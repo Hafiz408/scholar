@@ -31,12 +31,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. FastAPI health endpoint returns 200 and pgvector extension is confirmed active
   3. `.env` is gitignored from the first commit and no secrets appear in version history
   4. Project directory structure matches PRD layout (backend/, frontend/, eval/, .planning/)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: Docker Compose + PostgreSQL + pgvector setup
-- [ ] 01-02: FastAPI scaffold with health endpoint, SQLite init, and env config
-- [ ] 01-03: Next.js 14 scaffold with Tailwind and project structure
+- [ ] 01-01-PLAN.md — Docker Compose + PostgreSQL/pgvector setup + FastAPI scaffold with /health endpoint
+- [ ] 01-02-PLAN.md — Next.js 14 scaffold with Tailwind, App Router, and frontend Dockerfile
+- [ ] 01-03-PLAN.md — Integration boot: `docker compose up` verification + human approval gate
 
 ### Phase 2: Ingestion Pipeline
 **Goal**: Users can upload PDFs and URLs and have them fully ingested into both PageIndex and pgvector, with live status polling and graceful fallback when PageIndex fails
