@@ -1,5 +1,6 @@
 import sqlite3
 import aiosqlite
+import psycopg2
 from app.config import settings
 
 SQLITE_SCHEMA = """
@@ -28,6 +29,27 @@ CREATE TABLE IF NOT EXISTS chat_history (
 );
 """
 
+PGVECTOR_SCHEMA = """
+CREATE EXTENSION IF NOT EXISTS vector;
+
+CREATE TABLE IF NOT EXISTS knowledge_chunks (
+    id TEXT PRIMARY KEY,
+    source_id TEXT NOT NULL,
+    source_title TEXT NOT NULL,
+    page_number INTEGER,
+    chunk_index INTEGER,
+    content TEXT NOT NULL,
+    embedding vector(1536),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_chunks_embedding
+    ON knowledge_chunks USING ivfflat (embedding vector_cosine_ops);
+
+CREATE INDEX IF NOT EXISTS idx_chunks_source
+    ON knowledge_chunks (source_id);
+"""
+
 
 def init_db():
     """Initialize SQLite database with schema."""
@@ -36,6 +58,15 @@ def init_db():
     conn = sqlite3.connect(settings.sqlite_path)
     conn.executescript(SQLITE_SCHEMA)
     conn.commit()
+    conn.close()
+
+
+def init_pgvector_schema():
+    """Initialize pgvector knowledge_chunks table and indexes in PostgreSQL."""
+    conn = psycopg2.connect(settings.database_url)
+    conn.autocommit = True
+    with conn.cursor() as cur:
+        cur.execute(PGVECTOR_SCHEMA)
     conn.close()
 
 
