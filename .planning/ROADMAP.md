@@ -48,13 +48,13 @@ Plans:
   3. If PageIndex ingestion fails, status reaches "ready" with pageindex_doc_id = None — the upload is never blocked
   4. User can list all knowledge sources and see their current status pill (pending / indexing / ready / failed)
   5. User can delete a source and it is removed from pgvector, PageIndex, and SQLite
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 02-01: PDF extractor and URL extractor modules
-- [ ] 02-02: Embedder and pgvector ingestion
-- [ ] 02-03: PageIndex builder with fallback logic
-- [ ] 02-04: Ingestion pipeline orchestrator and /knowledge endpoints (upload, status, list, delete)
+- [ ] 02-01-PLAN.md — Config + pgvector schema init + FastAPI lifespan + PDF extractor + URL extractor
+- [ ] 02-02-PLAN.md — Embedder: chunking (600/100) + batch OpenAI embeddings + pgvector upsert
+- [ ] 02-03-PLAN.md — PageIndex builder with submit, poll, and graceful fallback to None
+- [ ] 02-04-PLAN.md — Pipeline orchestrator + /knowledge API (upload, status, list, delete)
 
 ### Phase 3: Retrieval Engine
 **Goal**: The retrieval layer accurately classifies queries and returns grounded context chunks; router meets the ≥ 8/10 accuracy hard gate before any chat agent is built
