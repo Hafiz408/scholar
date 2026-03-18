@@ -19,19 +19,19 @@ Progress: [████░░░░░░] 23%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 3.3 min
-- Total execution time: 0.2 hours
+- Total plans completed: 5
+- Average duration: 3.2 min
+- Total execution time: 0.3 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-infrastructure | 3/3 | 11 min | 3.7 min |
-| 02-ingestion-pipeline | 2/5 | 4 min | 2 min |
+| 02-ingestion-pipeline | 3/5 | 6 min | 2 min |
 
 **Recent Trend:**
-- Last 5 plans: 3.3 min
+- Last 5 plans: 3.2 min
 - Trend: —
 
 *Updated after each plan completion*
@@ -54,6 +54,7 @@ Recent decisions affecting current work:
 - [Phase 01-infrastructure-03]: Phase 1 go/no-go gate passed — all three services healthy, pgvector active, git history clean
 - [Phase 02-ingestion-pipeline-01]: Used autocommit=True on psycopg2 for CREATE EXTENSION in init_pgvector_schema; kept app.database get_engine for health check alongside db/database init functions
 - [Phase 02-ingestion-pipeline-02]: asyncio.to_thread wraps entire sync psycopg2+OpenAI block; register_vector(conn) called immediately after connect(); module-level OpenAI client singleton
+- [Phase 02-ingestion-pipeline-03]: Used httpx REST API directly — pageindex v0.1.0 package is empty stub; build_pageindex_tree outer try/except returns None on all failures
 
 ### Pending Todos
 
@@ -61,11 +62,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- PageIndex API key must be obtained before Phase 2 plan 3 (pageindex_builder.py) — without it that plan cannot execute
 - Router accuracy gate (≥ 8/10) must be passed at end of Phase 3 before Phase 4 agents begin
 
 ## Session Continuity
 
 Last session: 2026-03-18
-Stopped at: Completed 02-ingestion-pipeline-02-PLAN.md
+Stopped at: Completed 02-ingestion-pipeline-03-PLAN.md
 Resume file: None

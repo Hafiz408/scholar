@@ -10,7 +10,7 @@
 - [x] **INGEST-01**: User can upload a PDF (up to 50MB) and have it ingested into both PageIndex and pgvector
 - [x] **INGEST-02**: User can submit a URL and have its text extracted and ingested into both PageIndex and pgvector
 - [ ] **INGEST-03**: User can poll ingestion status (pending → indexing_pageindex → indexing_vectors → ready → failed)
-- [ ] **INGEST-04**: Ingestion completes even when PageIndex fails — falls back to vector-only (pageindex_doc_id = None)
+- [x] **INGEST-04**: Ingestion completes even when PageIndex fails — falls back to vector-only (pageindex_doc_id = None)
 - [ ] **INGEST-05**: User can list all knowledge sources with their current status
 - [ ] **INGEST-06**: User can delete a knowledge source (removes from pgvector + PageIndex + SQLite)
 
@@ -109,7 +109,7 @@
 | INGEST-01 | Phase 2 | Complete |
 | INGEST-02 | Phase 2 | Complete |
 | INGEST-03 | Phase 2 | Pending |
-| INGEST-04 | Phase 2 | Pending |
+| INGEST-04 | Phase 2 | Complete |
 | INGEST-05 | Phase 2 | Pending |
 | INGEST-06 | Phase 2 | Pending |
 | RETR-01 | Phase 3 | Pending |
