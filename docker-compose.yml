@@ -1,43 +1,56 @@
-version: "3.9"
 services:
-  postgres:
-    image: pgvector/pgvector:pg16
+  db:
+    image: pgvector/pgvector:0.8.0-pg16
     environment:
-      POSTGRES_DB: scholar
       POSTGRES_USER: scholar
-      POSTGRES_PASSWORD: scholar
-    ports: ["5432:5432"]
-    volumes: [pgdata:/var/lib/postgresql/data]
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: scholar
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init_db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U scholar"]
+      test: ["CMD-SHELL", "pg_isready -U scholar -d scholar"]
       interval: 5s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
   backend:
-    build: { context: ./backend }
-    ports: ["8000:8000"]
-    volumes: ["./backend:/app", "./data:/app/data"]
-    environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - PAGEINDEX_API_KEY=${PAGEINDEX_API_KEY}
-      - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY}
-      - LANGCHAIN_TRACING_V2=true
-      - LANGCHAIN_PROJECT=scholar-v1
-      - POSTGRES_URL=postgresql://scholar:scholar@postgres:5432/scholar
-      - SQLITE_PATH=/app/data/scholar.db
-      - UPLOAD_DIR=/app/data/uploads
+    build:
+      context: ./backend
     depends_on:
-      postgres:
+      db:
         condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      DATABASE_URL: postgresql://scholar:${POSTGRES_PASSWORD}@db:5432/scholar
+    env_file:
+      - .env
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
 
   frontend:
-    build: { context: ./frontend }
-    ports: ["3000:3000"]
-    environment: [NEXT_PUBLIC_API_URL=http://localhost:8000]
-    depends_on: [backend]
+    build:
+      context: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      NODE_ENV: development
+      WATCHPACK_POLLING: "true"
+      NEXT_PUBLIC_API_URL: http://localhost:8000
     command: npm run dev
+    restart: unless-stopped
 
 volumes:
-  pgdata:
+  postgres_data:

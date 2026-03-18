@@ -1,27 +1,19 @@
-import os
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from app.config import settings
-from app.db.database import init_db
+from sqlalchemy import text
+from app.database import get_engine
 
-app = FastAPI(title="Scholar V1", version="1.0.0")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.allowed_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-@app.on_event("startup")
-async def startup():
-    os.makedirs(settings.upload_dir, exist_ok=True)
-    os.makedirs(os.path.dirname(settings.sqlite_path) or ".", exist_ok=True)
-    init_db()
+app = FastAPI(title="Scholar API", version="0.1.0")
 
 
 @app.get("/health")
-async def health():
-    return {"status": "ok", "version": "1.0.0"}
+def health_check():
+    try:
+        engine = get_engine()
+        with engine.connect() as conn:
+            row = conn.execute(
+                text("SELECT extname FROM pg_extension WHERE extname = 'vector'")
+            ).fetchone()
+        pgvector_status = "active" if row else "missing"
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
+    return {"status": "ok", "pgvector": pgvector_status}
