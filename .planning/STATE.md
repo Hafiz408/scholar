@@ -10,24 +10,24 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 1 of 7 (Infrastructure)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-03-18 — Completed 01-01 infrastructure scaffold
+Last activity: 2026-03-18 — Completed 01-02 Next.js 14 frontend scaffold
 
-Progress: [█░░░░░░░░░] 5%
+Progress: [█░░░░░░░░░] 10%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 4 min
+- Total plans completed: 2
+- Average duration: 3 min
 - Total execution time: 0.1 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-infrastructure | 1/3 | 4 min | 4 min |
+| 01-infrastructure | 2/3 | 6 min | 3 min |
 
 **Recent Trend:**
 - Last 5 plans: 4 min
@@ -48,6 +48,8 @@ Recent decisions affecting current work:
 - gpt-4o-mini: default LLM for cost efficiency across high-frequency agent calls
 - SSE over WebSockets: simpler server-push for notes and chat streaming
 - [Phase 01-infrastructure]: Used pgvector/pgvector:0.8.0-pg16 pinned version; DATABASE_URL uses service name db for container networking; synchronous SQLAlchemy engine in Phase 1 only
+- [Phase 01-infrastructure]: node:20-alpine base image for minimal Dockerfile footprint in frontend service
+- [Phase 01-infrastructure]: CMD npm run dev in frontend Dockerfile; docker-compose handles WATCHPACK_POLLING and anonymous volumes
 
 ### Pending Todos
 
@@ -61,5 +63,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-18
-Stopped at: Completed 01-infrastructure-01-PLAN.md
+Stopped at: Completed 01-infrastructure-02-PLAN.md
 Resume file: None
