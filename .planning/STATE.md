@@ -10,17 +10,17 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 2 of 7 (Ingestion Pipeline)
-Plan: 1 of 5 in current phase — COMPLETE
-Status: Phase 2 plan 1 complete
-Last activity: 2026-03-18 — Completed 02-01 Foundation (config, pgvector schema, extractors)
+Plan: 3 of 5 in current phase — COMPLETE
+Status: Phase 2 plan 3 complete
+Last activity: 2026-03-18 — Completed 02-03 PageIndex Builder (submit, poll, fallback)
 
-Progress: [███░░░░░░░] 17%
+Progress: [████░░░░░░] 23%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 3.7 min
+- Total plans completed: 4
+- Average duration: 3.3 min
 - Total execution time: 0.2 hours
 
 **By Phase:**
@@ -28,10 +28,10 @@ Progress: [███░░░░░░░] 17%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-infrastructure | 3/3 | 11 min | 3.7 min |
-| 02-ingestion-pipeline | 1/5 | 2 min | 2 min |
+| 02-ingestion-pipeline | 2/5 | 4 min | 2 min |
 
 **Recent Trend:**
-- Last 5 plans: 3.7 min
+- Last 5 plans: 3.3 min
 - Trend: —
 
 *Updated after each plan completion*
@@ -53,6 +53,7 @@ Recent decisions affecting current work:
 - [Phase 01-infrastructure]: CMD npm run dev in frontend Dockerfile; docker-compose handles WATCHPACK_POLLING and anonymous volumes
 - [Phase 01-infrastructure-03]: Phase 1 go/no-go gate passed — all three services healthy, pgvector active, git history clean
 - [Phase 02-ingestion-pipeline-01]: Used autocommit=True on psycopg2 for CREATE EXTENSION in init_pgvector_schema; kept app.database get_engine for health check alongside db/database init functions
+- [Phase 02-ingestion-pipeline-02]: asyncio.to_thread wraps entire sync psycopg2+OpenAI block; register_vector(conn) called immediately after connect(); module-level OpenAI client singleton
 
 ### Pending Todos
 
@@ -66,5 +67,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-18
-Stopped at: Completed 02-ingestion-pipeline-01-PLAN.md
+Stopped at: Completed 02-ingestion-pipeline-02-PLAN.md
 Resume file: None
