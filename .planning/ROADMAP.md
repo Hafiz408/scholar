@@ -12,7 +12,7 @@ Scholar V1 is built in seven phases that mirror the PRD's 19 implementation step
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Infrastructure** - Docker, PostgreSQL, pgvector, and project scaffold ready for development
+- [x] **Phase 1: Infrastructure** - Docker, PostgreSQL, pgvector, and project scaffold ready for development
 - [ ] **Phase 2: Ingestion Pipeline** - PDF and URL ingestion into PageIndex and pgvector with status tracking
 - [ ] **Phase 3: Retrieval Engine** - Router, PageIndex retriever, vector retriever, and hybrid retriever passing accuracy gate
 - [ ] **Phase 4: Agents & Orchestrator** - Planner, note generator, session chat, and quiz agents with LangGraph + LangSmith
@@ -34,9 +34,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Docker Compose + PostgreSQL/pgvector setup + FastAPI scaffold with /health endpoint
-- [ ] 01-02-PLAN.md — Next.js 14 scaffold with Tailwind, App Router, and frontend Dockerfile
-- [ ] 01-03-PLAN.md — Integration boot: `docker compose up` verification + human approval gate
+- [x] 01-01-PLAN.md — Docker Compose + PostgreSQL/pgvector setup + FastAPI scaffold with /health endpoint
+- [x] 01-02-PLAN.md — Next.js 14 scaffold with Tailwind, App Router, and frontend Dockerfile
+- [x] 01-03-PLAN.md — Integration boot: `docker compose up` verification + human approval gate
 
 ### Phase 2: Ingestion Pipeline
 **Goal**: Users can upload PDFs and URLs and have them fully ingested into both PageIndex and pgvector, with live status polling and graceful fallback when PageIndex fails
@@ -145,7 +145,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Infrastructure | 2/3 | In Progress|  |
+| 1. Infrastructure | 3/3 | Complete | 2026-03-18 |
 | 2. Ingestion Pipeline | 0/4 | Not started | - |
 | 3. Retrieval Engine | 0/3 | Not started | - |
 | 4. Agents & Orchestrator | 0/4 | Not started | - |
