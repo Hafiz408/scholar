@@ -100,11 +100,11 @@ Plans:
   2. Each quiz question has one unambiguously correct answer and a plausible distractor set
   3. User can submit answers and receive a score (0.0–1.0) with per-question explanation
   4. After submission, the session is marked complete with the quiz score stored, and the goal progress updates
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: Quiz endpoints (generate, submit, score) wired to quiz agent
-- [ ] 05-02: Goal and session endpoints (create goal, get plan, session status) — remaining API surface
+- [ ] 05-01-PLAN.md — Quiz agent (generate_quiz + evaluate_quiz) + quiz_questions SQLite schema + POST /quiz/generate and /quiz/submit endpoints
+- [ ] 05-02-PLAN.md — Planner, note_generator, session_chat agents + goals/sessions/chat routers + CORS + main.py registration
 
 ### Phase 6: Frontend
 **Goal**: The complete Next.js UI is functional — users can upload sources, create goals, run study sessions with streaming notes and chat, and complete quizzes, all from the browser
