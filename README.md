@@ -40,7 +40,12 @@ docker compose up
 
 RAGAS benchmark comparing PageIndex vs vector RAG on 30 Q&A pairs from OpenStax Biology 2e:
 
-<!-- eval table inserted at step 19 -->
+| Strategy  | Faithfulness | Answer Relevancy | Context Precision | Avg Latency |
+|-----------|-------------|-----------------|-------------------|-------------|
+| PageIndex | 0.50 | 0.50 | 0.50 | 0ms |
+| Vector    | 0.50 | 0.50 | 0.50 | 0ms |
+
+*Scores shown are dry-run placeholders. Run `eval/run_ragas.py --book-path /app/data/uploads/bio2e.pdf` with the OpenStax Biology 2e PDF for real benchmark scores.*
 
 ## Running Tests
 

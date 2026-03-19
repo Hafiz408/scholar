@@ -1,0 +1,16 @@
+{
+  "timestamp": "20260319T102254",
+  "dry_run": true,
+  "pageindex": {
+    "faithfulness": 0.5,
+    "answer_relevancy": 0.5,
+    "context_precision": 0.5,
+    "avg_latency_ms": 0
+  },
+  "vector": {
+    "faithfulness": 0.5,
+    "answer_relevancy": 0.5,
+    "context_precision": 0.5,
+    "avg_latency_ms": 0
+  }
+}
