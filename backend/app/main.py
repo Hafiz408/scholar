@@ -12,11 +12,27 @@ from app.routers.knowledge import router as knowledge_router
 async def lifespan(app: FastAPI):
     init_db()
     init_pgvector_schema()
-    yield
+    from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+    from app.agents.orchestrator import build_graph
+    from app.config import settings
+    async with AsyncSqliteSaver.from_conn_string(settings.sqlite_path) as checkpointer:
+        app.state.checkpointer = checkpointer
+        app.state.graph = build_graph(checkpointer)
+        yield
 
 
 app = FastAPI(title="Scholar API", version="0.1.0", lifespan=lifespan)
 app.include_router(knowledge_router, prefix="/knowledge", tags=["knowledge"])
+
+from app.routers.goals import router as goals_router
+from app.routers.sessions import router as sessions_router
+from app.routers.chat import router as chat_router
+from app.routers.quiz import router as quiz_router
+
+app.include_router(goals_router)
+app.include_router(sessions_router)
+app.include_router(chat_router)
+app.include_router(quiz_router)
 
 
 @app.get("/health")
