@@ -31,10 +31,10 @@
 
 ### Session — Notes
 
-- [ ] **SESS-01**: User can start a session, triggering SSE-streamed note generation grounded in retrieved context
-- [ ] **SESS-02**: Notes stream via SSE notes_chunk events — never blocks waiting for full generation
-- [ ] **SESS-03**: Every factual claim in notes cites source book title and page number
-- [ ] **SESS-04**: Notes are persisted in SQLite after generation completes
+- [x] **SESS-01**: User can start a session, triggering SSE-streamed note generation grounded in retrieved context
+- [x] **SESS-02**: Notes stream via SSE notes_chunk events — never blocks waiting for full generation
+- [x] **SESS-03**: Every factual claim in notes cites source book title and page number
+- [x] **SESS-04**: Notes are persisted in SQLite after generation completes
 
 ### Session — Chat
 
@@ -125,10 +125,10 @@
 | GOAL-02 | Phase 4 | Complete |
 | GOAL-03 | Phase 4 | Complete |
 | GOAL-04 | Phase 4 | Complete |
-| SESS-01 | Phase 4 | Pending |
-| SESS-02 | Phase 4 | Pending |
-| SESS-03 | Phase 4 | Pending |
-| SESS-04 | Phase 4 | Pending |
+| SESS-01 | Phase 4 | Complete |
+| SESS-02 | Phase 4 | Complete |
+| SESS-03 | Phase 4 | Complete |
+| SESS-04 | Phase 4 | Complete |
 | CHAT-01 | Phase 4 | Pending |
 | CHAT-02 | Phase 4 | Pending |
 | CHAT-03 | Phase 4 | Pending |
