@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 3 of 7 (Retrieval Engine)
-Plan: 2 of 3 in current phase
-Status: In progress — 03-02 Leaf Retrievers complete
-Last activity: 2026-03-19 — Completed 03-02 Leaf Retrievers (PageIndex + Vector)
+Plan: 3 of 3 in current phase
+Status: In progress — 03-01 Query Router + 03-02 Leaf Retrievers complete
+Last activity: 2026-03-19 — Completed 03-01 Query Router Agent
 
 Progress: [██████░░░░] 34%
 
@@ -58,6 +58,7 @@ Recent decisions affecting current work:
 - [Phase 02-ingestion-pipeline-03]: Used httpx REST API directly — pageindex v0.1.0 package is empty stub; build_pageindex_tree outer try/except returns None on all failures
 - [Phase 02-ingestion-pipeline-04]: UploadFile bytes read in endpoint before background task; GET /knowledge/ redirects from /knowledge (standard FastAPI behavior); pgvector delete in router wrapped in try/except
 - [Phase 03-retrieval-engine-02]: Poll budget 18x5s=90s for PageIndex (30-90s on large docs); np.array required by pgvector adapter; embedding passed twice in SQL tuple for score + ORDER BY
+- [Phase 03-retrieval-engine-01]: asyncio_mode=auto in pytest.ini fixes pytest-asyncio 0.23.0 crash on __init__.py; RouterDecision Field description carries per-strategy examples inline as classifier prompt; asyncio.to_thread bridges sync LangChain into async handlers
 
 ### Pending Todos
 
@@ -70,5 +71,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-19
-Stopped at: Completed 03-retrieval-engine-02-PLAN.md
+Stopped at: Completed 03-retrieval-engine-01-PLAN.md
 Resume file: None
