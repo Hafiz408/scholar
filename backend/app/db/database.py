@@ -59,6 +59,12 @@ def init_db():
     conn = sqlite3.connect(settings.sqlite_path)
     conn.executescript(SQLITE_SCHEMA)
     conn.commit()
+    # Add quiz_questions column if it doesn't exist (ALTER TABLE guard)
+    try:
+        conn.execute("ALTER TABLE study_sessions ADD COLUMN quiz_questions TEXT")
+        conn.commit()
+    except Exception:
+        pass  # column already exists
     conn.close()
 
 
