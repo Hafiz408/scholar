@@ -1,5 +1,32 @@
-import { fetchEventSource } from '@microsoft/fetch-event-source'
 import type { RetrievedChunk } from '@/types'
+
+/**
+ * Minimal SSE parser for a ReadableStream of text.
+ * Yields parsed { event, data } objects from the stream.
+ */
+async function* parseSSE(
+  reader: ReadableStreamDefaultReader<Uint8Array>
+): AsyncGenerator<{ event: string; data: string }> {
+  const decoder = new TextDecoder()
+  let buf = ''
+  let event = 'message'
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buf += decoder.decode(value, { stream: true })
+    const lines = buf.split('\n')
+    buf = lines.pop() ?? ''
+    for (const line of lines) {
+      if (line.startsWith('event:')) {
+        event = line.slice(6).trim()
+      } else if (line.startsWith('data:')) {
+        yield { event, data: line.slice(5).trim() }
+        event = 'message'
+      }
+    }
+  }
+}
 
 /**
  * Stream notes for a session via POST /sessions/{sessionId}/start.
@@ -13,31 +40,34 @@ export function streamNotes(
 ): () => void {
   const ctrl = new AbortController()
 
-  fetchEventSource(`/api/sessions/${sessionId}/start`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({}),
-    signal: ctrl.signal,
-    onmessage(ev) {
-      if (ev.event === 'notes_chunk') {
-        const data = JSON.parse(ev.data)
-        onChunk(data.content)
-      } else if (ev.event === 'notes_done') {
-        const data = JSON.parse(ev.data)
-        ctrl.abort()
-        onDone(data.total_chars)
+  ;(async () => {
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+        signal: ctrl.signal,
+      })
+      if (!res.ok || !res.body) {
+        onError(`Notes stream failed: ${res.status}`)
+        return
       }
-    },
-    onerror(err) {
-      // fetchEventSource will retry on network errors; abort to stop retries
-      ctrl.abort()
-      onError('Notes stream error')
-      throw err // re-throw to prevent automatic retry
-    },
-    openWhenHidden: true,
-  }).catch(() => {
-    // Swallow AbortError from ctrl.abort() — not a real error
-  })
+      for await (const { event, data } of parseSSE(res.body.getReader())) {
+        if (event === 'notes_chunk') {
+          const parsed = JSON.parse(data) as { content: string }
+          onChunk(parsed.content)
+        } else if (event === 'notes_done') {
+          const parsed = JSON.parse(data) as { total_chars: number }
+          onDone(parsed.total_chars)
+          break
+        }
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name !== 'AbortError') {
+        onError('Notes stream error')
+      }
+    }
+  })()
 
   return () => ctrl.abort()
 }
@@ -56,32 +86,36 @@ export function streamChat(
 ): () => void {
   const ctrl = new AbortController()
 
-  fetchEventSource(`/api/sessions/${sessionId}/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message }),
-    signal: ctrl.signal,
-    onmessage(ev) {
-      if (ev.event === 'token') {
-        const data = JSON.parse(ev.data)
-        onToken(data.content)
-      } else if (ev.event === 'citations') {
-        const data = JSON.parse(ev.data)
-        onCitations(data.chunks)
-      } else if (ev.event === 'done') {
-        ctrl.abort()
-        onDone()
+  ;(async () => {
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message }),
+        signal: ctrl.signal,
+      })
+      if (!res.ok || !res.body) {
+        onError(`Chat stream failed: ${res.status}`)
+        return
       }
-    },
-    onerror(err) {
-      ctrl.abort()
-      onError('Chat stream error')
-      throw err // re-throw to prevent automatic retry
-    },
-    openWhenHidden: true,
-  }).catch(() => {
-    // Swallow AbortError from ctrl.abort()
-  })
+      for await (const { event, data } of parseSSE(res.body.getReader())) {
+        if (event === 'token') {
+          const parsed = JSON.parse(data) as { content: string }
+          onToken(parsed.content)
+        } else if (event === 'citations') {
+          const parsed = JSON.parse(data) as { chunks: RetrievedChunk[] }
+          onCitations(parsed.chunks)
+        } else if (event === 'done') {
+          onDone()
+          break
+        }
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name !== 'AbortError') {
+        onError('Chat stream error')
+      }
+    }
+  })()
 
   return () => ctrl.abort()
 }
