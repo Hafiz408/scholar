@@ -66,12 +66,12 @@ Plans:
   3. PageIndex retriever returns chapter-level chunks with book title and page number for sources that have a PageIndex tree
   4. Vector retriever returns cosine-similarity results filtered to the correct source IDs
   5. Hybrid retriever merges both result sets with 0.6/0.4 weighting and deduplicates by content hash
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: Router agent with structured output + labelled test set
-- [ ] 03-02: PageIndex retriever and vector retriever
-- [ ] 03-03: Hybrid retriever with weighted reranking + retrieval integration tests
+- [ ] 03-01-PLAN.md — Router agent (RETR-01 + RETR-02): classify_query with RETR-02 fallback guard + 10-query labelled test set with ≥ 8/10 accuracy gate
+- [ ] 03-02-PLAN.md — PageIndex retriever (RETR-03) + vector retriever (RETR-04): submit/poll/parse + cosine SQL with source_id filter
+- [ ] 03-03-PLAN.md — Hybrid retriever (RETR-05): 0.6/0.4 weighted merge + content hash dedup + retrieve() orchestrator + integration tests
 
 ### Phase 4: Agents & Orchestrator
 **Goal**: The full study session machinery works end-to-end — planner generates session plans, note generator streams grounded notes, chat agent streams context-only answers, quiz agent generates and scores MCQs, all traced in LangSmith, all state persisted via LangGraph SqliteSaver
