@@ -27,6 +27,17 @@ CREATE TABLE IF NOT EXISTS chat_history (
     id TEXT PRIMARY KEY, session_id TEXT, role TEXT,
     content TEXT, citations TEXT, created_at TEXT
 );
+
+CREATE TABLE IF NOT EXISTS quiz_questions (
+    id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    question TEXT NOT NULL,
+    options TEXT NOT NULL,
+    correct_index INTEGER NOT NULL,
+    explanation TEXT NOT NULL,
+    created_at TEXT,
+    FOREIGN KEY (session_id) REFERENCES study_sessions(id)
+);
 """
 
 def _pgvector_schema(dimensions: int) -> str:
