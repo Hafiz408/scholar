@@ -38,10 +38,10 @@
 
 ### Session — Chat
 
-- [ ] **CHAT-01**: User can send a chat message and receive an SSE-streamed response grounded in retrieved context
-- [ ] **CHAT-02**: Chat agent answers ONLY from provided context — refuses to answer from training data
-- [ ] **CHAT-03**: Each chat response includes citation chunks referencing source book and page
-- [ ] **CHAT-04**: Full chat history is persisted in LangGraph state (SqliteSaver) — survives browser refresh
+- [x] **CHAT-01**: User can send a chat message and receive an SSE-streamed response grounded in retrieved context
+- [x] **CHAT-02**: Chat agent answers ONLY from provided context — refuses to answer from training data
+- [x] **CHAT-03**: Each chat response includes citation chunks referencing source book and page
+- [x] **CHAT-04**: Full chat history is persisted in LangGraph state (SqliteSaver) — survives browser refresh
 
 ### Session — Quiz
 
@@ -129,10 +129,10 @@
 | SESS-02 | Phase 4 | Complete |
 | SESS-03 | Phase 4 | Complete |
 | SESS-04 | Phase 4 | Complete |
-| CHAT-01 | Phase 4 | Pending |
-| CHAT-02 | Phase 4 | Pending |
-| CHAT-03 | Phase 4 | Pending |
-| CHAT-04 | Phase 4 | Pending |
+| CHAT-01 | Phase 4 | Complete |
+| CHAT-02 | Phase 4 | Complete |
+| CHAT-03 | Phase 4 | Complete |
+| CHAT-04 | Phase 4 | Complete |
 | QUIZ-01 | Phase 4 | Pending |
 | QUIZ-02 | Phase 4 | Pending |
 | QUIZ-03 | Phase 4 | Pending |
