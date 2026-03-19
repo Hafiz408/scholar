@@ -10,16 +10,16 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 2 of 7 (Ingestion Pipeline)
-Plan: 3 of 5 in current phase — COMPLETE
-Status: Phase 2 plan 3 complete
-Last activity: 2026-03-18 — Completed 02-03 PageIndex Builder (submit, poll, fallback)
+Plan: 4 of 4 in current phase — COMPLETE
+Status: Phase 2 COMPLETE — all 4 plans done
+Last activity: 2026-03-19 — Completed 02-04 Pipeline Orchestrator + Knowledge Router
 
-Progress: [████░░░░░░] 23%
+Progress: [█████░░░░░] 26%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
+- Total plans completed: 6
 - Average duration: 3.2 min
 - Total execution time: 0.3 hours
 
@@ -28,7 +28,7 @@ Progress: [████░░░░░░] 23%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-infrastructure | 3/3 | 11 min | 3.7 min |
-| 02-ingestion-pipeline | 3/5 | 6 min | 2 min |
+| 02-ingestion-pipeline | 4/5 | 8 min | 2 min |
 
 **Recent Trend:**
 - Last 5 plans: 3.2 min
@@ -55,6 +55,7 @@ Recent decisions affecting current work:
 - [Phase 02-ingestion-pipeline-01]: Used autocommit=True on psycopg2 for CREATE EXTENSION in init_pgvector_schema; kept app.database get_engine for health check alongside db/database init functions
 - [Phase 02-ingestion-pipeline-02]: asyncio.to_thread wraps entire sync psycopg2+OpenAI block; register_vector(conn) called immediately after connect(); module-level OpenAI client singleton
 - [Phase 02-ingestion-pipeline-03]: Used httpx REST API directly — pageindex v0.1.0 package is empty stub; build_pageindex_tree outer try/except returns None on all failures
+- [Phase 02-ingestion-pipeline-04]: UploadFile bytes read in endpoint before background task; GET /knowledge/ redirects from /knowledge (standard FastAPI behavior); pgvector delete in router wrapped in try/except
 
 ### Pending Todos
 
@@ -66,6 +67,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18
-Stopped at: Completed 02-ingestion-pipeline-03-PLAN.md
+Last session: 2026-03-19
+Stopped at: Completed 02-ingestion-pipeline-04-PLAN.md
 Resume file: None
