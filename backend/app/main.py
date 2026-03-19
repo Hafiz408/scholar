@@ -5,6 +5,7 @@ from sqlalchemy import text
 
 from app.database import get_engine
 from app.db.database import init_db, init_pgvector_schema
+from app.routers.knowledge import router as knowledge_router
 
 
 @asynccontextmanager
@@ -15,6 +16,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Scholar API", version="0.1.0", lifespan=lifespan)
+app.include_router(knowledge_router, prefix="/knowledge", tags=["knowledge"])
 
 
 @app.get("/health")

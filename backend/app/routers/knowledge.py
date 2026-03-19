@@ -1,1 +1,166 @@
-# TODO: implement
+import os
+import uuid
+import logging
+from datetime import datetime
+from typing import Optional
+
+import aiosqlite
+import psycopg2
+from fastapi import APIRouter, BackgroundTasks, UploadFile, File, Form, HTTPException, Response
+
+from app.config import settings
+from app.models.schemas import KnowledgeSource, IngestionStatus
+from app.ingestion.pipeline import run_ingestion
+from app.ingestion.embedder import delete_chunks_for_source
+from app.ingestion.pageindex_builder import delete_pageindex_doc
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter()
+
+
+@router.post("/upload", status_code=202)
+async def upload_knowledge(
+    background_tasks: BackgroundTasks,
+    file: Optional[UploadFile] = File(None),
+    url: Optional[str] = Form(None),
+):
+    """Upload a PDF file or a URL for ingestion into the knowledge base.
+
+    Returns HTTP 202 immediately with source_id and status=pending.
+    The actual ingestion (text extraction, embedding, PageIndex) runs as a background task.
+    """
+    if file is None and url is None:
+        raise HTTPException(status_code=400, detail="Must provide file or url")
+
+    source_id = str(uuid.uuid4())
+    save_path: Optional[str] = None
+
+    if file is not None:
+        # Read all bytes before any background work — UploadFile stream must not be passed
+        # to a background task (stream is closed by the time the task runs).
+        content = await file.read()
+        size_mb = len(content) / (1024 * 1024)
+        if size_mb > settings.max_upload_size_mb:
+            raise HTTPException(
+                status_code=413,
+                detail=f"File size {size_mb:.1f} MB exceeds limit of {settings.max_upload_size_mb} MB",
+            )
+        os.makedirs(settings.upload_dir, exist_ok=True)
+        save_path = os.path.join(settings.upload_dir, f"{source_id}.pdf")
+        with open(save_path, "wb") as fh:
+            fh.write(content)
+        source_type = "pdf"
+        title = file.filename or source_id
+    else:
+        source_type = "url"
+        title = url
+
+    created_at = datetime.utcnow().isoformat()
+
+    async with aiosqlite.connect(settings.sqlite_path) as db:
+        await db.execute(
+            """
+            INSERT INTO knowledge_sources
+                (id, title, source_type, file_path, url, page_count, status, created_at)
+            VALUES (?, ?, ?, ?, ?, 0, 'pending', ?)
+            """,
+            (source_id, title, source_type, save_path, url, created_at),
+        )
+        await db.commit()
+
+    background_tasks.add_task(run_ingestion, source_id, save_path, url, source_type, title)
+
+    return {"source_id": source_id, "status": "pending"}
+
+
+@router.get("/{source_id}/status", response_model=IngestionStatus)
+async def get_status(source_id: str):
+    """Return the current ingestion status for a knowledge source."""
+    async with aiosqlite.connect(settings.sqlite_path) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute(
+            "SELECT id, status, page_count FROM knowledge_sources WHERE id = ?",
+            (source_id,),
+        ) as cursor:
+            row = await cursor.fetchone()
+
+    if row is None:
+        raise HTTPException(status_code=404, detail="Knowledge source not found")
+
+    status = row["status"]
+    page_count = row["page_count"] or 0
+    return IngestionStatus(
+        source_id=row["id"],
+        status=status,
+        pages_processed=page_count if status == "ready" else 0,
+        total_pages=page_count,
+    )
+
+
+@router.get("/", response_model=list[KnowledgeSource])
+async def list_knowledge_sources():
+    """Return all knowledge sources ordered by creation date descending."""
+    async with aiosqlite.connect(settings.sqlite_path) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute(
+            "SELECT * FROM knowledge_sources ORDER BY created_at DESC"
+        ) as cursor:
+            rows = await cursor.fetchall()
+
+    sources = []
+    for row in rows:
+        sources.append(
+            KnowledgeSource(
+                id=row["id"],
+                title=row["title"],
+                source_type=row["source_type"],
+                file_path=row["file_path"],
+                url=row["url"],
+                page_count=row["page_count"] or 0,
+                pageindex_doc_id=row["pageindex_doc_id"],
+                status=row["status"],
+                created_at=datetime.fromisoformat(row["created_at"]),
+            )
+        )
+    return sources
+
+
+@router.delete("/{source_id}", status_code=204)
+async def delete_knowledge_source(source_id: str):
+    """Delete a knowledge source with cascade across pgvector, PageIndex, and SQLite.
+
+    Returns 204 on success, 404 if source not found.
+    PageIndex deletion is best-effort — failure there will not prevent the overall delete.
+    """
+    # Step 1: Fetch pageindex_doc_id from SQLite (also validates source exists)
+    async with aiosqlite.connect(settings.sqlite_path) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute(
+            "SELECT pageindex_doc_id FROM knowledge_sources WHERE id = ?",
+            (source_id,),
+        ) as cursor:
+            row = await cursor.fetchone()
+
+        if row is None:
+            raise HTTPException(status_code=404, detail="Knowledge source not found")
+
+        pageindex_doc_id = row["pageindex_doc_id"]
+
+        # Step 2: Delete from pgvector (synchronous — fast operation)
+        try:
+            delete_chunks_for_source(source_id)
+        except Exception as e:
+            logger.warning("pgvector delete failed for %s: %s", source_id, e)
+
+        # Step 3: Delete from PageIndex (best-effort — delete_pageindex_doc never raises)
+        if pageindex_doc_id is not None:
+            delete_pageindex_doc(pageindex_doc_id)
+
+        # Step 4: Delete from SQLite
+        await db.execute(
+            "DELETE FROM knowledge_sources WHERE id = ?", (source_id,)
+        )
+        await db.commit()
+
+    return Response(status_code=204)
