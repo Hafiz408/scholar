@@ -116,13 +116,13 @@ Plans:
   3. Goal detail page shows a live progress bar and session cards with correct locked/available/complete states and quiz score badges
   4. Study session page shows three panels — notes stream in as they generate, chat responds with citation chips, quiz flows to results and Complete Session
   5. Chat and notes both stream via SSE with no full-page block
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 06-01: Knowledge base page (upload, URL, status pills, polling)
-- [ ] 06-02: Goal creation form and goal detail page (progress bar, session cards)
-- [ ] 06-03: Study session page with three-panel layout and SSE integration (notes + chat)
-- [ ] 06-04: Quiz panel UI (MCQ render, answer submit, results, Complete Session)
+- [ ] 06-01-PLAN.md — API client (lib/api.ts + lib/sse.ts) + knowledge base page (upload, URL, status pills, polling)
+- [ ] 06-02-PLAN.md — Goal creation form + goal detail page (progress bar, session cards with states)
+- [ ] 06-03-PLAN.md — Study session three-panel layout + SessionNotes (SSE) + ChatPanel (SSE + citations)
+- [ ] 06-04-PLAN.md — Quiz panel (MCQ state machine, results, Complete Session flow)
 
 ### Phase 7: Evaluation
 **Goal**: RAGAS benchmark is run against 30 labelled Q&A pairs, results are committed, and the README displays a comparison table — the portfolio artifact is complete
