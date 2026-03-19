@@ -5,6 +5,7 @@ import { getSession } from '@/lib/api'
 import type { StudySession } from '@/types'
 import SessionNotes from '@/components/SessionNotes'
 import ChatPanel from '@/components/ChatPanel'
+import QuizPanel from '@/components/QuizPanel'
 
 interface PageProps {
   params: { sessionId: string }
@@ -54,10 +55,10 @@ export default function StudySessionPage({ params }: PageProps) {
         <ChatPanel sessionId={sessionId} />
       </div>
 
-      {/* Quiz placeholder */}
+      {/* Quiz panel */}
       <div className="col-span-1 overflow-y-auto border rounded-lg p-4">
         <h2 className="font-semibold mb-3">Quiz</h2>
-        <p className="text-gray-500 text-sm">Quiz available after notes are generated.</p>
+        {session && <QuizPanel sessionId={sessionId} goalId={session.goal_id} />}
       </div>
     </div>
   )
