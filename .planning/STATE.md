@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** A student can upload their actual textbooks, set a real deadline, and have every note, chat answer, and quiz question grounded in — and only in — those specific books.
-**Current focus:** Phase 2 — Ingestion Pipeline
+**Current focus:** Phase 3 — Retrieval Engine
 
 ## Current Position
 
-Phase: 2 of 7 (Ingestion Pipeline)
-Plan: 4 of 4 in current phase — COMPLETE
-Status: Phase 2 COMPLETE — all 4 plans done
-Last activity: 2026-03-19 — Completed 02-04 Pipeline Orchestrator + Knowledge Router
+Phase: 3 of 7 (Retrieval Engine)
+Plan: 2 of 3 in current phase
+Status: In progress — 03-02 Leaf Retrievers complete
+Last activity: 2026-03-19 — Completed 03-02 Leaf Retrievers (PageIndex + Vector)
 
-Progress: [█████░░░░░] 26%
+Progress: [██████░░░░] 34%
 
 ## Performance Metrics
 
@@ -29,6 +29,7 @@ Progress: [█████░░░░░] 26%
 |-------|-------|-------|----------|
 | 01-infrastructure | 3/3 | 11 min | 3.7 min |
 | 02-ingestion-pipeline | 4/5 | 8 min | 2 min |
+| 03-retrieval-engine | 2/3 | 6 min | 3 min |
 
 **Recent Trend:**
 - Last 5 plans: 3.2 min
@@ -56,6 +57,7 @@ Recent decisions affecting current work:
 - [Phase 02-ingestion-pipeline-02]: asyncio.to_thread wraps entire sync psycopg2+OpenAI block; register_vector(conn) called immediately after connect(); module-level OpenAI client singleton
 - [Phase 02-ingestion-pipeline-03]: Used httpx REST API directly — pageindex v0.1.0 package is empty stub; build_pageindex_tree outer try/except returns None on all failures
 - [Phase 02-ingestion-pipeline-04]: UploadFile bytes read in endpoint before background task; GET /knowledge/ redirects from /knowledge (standard FastAPI behavior); pgvector delete in router wrapped in try/except
+- [Phase 03-retrieval-engine-02]: Poll budget 18x5s=90s for PageIndex (30-90s on large docs); np.array required by pgvector adapter; embedding passed twice in SQL tuple for score + ORDER BY
 
 ### Pending Todos
 
@@ -68,5 +70,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-19
-Stopped at: Completed 02-ingestion-pipeline-04-PLAN.md
+Stopped at: Completed 03-retrieval-engine-02-PLAN.md
 Resume file: None
