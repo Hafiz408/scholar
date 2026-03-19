@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Ingestion Pipeline** - PDF and URL ingestion into PageIndex and pgvector with status tracking
 - [x] **Phase 3: Retrieval Engine** - Router, PageIndex retriever, vector retriever, and hybrid retriever passing accuracy gate (completed 2026-03-19)
 - [x] **Phase 4: Agents & Orchestrator** - Planner, note generator, session chat, and quiz agents with LangGraph + LangSmith (completed 2026-03-19)
-- [ ] **Phase 5: API Layer** - quiz_questions schema gap + end-to-end integration tests covering the full API surface
+- [x] **Phase 5: API Layer** - quiz_questions schema gap + end-to-end integration tests covering the full API surface (completed 2026-03-19)
 - [ ] **Phase 6: Frontend** - Next.js UI: knowledge page, goal form, goal detail, study session with SSE streaming
 - [ ] **Phase 7: Evaluation** - RAGAS benchmark on 30 Q&A pairs; results committed and README updated
 
@@ -148,6 +148,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 2. Ingestion Pipeline | 4/4 | Complete | 2026-03-19 |
 | 3. Retrieval Engine | 3/3 | Complete   | 2026-03-19 |
 | 4. Agents & Orchestrator | 4/4 | Complete   | 2026-03-19 |
-| 5. API Layer | 0/1 | Not started | - |
+| 5. API Layer | 1/1 | Complete   | 2026-03-19 |
 | 6. Frontend | 0/4 | Not started | - |
 | 7. Evaluation | 0/2 | Not started | - |

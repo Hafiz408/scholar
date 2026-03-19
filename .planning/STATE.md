@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** A student can upload their actual textbooks, set a real deadline, and have every note, chat answer, and quiz question grounded in — and only in — those specific books.
-**Current focus:** Phase 4 — Agents Orchestrator (complete — all 4 plans done)
+**Current focus:** Phase 5 — API Layer (in progress — plan 1 of 2 done)
 
 ## Current Position
 
-Phase: 4 of 7 (Agents Orchestrator)
-Plan: 4 of 4 in current phase
-Status: Complete — 04-04 complete (Quiz Agent, quiz generate/submit endpoints, QUIZ-01..04)
-Last activity: 2026-03-19 — Completed 04-04 Quiz Agent (QUIZ-01..04)
+Phase: 5 of 7 (API Layer)
+Plan: 1 of 2 in current phase
+Status: In progress — 05-01 complete (quiz_questions DDL, API integration tests, API-INT-01)
+Last activity: 2026-03-19 — Completed 05-01 API Integration Tests (API-INT-01)
 
-Progress: [██████████] 69%
+Progress: [██████████] 72%
 
 ## Performance Metrics
 
@@ -73,6 +73,9 @@ Recent decisions affecting current work:
 - [Phase 04-agents-orchestrator-03]: chat router uses prefix=/sessions — coexists with sessions router under same prefix; goal_id used as LangGraph thread_id for per-goal history isolation
 - [Phase 04-agents-orchestrator-03]: Defensive import fallback for Checkpoint/CheckpointMetadata: base -> types -> plain dict handles langgraph version differences
 - [Phase 04-agents-orchestrator-04]: QuizQuestionPublic model strips correct_index at HTTP layer — security boundary explicit in router, not agent; router prefix=/sessions (not /quiz) to match /sessions/{id}/quiz/* paths; ALTER TABLE guard pattern for idempotent SQLite column additions
+- [Phase 05-api-layer-01]: pythonpath = . in pytest.ini resolves app.* imports without __init__.py — pytest-asyncio 0.23.0 + asyncio_mode=auto crashes on Package collector when __init__.py present
+- [Phase 05-api-layer-01]: quiz_questions normalized table additive; study_sessions.quiz_questions TEXT column + ALTER TABLE guard retained for live DB backward compat
+- [Phase 05-api-layer-01]: GET /goals/{goal_id} response shape is {goal: {...}, sessions: [...]} — goal_id nested at data["goal"]["id"], not data["goal_id"]
 
 ### Pending Todos
 
@@ -80,10 +83,10 @@ None yet.
 
 ### Blockers/Concerns
 
-None — Phase 4 complete (all 4 plans done). Ready for Phase 5.
+None — Phase 5 plan 01 complete. Ready for Phase 5 plan 02.
 
 ## Session Continuity
 
 Last session: 2026-03-19
-Stopped at: Completed 04-agents-orchestrator-04-PLAN.md
+Stopped at: Completed 05-api-layer-01-PLAN.md
 Resume file: None

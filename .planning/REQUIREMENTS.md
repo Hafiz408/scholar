@@ -56,7 +56,7 @@
 
 ### API Integration
 
-- [ ] **API-INT-01**: End-to-end integration tests verify the full API surface (POST /goals → GET /goals/{id} → POST /sessions/{id}/start → POST /sessions/{id}/quiz/generate → POST /sessions/{id}/quiz/submit) passes without errors; quiz_questions table DDL is in SQLITE_SCHEMA (not via ALTER TABLE workaround)
+- [x] **API-INT-01**: End-to-end integration tests verify the full API surface (POST /goals → GET /goals/{id} → POST /sessions/{id}/start → POST /sessions/{id}/quiz/generate → POST /sessions/{id}/quiz/submit) passes without errors; quiz_questions table DDL is in SQLITE_SCHEMA (not via ALTER TABLE workaround)
 
 ### Frontend
 
@@ -138,7 +138,7 @@
 | QUIZ-03 | Phase 4 | Complete |
 | QUIZ-04 | Phase 4 | Complete |
 | OBS-01 | Phase 4 | Complete |
-| API-INT-01 | Phase 5 | Pending |
+| API-INT-01 | Phase 5 | Complete |
 | FE-01 | Phase 6 | Pending |
 | FE-02 | Phase 6 | Pending |
 | FE-03 | Phase 6 | Pending |
