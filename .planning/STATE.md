@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** A student can upload their actual textbooks, set a real deadline, and have every note, chat answer, and quiz question grounded in — and only in — those specific books.
-**Current focus:** Phase 6 — Frontend (in progress — plan 3 of 4 done)
+**Current focus:** Phase 6 — Frontend (complete — all 4 plans done)
 
 ## Current Position
 
 Phase: 6 of 7 (Frontend)
-Plan: 3 of 4 in current phase
-Status: In progress — 06-03 complete (SessionNotes, ChatPanel, three-panel study session page)
-Last activity: 2026-03-19 — Completed 06-03 Study Session Page (FE-04, FE-05)
+Plan: 4 of 4 in current phase
+Status: Phase 06 complete — QuizPanel MCQ flow, study session all three panels functional
+Last activity: 2026-03-19 — Completed 06-04 QuizPanel (FE-04)
 
-Progress: [████████████] 82%
+Progress: [█████████████] 86%
 
 ## Performance Metrics
 
@@ -31,7 +31,7 @@ Progress: [████████████] 82%
 | 02-ingestion-pipeline | 4/5 | 8 min | 2 min |
 | 03-retrieval-engine | 3/3 | 14 min | 4.7 min |
 | 04-agents-orchestrator | 4/4 | 32 min | 8 min |
-| 06-frontend | 3/4 | 7 min | 2.3 min |
+| 06-frontend | 4/4 | 9 min | 2.3 min |
 
 **Recent Trend:**
 - Last 5 plans: 5 min
@@ -46,6 +46,7 @@ Progress: [████████████] 82%
 | Phase 06-frontend P01 | 4 | 2 tasks | 6 files |
 | Phase 06-frontend P02 | 2 | 2 tasks | 5 files |
 | Phase 06-frontend P03 | 1 | 2 tasks | 3 files |
+| Phase 06-frontend P04 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,8 @@ Recent decisions affecting current work:
 - [Phase 06-frontend-02]: Redirect after goal creation uses studyPlan.goal.id — getGoalPlan returns {goal: StudyGoal, sessions: [...]} so goal ID is nested at .goal.id
 - [Phase 06-frontend-02]: goals/[id]/page.tsx is 'use client' with useEffect data fetch — params.id accessed synchronously per Next.js 14 pattern
 - [Phase 06-frontend]: source_title used in citation chips — RetrievedChunk has source_title not title per types/index.ts
+- [Phase 06-frontend]: selectedAnswers stores option index (number) — QuizSubmissionRequest is Record<string, number> (question_id -> index)
+- [Phase 06-frontend]: per_question used for quiz results — QuizResult uses per_question with correct/question_id, not question_results/is_correct as plan spec assumed
 
 ### Pending Todos
 
@@ -94,10 +97,10 @@ None yet.
 
 ### Blockers/Concerns
 
-None — Phase 6 plan 03 complete. Ready for Phase 6 plan 04 (QuizPanel).
+None — Phase 6 complete. All four plans done. Ready for Phase 7 if applicable.
 
 ## Session Continuity
 
 Last session: 2026-03-19
-Stopped at: Completed 06-frontend-03-PLAN.md
+Stopped at: Completed 06-frontend-04-PLAN.md
 Resume file: None
