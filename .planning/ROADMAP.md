@@ -118,7 +118,7 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — API client (lib/api.ts + lib/sse.ts) + knowledge base page (upload, URL, status pills, polling)
+- [x] 06-01-PLAN.md — API client (lib/api.ts + lib/sse.ts) + knowledge base page (upload, URL, status pills, polling)
 - [ ] 06-02-PLAN.md — Goal creation form + goal detail page (progress bar, session cards with states)
 - [ ] 06-03-PLAN.md — Study session three-panel layout + SessionNotes (SSE) + ChatPanel (SSE + citations)
 - [ ] 06-04-PLAN.md — Quiz panel (MCQ state machine, results, Complete Session flow)
@@ -149,5 +149,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 3. Retrieval Engine | 3/3 | Complete   | 2026-03-19 |
 | 4. Agents & Orchestrator | 4/4 | Complete   | 2026-03-19 |
 | 5. API Layer | 1/1 | Complete   | 2026-03-19 |
-| 6. Frontend | 0/4 | Not started | - |
+| 6. Frontend | 1/4 | In progress | - |
 | 7. Evaluation | 0/2 | Not started | - |

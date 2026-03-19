@@ -60,7 +60,7 @@
 
 ### Frontend
 
-- [ ] **FE-01**: Knowledge base page: drag-and-drop PDF upload + URL field, source list with status pills, polling during ingestion
+- [x] **FE-01**: Knowledge base page: drag-and-drop PDF upload + URL field, source list with status pills, polling during ingestion
 - [ ] **FE-02**: Goal creation form: title, topic, source multi-select, deadline dropdown, level radio, sessions/week selector
 - [ ] **FE-03**: Goal detail page: progress bar, session card list with locked/available/in-progress/complete states and quiz score badges
 - [ ] **FE-04**: Study session page: three-panel layout — Notes (react-markdown with citations), Chat (SSE streaming + citation chips), Quiz (MCQ → results → Complete Session)
@@ -139,7 +139,7 @@
 | QUIZ-04 | Phase 4 | Complete |
 | OBS-01 | Phase 4 | Complete |
 | API-INT-01 | Phase 5 | Complete |
-| FE-01 | Phase 6 | Pending |
+| FE-01 | Phase 6 | Complete |
 | FE-02 | Phase 6 | Pending |
 | FE-03 | Phase 6 | Pending |
 | FE-04 | Phase 6 | Pending |

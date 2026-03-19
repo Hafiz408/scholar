@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** A student can upload their actual textbooks, set a real deadline, and have every note, chat answer, and quiz question grounded in — and only in — those specific books.
-**Current focus:** Phase 5 — API Layer (in progress — plan 1 of 2 done)
+**Current focus:** Phase 6 — Frontend (in progress — plan 1 of 4 done)
 
 ## Current Position
 
-Phase: 5 of 7 (API Layer)
-Plan: 1 of 2 in current phase
-Status: In progress — 05-01 complete (quiz_questions DDL, API integration tests, API-INT-01)
-Last activity: 2026-03-19 — Completed 05-01 API Integration Tests (API-INT-01)
+Phase: 6 of 7 (Frontend)
+Plan: 1 of 4 in current phase
+Status: In progress — 06-01 complete (API client, SSE helpers, knowledge base page)
+Last activity: 2026-03-19 — Completed 06-01 API Client and Knowledge Base Page (FE-01)
 
-Progress: [██████████] 72%
+Progress: [███████████] 78%
 
 ## Performance Metrics
 
@@ -31,6 +31,7 @@ Progress: [██████████] 72%
 | 02-ingestion-pipeline | 4/5 | 8 min | 2 min |
 | 03-retrieval-engine | 3/3 | 14 min | 4.7 min |
 | 04-agents-orchestrator | 4/4 | 32 min | 8 min |
+| 06-frontend | 1/4 | 4 min | 4 min |
 
 **Recent Trend:**
 - Last 5 plans: 5 min
@@ -42,6 +43,7 @@ Progress: [██████████] 72%
 | Phase 04-agents-orchestrator P02 | 8 | 2 tasks | 2 files |
 | Phase 04-agents-orchestrator P03 | 2 | 2 tasks | 2 files |
 | Phase 04-agents-orchestrator P04 | 7 | 2 tasks | 3 files |
+| Phase 06-frontend P01 | 4 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -76,6 +78,9 @@ Recent decisions affecting current work:
 - [Phase 05-api-layer-01]: pythonpath = . in pytest.ini resolves app.* imports without __init__.py — pytest-asyncio 0.23.0 + asyncio_mode=auto crashes on Package collector when __init__.py present
 - [Phase 05-api-layer-01]: quiz_questions normalized table additive; study_sessions.quiz_questions TEXT column + ALTER TABLE guard retained for live DB backward compat
 - [Phase 05-api-layer-01]: GET /goals/{goal_id} response shape is {goal: {...}, sessions: [...]} — goal_id nested at data["goal"]["id"], not data["goal_id"]
+- [Phase 06-frontend-01]: @microsoft/fetch-event-source required — both /sessions/{id}/start and /sessions/{id}/chat are POST endpoints; native EventSource (GET-only) cannot be used
+- [Phase 06-frontend-01]: Quiz endpoints are /sessions/{session_id}/quiz/generate and /sessions/{session_id}/quiz/submit (prefix /sessions, not /quiz) — matches Phase 4 router decisions
+- [Phase 06-frontend-01]: CreateGoalRequest and QuizSubmissionRequest defined in api.ts (not types/index.ts) — they mirror backend Pydantic models, not frontend domain types
 
 ### Pending Todos
 
@@ -83,10 +88,10 @@ None yet.
 
 ### Blockers/Concerns
 
-None — Phase 5 plan 01 complete. Ready for Phase 5 plan 02.
+None — Phase 6 plan 01 complete. Ready for Phase 6 plan 02 (GoalForm, goal detail page).
 
 ## Session Continuity
 
 Last session: 2026-03-19
-Stopped at: Completed 05-api-layer-01-PLAN.md
+Stopped at: Completed 06-frontend-01-PLAN.md
 Resume file: None
