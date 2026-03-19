@@ -117,17 +117,20 @@ async def vector_search(
     if not source_ids:
         return []
 
-    query_embedding = await asyncio.to_thread(embed_query, query)
-    rows = await asyncio.to_thread(_vector_search_sync, query_embedding, source_ids, top_k)
-
-    return [
-        RetrievedChunk(
-            source_id=row[0],
-            source_title=row[1],
-            content=row[2],
-            page_number=row[3],
-            relevance_score=float(row[4]),
-            retrieval_method="vector",
-        )
-        for row in rows
-    ]
+    try:
+        query_embedding = await asyncio.to_thread(embed_query, query)
+        rows = await asyncio.to_thread(_vector_search_sync, query_embedding, source_ids, top_k)
+        return [
+            RetrievedChunk(
+                source_id=row[0],
+                source_title=row[1],
+                content=row[2],
+                page_number=row[3],
+                relevance_score=float(row[4]),
+                retrieval_method="vector",
+            )
+            for row in rows
+        ]
+    except Exception:
+        logger.exception("vector_search failed for source_ids=%s", source_ids)
+        return []
