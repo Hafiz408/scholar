@@ -43,7 +43,7 @@ async def stream_chat(
         system_msg = {"role": "system", "content": CHAT_SYSTEM_PROMPT.format(context=context)}
         user_msg = {"role": "user", "content": message}
 
-        llm = ChatOpenAI(model=settings.llm_model, temperature=0, streaming=True)
+        llm = ChatOpenAI(model=settings.llm_model, temperature=0, streaming=True, api_key=settings.llm_api_key or settings.openai_api_key or "none", base_url=settings.llm_base_url or None)
         all_messages = [system_msg, *history, user_msg]
 
         full_response: list[str] = []

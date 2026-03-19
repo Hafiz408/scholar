@@ -23,7 +23,16 @@ class RouterDecision(BaseModel):
     )
 
 
-_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+def _make_llm() -> ChatOpenAI:
+    return ChatOpenAI(
+        model=settings.llm_model,
+        temperature=0,
+        api_key=settings.llm_api_key or settings.openai_api_key or "none",
+        base_url=settings.llm_base_url or None,
+    )
+
+
+_llm = _make_llm()
 _router_chain = _llm.with_structured_output(RouterDecision)
 
 
@@ -49,8 +58,8 @@ async def classify_query(query: str, source_ids: list[str]) -> str:
     """Classify a query into a retrieval strategy.
 
     RETR-02: If no sources have a pageindex_doc_id, returns 'vector' immediately
-    without making any LLM call. Otherwise calls gpt-4o-mini with structured output
-    to classify into pageindex / vector / hybrid.
+    without making any LLM call. Otherwise calls the configured LLM with structured
+    output to classify into pageindex / vector / hybrid.
 
     Args:
         query: The user's natural-language query.

@@ -32,8 +32,17 @@ class QuizResult(BaseModel):
     per_question: list[PerQuestionResult]
 
 
-_quiz_llm = ChatOpenAI(model=settings.llm_model, temperature=0.3)
-_quiz_chain = _quiz_llm.with_structured_output(QuizOutput)
+def _make_quiz_chain():
+    llm = ChatOpenAI(
+        model=settings.llm_model,
+        temperature=0.3,
+        api_key=settings.llm_api_key or settings.openai_api_key or "none",
+        base_url=settings.llm_base_url or None,
+    )
+    return llm.with_structured_output(QuizOutput)
+
+
+_quiz_chain = _make_quiz_chain()
 
 
 async def generate_quiz(
@@ -42,50 +51,50 @@ async def generate_quiz(
     topic: str,
     level: str,
 ) -> list[QuizQuestion]:
-    """Generate 5 MCQ questions from session notes via structured output."""
+    """Generate 5 MCQ questions grounded in session notes via structured output."""
     messages = [
         {"role": "system", "content": QUIZ_SYSTEM_PROMPT.format(level=level)},
         {
             "role": "user",
             "content": (
                 f"Topic: {topic}\n\n"
-                f"Session Notes:\n{notes_markdown}"
+                f"Session notes:\n{notes_markdown[:4000]}"
             ),
         },
     ]
-    result: QuizOutput = await asyncio.to_thread(_quiz_chain.invoke, messages)
-
-    # Assign stable IDs if not already set by LLM
-    questions = []
+    result = await asyncio.to_thread(_quiz_chain.invoke, messages)
+    # Ensure each question has a unique id
     for q in result.questions:
-        if not q.id or q.id.strip() == "":
-            q = q.model_copy(update={"id": str(uuid.uuid4())})
-        questions.append(q)
-
-    return questions
+        if not q.id:
+            q.id = str(uuid.uuid4())
+    return result.questions
 
 
 def evaluate_quiz(
     questions: list[QuizQuestion],
     answers: dict[str, int],
 ) -> QuizResult:
-    """Pure Python scoring — no LLM call. answers maps question_id -> selected_index (0-3)."""
-    correct_count = sum(
-        1 for q in questions
-        if answers.get(q.id) == q.correct_index
-    )
-    per_question = [
-        PerQuestionResult(
-            question_id=q.id,
-            correct=answers.get(q.id) == q.correct_index,
-            explanation=q.explanation,
-            correct_index=q.correct_index,
+    """Pure-Python evaluation — no LLM call."""
+    per_question = []
+    correct_count = 0
+    for q in questions:
+        selected = answers.get(q.id)
+        is_correct = selected == q.correct_index
+        if is_correct:
+            correct_count += 1
+        per_question.append(
+            PerQuestionResult(
+                question_id=q.id,
+                correct=is_correct,
+                explanation=q.explanation,
+                correct_index=q.correct_index,
+            )
         )
-        for q in questions
-    ]
+    total = len(questions)
+    score = correct_count / total if total > 0 else 0.0
     return QuizResult(
-        score=correct_count / len(questions) if questions else 0.0,
-        total_questions=len(questions),
+        score=score,
+        total_questions=total,
         correct_count=correct_count,
         per_question=per_question,
     )

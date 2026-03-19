@@ -163,7 +163,8 @@ async def generate_answer(question: str, chunks: list) -> str:
     """
     context = "\n\n".join(chunk.content for chunk in chunks) if chunks else "(no context retrieved)"
     client = openai.AsyncOpenAI(
-        api_key=settings.openai_api_key or settings.llm_api_key or None,
+        api_key=settings.llm_api_key or settings.openai_api_key or None,
+            base_url=settings.llm_base_url or None,
     )
     response = await client.chat.completions.create(
         model=settings.llm_model or "gpt-4o-mini",
@@ -370,8 +371,9 @@ async def main() -> None:
     # Step 4: Initialise RAGAS evaluator LLM
     evaluator_llm = LangchainLLMWrapper(
         ChatOpenAI(
-            model="gpt-4o-mini",
-            api_key=settings.openai_api_key or settings.llm_api_key or None,
+            model=settings.llm_model,
+            api_key=settings.llm_api_key or settings.openai_api_key or None,
+            base_url=settings.llm_base_url or None,
         )
     )
 

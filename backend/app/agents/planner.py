@@ -19,8 +19,17 @@ class StudyPlanOutput(BaseModel):
     rationale: str
 
 
-_llm = ChatOpenAI(model=settings.llm_model, temperature=0)
-_planner_chain = _llm.with_structured_output(StudyPlanOutput)
+def _make_planner_chain():
+    llm = ChatOpenAI(
+        model=settings.llm_model,
+        temperature=0,
+        api_key=settings.llm_api_key or settings.openai_api_key or "none",
+        base_url=settings.llm_base_url or None,
+    )
+    return llm.with_structured_output(StudyPlanOutput)
+
+
+_planner_chain = _make_planner_chain()
 
 
 async def generate_plan(

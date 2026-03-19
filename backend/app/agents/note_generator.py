@@ -28,7 +28,7 @@ async def stream_notes(
         retrieval = await retrieve(topic, source_ids, top_k=8)
         context = _format_context(retrieval.chunks)
 
-        llm = ChatOpenAI(model=settings.llm_model, temperature=0, streaming=True)
+        llm = ChatOpenAI(model=settings.llm_model, temperature=0, streaming=True, api_key=settings.llm_api_key or settings.openai_api_key or "none", base_url=settings.llm_base_url or None)
         messages = [
             {"role": "system", "content": NOTE_SYSTEM_PROMPT.format(level=level)},
             {"role": "user", "content": f"Topic: {topic}\n\nContext:\n{context}"},

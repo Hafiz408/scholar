@@ -79,11 +79,35 @@ def init_db():
     conn.close()
 
 
+def _get_existing_chunk_dims(cur) -> int | None:
+    """Return the vector dimension of the existing knowledge_chunks table, or None."""
+    try:
+        cur.execute(
+            "SELECT format_type(atttypid, atttypmod) FROM pg_attribute "
+            "WHERE attrelid = 'knowledge_chunks'::regclass AND attname = 'embedding' LIMIT 1"
+        )
+        row = cur.fetchone()
+        if row and "(" in row[0]:
+            return int(row[0].split("(")[1].rstrip(")"))
+    except Exception:
+        pass
+    return None
+
+
 def init_pgvector_schema():
-    """Initialize pgvector knowledge_chunks table and indexes in PostgreSQL."""
+    """Initialize pgvector knowledge_chunks table; recreates it if embedding dimensions changed."""
     conn = psycopg2.connect(settings.database_url)
     conn.autocommit = True
     with conn.cursor() as cur:
+        cur.execute("CREATE EXTENSION IF NOT EXISTS vector")
+        existing = _get_existing_chunk_dims(cur)
+        if existing is not None and existing != settings.embedding_dimensions:
+            import logging
+            logging.getLogger(__name__).info(
+                "Embedding dimensions changed %d→%d — recreating knowledge_chunks",
+                existing, settings.embedding_dimensions,
+            )
+            cur.execute("DROP TABLE IF EXISTS knowledge_chunks CASCADE")
         cur.execute(_pgvector_schema(settings.embedding_dimensions))
     conn.close()
 
