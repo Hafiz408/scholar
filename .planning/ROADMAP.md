@@ -132,11 +132,11 @@ Plans:
   1. 30 Q&A pairs (10 deep / 10 broad / 10 intermediate) from OpenStax Biology 2e are answered using both PageIndex and vector strategies
   2. RAGAS scores (faithfulness, answer_relevancy, context_precision, avg_latency_ms) are committed as JSON to eval/results/
   3. README contains a comparison table showing PageIndex vs vector results for all four metrics
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 07-01: RAGAS eval script, 30 Q&A pair dataset, and benchmark run
-- [ ] 07-02: Commit results JSON and update README comparison table
+- [ ] 07-01-PLAN.md — golden_qa.json (30 Q&A pairs) + run_ragas.py RAGAS 0.2 benchmark script implementation
+- [ ] 07-02-PLAN.md — Run benchmark inside Docker, commit JSON results, update README comparison table
 
 ## Progress
 
