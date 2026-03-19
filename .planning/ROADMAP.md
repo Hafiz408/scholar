@@ -87,7 +87,7 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Dependencies + AsyncSqliteSaver lifespan + prompts.py + Planner agent + Goal CRUD (GOAL-01, GOAL-02, GOAL-03, GOAL-04, OBS-01)
+- [x] 04-01-PLAN.md — Dependencies + AsyncSqliteSaver lifespan + prompts.py + Planner agent + Goal CRUD (GOAL-01, GOAL-02, GOAL-03, GOAL-04, OBS-01)
 - [ ] 04-02-PLAN.md — Note Generator SSE streaming + POST /sessions/{session_id}/start endpoint (SESS-01, SESS-02, SESS-03, SESS-04)
 - [ ] 04-03-PLAN.md — Session Chat agent SSE streaming + AsyncSqliteSaver history + POST /sessions/{session_id}/chat endpoint (CHAT-01, CHAT-02, CHAT-03, CHAT-04)
 - [ ] 04-04-PLAN.md — Quiz Agent (generate + evaluate) + POST /quiz/generate and /quiz/submit endpoints (QUIZ-01, QUIZ-02, QUIZ-03, QUIZ-04)
@@ -147,7 +147,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 1. Infrastructure | 3/3 | Complete | 2026-03-18 |
 | 2. Ingestion Pipeline | 4/4 | Complete | 2026-03-19 |
 | 3. Retrieval Engine | 3/3 | Complete   | 2026-03-19 |
-| 4. Agents & Orchestrator | 0/4 | Not started | - |
+| 4. Agents & Orchestrator | 1/4 | In progress | - |
 | 5. API Layer | 0/1 | Not started | - |
 | 6. Frontend | 0/4 | Not started | - |
 | 7. Evaluation | 0/2 | Not started | - |

@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** A student can upload their actual textbooks, set a real deadline, and have every note, chat answer, and quiz question grounded in — and only in — those specific books.
-**Current focus:** Phase 3 — Retrieval Engine COMPLETE — Next: Phase 4 Study Agents
+**Current focus:** Phase 4 — Agents Orchestrator (in progress — plan 1 complete)
 
 ## Current Position
 
-Phase: 3 of 7 (Retrieval Engine)
-Plan: 3 of 3 in current phase
-Status: Complete — all 3 plans done (03-01 Query Router, 03-02 Leaf Retrievers, 03-03 Hybrid Retriever)
-Last activity: 2026-03-19 — Completed 03-03 Hybrid Retriever (RETR-05)
+Phase: 4 of 7 (Agents Orchestrator)
+Plan: 1 of 4 in current phase
+Status: In progress — 04-01 complete (AsyncSqliteSaver lifespan, Planner agent, goals CRUD)
+Last activity: 2026-03-19 — Completed 04-01 Agents Orchestrator Foundation (GOAL-01..04, OBS-01)
 
-Progress: [████████░░] 43%
+Progress: [█████████░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: 3.4 min
-- Total execution time: 0.4 hours
+- Total plans completed: 8
+- Average duration: 3.6 min
+- Total execution time: 0.5 hours
 
 **By Phase:**
 
@@ -30,13 +30,15 @@ Progress: [████████░░] 43%
 | 01-infrastructure | 3/3 | 11 min | 3.7 min |
 | 02-ingestion-pipeline | 4/5 | 8 min | 2 min |
 | 03-retrieval-engine | 3/3 | 14 min | 4.7 min |
+| 04-agents-orchestrator | 1/4 | 15 min | 15 min |
 
 **Recent Trend:**
-- Last 5 plans: 3.2 min
+- Last 5 plans: 5 min
 - Trend: —
 
 *Updated after each plan completion*
 | Phase 03-retrieval-engine P03 | 8 | 2 tasks | 2 files |
+| Phase 04-agents-orchestrator P01 | 15 | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -62,6 +64,7 @@ Recent decisions affecting current work:
 - [Phase 03-retrieval-engine-01]: asyncio_mode=auto in pytest.ini fixes pytest-asyncio 0.23.0 crash on __init__.py; RouterDecision Field description carries per-strategy examples inline as classifier prompt; asyncio.to_thread bridges sync LangChain into async handlers
 - [Phase 03-retrieval-engine]: model_copy(update={'relevance_score': score}) avoids mutating input RetrievedChunk objects in merge_results
 - [Phase 03-retrieval-engine]: _get_sources_with_pageindex helper returns (doc_id, source_id, title) triples; separate from router's _get_pageindex_doc_ids which returns only doc_ids
+- [Phase 04-agents-orchestrator-01]: AsyncSqliteSaver imported inside lifespan body (not module-level); study_goals uses knowledge_source_ids column; stub routers given minimal router objects so all four can be registered in main.py now
 
 ### Pending Todos
 
@@ -69,10 +72,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- Router accuracy gate (≥ 8/10) must be passed at end of Phase 3 before Phase 4 agents begin
+None — Phase 4 plan 01 complete, ready for plans 04-02 through 04-04.
 
 ## Session Continuity
 
 Last session: 2026-03-19
-Stopped at: Completed 03-retrieval-engine-03-PLAN.md
+Stopped at: Completed 04-agents-orchestrator-01-PLAN.md
 Resume file: None

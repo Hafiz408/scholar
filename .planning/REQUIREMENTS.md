@@ -24,10 +24,10 @@
 
 ### Goals & Planning
 
-- [ ] **GOAL-01**: User can create a study goal with title, topic, deadline (days), level, sessions/week, and knowledge source selection
-- [ ] **GOAL-02**: Planner agent generates a sequenced multi-session study plan (session count = ceil(deadline_days / 7 * sessions_per_week))
-- [ ] **GOAL-03**: Each session in the plan has a title, topic, estimated_minutes, and sequential session_number
-- [ ] **GOAL-04**: User can retrieve a goal's full study plan including session statuses
+- [x] **GOAL-01**: User can create a study goal with title, topic, deadline (days), level, sessions/week, and knowledge source selection
+- [x] **GOAL-02**: Planner agent generates a sequenced multi-session study plan (session count = ceil(deadline_days / 7 * sessions_per_week))
+- [x] **GOAL-03**: Each session in the plan has a title, topic, estimated_minutes, and sequential session_number
+- [x] **GOAL-04**: User can retrieve a goal's full study plan including session statuses
 
 ### Session — Notes
 
@@ -52,7 +52,7 @@
 
 ### Observability
 
-- [ ] **OBS-01**: Every agent call (Planner, Note Generator, Session Chat, Quiz Agent) is traced in LangSmith with cost and latency
+- [x] **OBS-01**: Every agent call (Planner, Note Generator, Session Chat, Quiz Agent) is traced in LangSmith with cost and latency
 
 ### API Integration
 
@@ -121,10 +121,10 @@
 | RETR-03 | Phase 3 | Complete |
 | RETR-04 | Phase 3 | Complete |
 | RETR-05 | Phase 3 | Complete |
-| GOAL-01 | Phase 4 | Pending |
-| GOAL-02 | Phase 4 | Pending |
-| GOAL-03 | Phase 4 | Pending |
-| GOAL-04 | Phase 4 | Pending |
+| GOAL-01 | Phase 4 | Complete |
+| GOAL-02 | Phase 4 | Complete |
+| GOAL-03 | Phase 4 | Complete |
+| GOAL-04 | Phase 4 | Complete |
 | SESS-01 | Phase 4 | Pending |
 | SESS-02 | Phase 4 | Pending |
 | SESS-03 | Phase 4 | Pending |
@@ -137,7 +137,7 @@
 | QUIZ-02 | Phase 4 | Pending |
 | QUIZ-03 | Phase 4 | Pending |
 | QUIZ-04 | Phase 4 | Pending |
-| OBS-01 | Phase 4 | Pending |
+| OBS-01 | Phase 4 | Complete |
 | API-INT-01 | Phase 5 | Pending |
 | FE-01 | Phase 6 | Pending |
 | FE-02 | Phase 6 | Pending |
