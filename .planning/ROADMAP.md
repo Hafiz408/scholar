@@ -83,13 +83,13 @@ Plans:
   3. Sending a chat message returns an SSE-streamed response that cites sources and refuses to answer from training data
   4. Chat history survives a full browser refresh (LangGraph SqliteSaver checkpoint)
   5. Every agent call (Planner, Note Generator, Chat, Quiz) appears in LangSmith with cost and latency per node
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 04-01: Planner agent and LangGraph orchestrator with SqliteSaver
-- [ ] 04-02: Note generator with SSE streaming and citation grounding
-- [ ] 04-03: Session chat agent with SSE streaming, grounding enforcement, and history persistence
-- [ ] 04-04: Quiz agent (generation, submission, scoring) and LangSmith tracing
+- [ ] 04-01-PLAN.md — Dependencies + AsyncSqliteSaver lifespan + prompts.py + Planner agent + Goal CRUD (GOAL-01, GOAL-02, GOAL-03, GOAL-04, OBS-01)
+- [ ] 04-02-PLAN.md — Note Generator SSE streaming + POST /sessions/{session_id}/start endpoint (SESS-01, SESS-02, SESS-03, SESS-04)
+- [ ] 04-03-PLAN.md — Session Chat agent SSE streaming + AsyncSqliteSaver history + POST /sessions/{session_id}/chat endpoint (CHAT-01, CHAT-02, CHAT-03, CHAT-04)
+- [ ] 04-04-PLAN.md — Quiz Agent (generate + evaluate) + POST /quiz/generate and /quiz/submit endpoints (QUIZ-01, QUIZ-02, QUIZ-03, QUIZ-04)
 
 ### Phase 5: API Layer
 **Goal**: All API endpoints for goals, sessions, chat, and quiz are implemented, wired to agents, and manually testable end-to-end via the FastAPI docs UI
