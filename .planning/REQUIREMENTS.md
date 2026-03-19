@@ -63,8 +63,8 @@
 - [x] **FE-01**: Knowledge base page: drag-and-drop PDF upload + URL field, source list with status pills, polling during ingestion
 - [x] **FE-02**: Goal creation form: title, topic, source multi-select, deadline dropdown, level radio, sessions/week selector
 - [x] **FE-03**: Goal detail page: progress bar, session card list with locked/available/in-progress/complete states and quiz score badges
-- [ ] **FE-04**: Study session page: three-panel layout — Notes (react-markdown with citations), Chat (SSE streaming + citation chips), Quiz (MCQ → results → Complete Session)
-- [ ] **FE-05**: SSE streaming integrated for both chat (token events) and notes (notes_chunk events)
+- [x] **FE-04**: Study session page: three-panel layout — Notes (react-markdown with citations), Chat (SSE streaming + citation chips), Quiz (MCQ → results → Complete Session)
+- [x] **FE-05**: SSE streaming integrated for both chat (token events) and notes (notes_chunk events)
 
 ### Evaluation
 
@@ -142,8 +142,8 @@
 | FE-01 | Phase 6 | Complete |
 | FE-02 | Phase 6 | Complete |
 | FE-03 | Phase 6 | Complete |
-| FE-04 | Phase 6 | Pending |
-| FE-05 | Phase 6 | Pending |
+| FE-04 | Phase 6 | Complete |
+| FE-05 | Phase 6 | Complete |
 | EVAL-01 | Phase 7 | Pending |
 | EVAL-02 | Phase 7 | Pending |
 | EVAL-03 | Phase 7 | Pending |

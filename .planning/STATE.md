@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** A student can upload their actual textbooks, set a real deadline, and have every note, chat answer, and quiz question grounded in — and only in — those specific books.
-**Current focus:** Phase 6 — Frontend (in progress — plan 2 of 4 done)
+**Current focus:** Phase 6 — Frontend (in progress — plan 3 of 4 done)
 
 ## Current Position
 
 Phase: 6 of 7 (Frontend)
-Plan: 2 of 4 in current phase
-Status: In progress — 06-02 complete (GoalForm, ProgressBar, StudyPlan, goal detail page)
-Last activity: 2026-03-19 — Completed 06-02 Goal Form and Goal Detail Page (FE-02, FE-03)
+Plan: 3 of 4 in current phase
+Status: In progress — 06-03 complete (SessionNotes, ChatPanel, three-panel study session page)
+Last activity: 2026-03-19 — Completed 06-03 Study Session Page (FE-04, FE-05)
 
 Progress: [████████████] 82%
 
@@ -31,7 +31,7 @@ Progress: [████████████] 82%
 | 02-ingestion-pipeline | 4/5 | 8 min | 2 min |
 | 03-retrieval-engine | 3/3 | 14 min | 4.7 min |
 | 04-agents-orchestrator | 4/4 | 32 min | 8 min |
-| 06-frontend | 2/4 | 6 min | 3 min |
+| 06-frontend | 3/4 | 7 min | 2.3 min |
 
 **Recent Trend:**
 - Last 5 plans: 5 min
@@ -45,6 +45,7 @@ Progress: [████████████] 82%
 | Phase 04-agents-orchestrator P04 | 7 | 2 tasks | 3 files |
 | Phase 06-frontend P01 | 4 | 2 tasks | 6 files |
 | Phase 06-frontend P02 | 2 | 2 tasks | 5 files |
+| Phase 06-frontend P03 | 1 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,7 @@ Recent decisions affecting current work:
 - [Phase 06-frontend-02]: createGoal called with source_ids (not knowledge_source_ids) — backend goals.py CreateGoalRequest uses source_ids as field name
 - [Phase 06-frontend-02]: Redirect after goal creation uses studyPlan.goal.id — getGoalPlan returns {goal: StudyGoal, sessions: [...]} so goal ID is nested at .goal.id
 - [Phase 06-frontend-02]: goals/[id]/page.tsx is 'use client' with useEffect data fetch — params.id accessed synchronously per Next.js 14 pattern
+- [Phase 06-frontend]: source_title used in citation chips — RetrievedChunk has source_title not title per types/index.ts
 
 ### Pending Todos
 
@@ -92,10 +94,10 @@ None yet.
 
 ### Blockers/Concerns
 
-None — Phase 6 plan 02 complete. Ready for Phase 6 plan 03 (Study session page, SessionNotes, ChatPanel, SSE streaming).
+None — Phase 6 plan 03 complete. Ready for Phase 6 plan 04 (QuizPanel).
 
 ## Session Continuity
 
 Last session: 2026-03-19
-Stopped at: Completed 06-frontend-02-PLAN.md
+Stopped at: Completed 06-frontend-03-PLAN.md
 Resume file: None
