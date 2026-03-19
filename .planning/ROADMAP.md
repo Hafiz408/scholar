@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Ingestion Pipeline** - PDF and URL ingestion into PageIndex and pgvector with status tracking
 - [x] **Phase 3: Retrieval Engine** - Router, PageIndex retriever, vector retriever, and hybrid retriever passing accuracy gate (completed 2026-03-19)
 - [ ] **Phase 4: Agents & Orchestrator** - Planner, note generator, session chat, and quiz agents with LangGraph + LangSmith
-- [ ] **Phase 5: API Layer** - All remaining API endpoints (goals, sessions, chat, quiz) wired and testable
+- [ ] **Phase 5: API Layer** - quiz_questions schema gap + end-to-end integration tests covering the full API surface
 - [ ] **Phase 6: Frontend** - Next.js UI: knowledge page, goal form, goal detail, study session with SSE streaming
 - [ ] **Phase 7: Evaluation** - RAGAS benchmark on 30 Q&A pairs; results committed and README updated
 
@@ -76,13 +76,14 @@ Plans:
 ### Phase 4: Agents & Orchestrator
 **Goal**: The full study session machinery works end-to-end — planner generates session plans, note generator streams grounded notes, chat agent streams context-only answers, quiz agent generates and scores MCQs, all traced in LangSmith, all state persisted via LangGraph SqliteSaver
 **Depends on**: Phase 3
-**Requirements**: GOAL-01, GOAL-02, GOAL-03, GOAL-04, SESS-01, SESS-02, SESS-03, SESS-04, CHAT-01, CHAT-02, CHAT-03, CHAT-04, OBS-01
+**Requirements**: GOAL-01, GOAL-02, GOAL-03, GOAL-04, SESS-01, SESS-02, SESS-03, SESS-04, CHAT-01, CHAT-02, CHAT-03, CHAT-04, QUIZ-01, QUIZ-02, QUIZ-03, QUIZ-04, OBS-01
 **Success Criteria** (what must be TRUE):
   1. User creates a goal and receives a sequenced study plan where session count matches ceil(deadline_days / 7 * sessions_per_week)
   2. Starting a session triggers SSE-streamed notes that include page-level citations and complete without blocking
   3. Sending a chat message returns an SSE-streamed response that cites sources and refuses to answer from training data
   4. Chat history survives a full browser refresh (LangGraph SqliteSaver checkpoint)
   5. Every agent call (Planner, Note Generator, Chat, Quiz) appears in LangSmith with cost and latency per node
+  6. User can generate a 5-question MCQ quiz for a session and submit answers to receive a scored result; session is marked complete
 **Plans**: 4 plans
 
 Plans:
@@ -92,19 +93,17 @@ Plans:
 - [ ] 04-04-PLAN.md — Quiz Agent (generate + evaluate) + POST /quiz/generate and /quiz/submit endpoints (QUIZ-01, QUIZ-02, QUIZ-03, QUIZ-04)
 
 ### Phase 5: API Layer
-**Goal**: All API endpoints for goals, sessions, chat, and quiz are implemented, wired to agents, and manually testable end-to-end via the FastAPI docs UI
+**Goal**: quiz_questions table is properly defined in SQLITE_SCHEMA, and end-to-end integration tests verify the full API surface (goals → sessions → notes → quiz) passes without errors
 **Depends on**: Phase 4
-**Requirements**: QUIZ-01, QUIZ-02, QUIZ-03, QUIZ-04
+**Requirements**: API-INT-01
 **Success Criteria** (what must be TRUE):
-  1. User can request a quiz for a completed session and receive 5 MCQ questions each with 4 options
-  2. Each quiz question has one unambiguously correct answer and a plausible distractor set
-  3. User can submit answers and receive a score (0.0–1.0) with per-question explanation
-  4. After submission, the session is marked complete with the quiz score stored, and the goal progress updates
-**Plans**: 2 plans
+  1. quiz_questions table DDL exists in SQLITE_SCHEMA in database.py — no ALTER TABLE workaround needed at runtime
+  2. pytest integration tests pass end-to-end: POST /goals → GET /goals/{id} → POST /sessions/{id}/start → POST /sessions/{id}/quiz/generate → POST /sessions/{id}/quiz/submit
+  3. All integration tests run in the Docker backend container without LLM calls (mocked with pytest-mock or httpx test client)
+**Plans**: 1 plan
 
 Plans:
-- [ ] 05-01-PLAN.md — Quiz agent (generate_quiz + evaluate_quiz) + quiz_questions SQLite schema + POST /quiz/generate and /quiz/submit endpoints
-- [ ] 05-02-PLAN.md — Planner, note_generator, session_chat agents + goals/sessions/chat routers + CORS + main.py registration
+- [ ] 05-01-PLAN.md — quiz_questions SQLITE_SCHEMA DDL fix + pytest end-to-end integration tests for full API surface
 
 ### Phase 6: Frontend
 **Goal**: The complete Next.js UI is functional — users can upload sources, create goals, run study sessions with streaming notes and chat, and complete quizzes, all from the browser
@@ -149,6 +148,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 2. Ingestion Pipeline | 4/4 | Complete | 2026-03-19 |
 | 3. Retrieval Engine | 3/3 | Complete   | 2026-03-19 |
 | 4. Agents & Orchestrator | 0/4 | Not started | - |
-| 5. API Layer | 0/2 | Not started | - |
+| 5. API Layer | 0/1 | Not started | - |
 | 6. Frontend | 0/4 | Not started | - |
 | 7. Evaluation | 0/2 | Not started | - |

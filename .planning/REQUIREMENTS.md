@@ -54,6 +54,10 @@
 
 - [ ] **OBS-01**: Every agent call (Planner, Note Generator, Session Chat, Quiz Agent) is traced in LangSmith with cost and latency
 
+### API Integration
+
+- [ ] **API-INT-01**: End-to-end integration tests verify the full API surface (POST /goals → GET /goals/{id} → POST /sessions/{id}/start → POST /sessions/{id}/quiz/generate → POST /sessions/{id}/quiz/submit) passes without errors; quiz_questions table DDL is in SQLITE_SCHEMA (not via ALTER TABLE workaround)
+
 ### Frontend
 
 - [ ] **FE-01**: Knowledge base page: drag-and-drop PDF upload + URL field, source list with status pills, polling during ingestion
@@ -129,11 +133,12 @@
 | CHAT-02 | Phase 4 | Pending |
 | CHAT-03 | Phase 4 | Pending |
 | CHAT-04 | Phase 4 | Pending |
+| QUIZ-01 | Phase 4 | Pending |
+| QUIZ-02 | Phase 4 | Pending |
+| QUIZ-03 | Phase 4 | Pending |
+| QUIZ-04 | Phase 4 | Pending |
 | OBS-01 | Phase 4 | Pending |
-| QUIZ-01 | Phase 5 | Pending |
-| QUIZ-02 | Phase 5 | Pending |
-| QUIZ-03 | Phase 5 | Pending |
-| QUIZ-04 | Phase 5 | Pending |
+| API-INT-01 | Phase 5 | Pending |
 | FE-01 | Phase 6 | Pending |
 | FE-02 | Phase 6 | Pending |
 | FE-03 | Phase 6 | Pending |
@@ -144,17 +149,17 @@
 | EVAL-03 | Phase 7 | Pending |
 
 **Coverage:**
-- v1 requirements: 36 total
-- Mapped to phases: 36
+- v1 requirements: 37 total
+- Mapped to phases: 37
 - Phase 1 (Infrastructure): 0 requirements (foundational scaffold — no direct user-facing requirements)
 - Phase 2 (Ingestion Pipeline): 6 requirements
 - Phase 3 (Retrieval Engine): 5 requirements
-- Phase 4 (Agents & Orchestrator): 13 requirements
-- Phase 5 (API Layer): 4 requirements
+- Phase 4 (Agents & Orchestrator): 17 requirements (GOAL-01–04, SESS-01–04, CHAT-01–04, QUIZ-01–04, OBS-01)
+- Phase 5 (API Layer): 1 requirement (API-INT-01)
 - Phase 6 (Frontend): 5 requirements
 - Phase 7 (Evaluation): 3 requirements
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-18*
-*Last updated: 2026-03-18 after roadmap creation*
+*Last updated: 2026-03-19 — QUIZ-01 through QUIZ-04 moved from Phase 5 to Phase 4 (implemented in 04-04-PLAN.md); API-INT-01 added as Phase 5 requirement*
