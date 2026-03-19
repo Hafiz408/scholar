@@ -68,8 +68,8 @@
 
 ### Evaluation
 
-- [ ] **EVAL-01**: RAGAS benchmark run on 30 Q&A pairs from OpenStax Biology 2e (10 deep / 10 broad / 10 intermediate)
-- [ ] **EVAL-02**: Benchmark results committed to eval/results/ as JSON files
+- [x] **EVAL-01**: RAGAS benchmark run on 30 Q&A pairs from OpenStax Biology 2e (10 deep / 10 broad / 10 intermediate)
+- [x] **EVAL-02**: Benchmark results committed to eval/results/ as JSON files
 - [ ] **EVAL-03**: README displays RAGAS comparison table (PageIndex vs vector: faithfulness, answer_relevancy, context_precision, avg_latency_ms)
 
 ## v2 Requirements
@@ -144,8 +144,8 @@
 | FE-03 | Phase 6 | Complete |
 | FE-04 | Phase 6 | Complete |
 | FE-05 | Phase 6 | Complete |
-| EVAL-01 | Phase 7 | Pending |
-| EVAL-02 | Phase 7 | Pending |
+| EVAL-01 | Phase 7 | Complete |
+| EVAL-02 | Phase 7 | Complete |
 | EVAL-03 | Phase 7 | Pending |
 
 **Coverage:**

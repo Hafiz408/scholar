@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** A student can upload their actual textbooks, set a real deadline, and have every note, chat answer, and quiz question grounded in — and only in — those specific books.
-**Current focus:** Phase 6 — Frontend (complete — all 4 plans done)
+**Current focus:** Phase 7 — Evaluation (1 of 1 plan done)
 
 ## Current Position
 
-Phase: 6 of 7 (Frontend)
-Plan: 4 of 4 in current phase
-Status: Phase 06 complete — QuizPanel MCQ flow, study session all three panels functional
-Last activity: 2026-03-19 — Completed 06-04 QuizPanel (FE-04)
+Phase: 7 of 7 (Evaluation)
+Plan: 1 of 1 in current phase
+Status: Phase 07 complete — golden Q&A dataset and RAGAS 0.2 benchmark script implemented
+Last activity: 2026-03-19 — Completed 07-01 Golden Dataset + RAGAS Benchmark (EVAL-01, EVAL-02)
 
-Progress: [█████████████] 86%
+Progress: [██████████████] 100%
 
 ## Performance Metrics
 
@@ -32,6 +32,7 @@ Progress: [█████████████] 86%
 | 03-retrieval-engine | 3/3 | 14 min | 4.7 min |
 | 04-agents-orchestrator | 4/4 | 32 min | 8 min |
 | 06-frontend | 4/4 | 9 min | 2.3 min |
+| 07-evaluation | 1/1 | 3 min | 3 min |
 
 **Recent Trend:**
 - Last 5 plans: 5 min
@@ -47,6 +48,7 @@ Progress: [█████████████] 86%
 | Phase 06-frontend P02 | 2 | 2 tasks | 5 files |
 | Phase 06-frontend P03 | 1 | 2 tasks | 3 files |
 | Phase 06-frontend P04 | 2 | 2 tasks | 2 files |
+| Phase 07-evaluation P01 | 3 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -90,6 +92,9 @@ Recent decisions affecting current work:
 - [Phase 06-frontend]: source_title used in citation chips — RetrievedChunk has source_title not title per types/index.ts
 - [Phase 06-frontend]: selectedAnswers stores option index (number) — QuizSubmissionRequest is Record<string, number> (question_id -> index)
 - [Phase 06-frontend]: per_question used for quiz results — QuizResult uses per_question with correct/question_id, not question_results/is_correct as plan spec assumed
+- [Phase 07-evaluation-01]: retrieve() has no strategy param — called vector_search and fetch_pageindex_chunks directly to force each strategy in benchmark; bypasses classify_query router cleanly
+- [Phase 07-evaluation-01]: EvaluationDataset.from_list() called once per 30-item dataset (not per-item) — correct RAGAS 0.2 pattern for proper metric aggregation
+- [Phase 07-evaluation-01]: RAGAS 0.2 column names are user_input/retrieved_contexts/response/reference — NOT question/contexts/answer/ground_truth
 
 ### Pending Todos
 
@@ -97,10 +102,10 @@ None yet.
 
 ### Blockers/Concerns
 
-None — Phase 6 complete. All four plans done. Ready for Phase 7 if applicable.
+None — Phase 7 complete. All plans across all 7 phases done. Project ready for benchmark execution and portfolio review.
 
 ## Session Continuity
 
 Last session: 2026-03-19
-Stopped at: Completed 06-frontend-04-PLAN.md
+Stopped at: Completed 07-evaluation-01-PLAN.md
 Resume file: None
