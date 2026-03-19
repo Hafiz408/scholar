@@ -3,9 +3,8 @@ import asyncio
 import aiosqlite
 from pydantic import BaseModel, Field
 from typing import Literal
-from langchain_openai import ChatOpenAI
 
-from app.config import settings
+from app.llm_factory import get_llm
 
 
 class RouterDecision(BaseModel):
@@ -23,17 +22,7 @@ class RouterDecision(BaseModel):
     )
 
 
-def _make_llm() -> ChatOpenAI:
-    return ChatOpenAI(
-        model=settings.llm_model,
-        temperature=0,
-        api_key=settings.llm_api_key or settings.openai_api_key or "none",
-        base_url=settings.llm_base_url or None,
-    )
-
-
-_llm = _make_llm()
-_router_chain = _llm.with_structured_output(RouterDecision)
+_router_chain = get_llm(temperature=0).with_structured_output(RouterDecision)
 
 
 async def _get_pageindex_doc_ids(source_ids: list[str]) -> list[str]:

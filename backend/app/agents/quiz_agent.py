@@ -1,8 +1,7 @@
 import asyncio
 import uuid
 from pydantic import BaseModel
-from langchain_openai import ChatOpenAI
-from app.config import settings
+from app.llm_factory import get_llm
 from app.agents.prompts import QUIZ_SYSTEM_PROMPT
 
 
@@ -33,13 +32,7 @@ class QuizResult(BaseModel):
 
 
 def _make_quiz_chain():
-    llm = ChatOpenAI(
-        model=settings.llm_model,
-        temperature=0.3,
-        api_key=settings.llm_api_key or settings.openai_api_key or "none",
-        base_url=settings.llm_base_url or None,
-    )
-    return llm.with_structured_output(QuizOutput)
+    return get_llm(temperature=0.3).with_structured_output(QuizOutput)
 
 
 _quiz_chain = _make_quiz_chain()

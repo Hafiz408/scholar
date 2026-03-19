@@ -15,7 +15,8 @@ class Settings(BaseSettings):
     upload_dir: str = "./data/uploads"
     max_upload_size_mb: int = 50
 
-    # LLM — set LLM_BASE_URL to use any OpenAI-compatible provider (Ollama, Groq, etc.)
+    # LLM provider — one of: openai, openai-compat, anthropic, google
+    llm_provider: str = "openai"
     llm_model: str = "gpt-4o-mini"
     llm_api_key: str = ""          # falls back to openai_api_key if empty
     llm_base_url: str = ""         # e.g. http://localhost:11434/v1 for Ollama

@@ -1,8 +1,7 @@
 import asyncio
 from math import ceil
 from pydantic import BaseModel
-from langchain_openai import ChatOpenAI
-from app.config import settings
+from app.llm_factory import get_llm
 from app.agents.prompts import PLANNER_SYSTEM_PROMPT
 
 
@@ -20,13 +19,7 @@ class StudyPlanOutput(BaseModel):
 
 
 def _make_planner_chain():
-    llm = ChatOpenAI(
-        model=settings.llm_model,
-        temperature=0,
-        api_key=settings.llm_api_key or settings.openai_api_key or "none",
-        base_url=settings.llm_base_url or None,
-    )
-    return llm.with_structured_output(StudyPlanOutput)
+    return get_llm(temperature=0).with_structured_output(StudyPlanOutput)
 
 
 _planner_chain = _make_planner_chain()

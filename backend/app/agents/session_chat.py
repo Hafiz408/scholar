@@ -1,9 +1,8 @@
 import json
 import asyncio
 import time
-from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
-from app.config import settings
+from app.llm_factory import get_llm
 from app.agents.prompts import CHAT_SYSTEM_PROMPT
 from app.retrieval.hybrid_retriever import retrieve
 
@@ -43,7 +42,7 @@ async def stream_chat(
         system_msg = {"role": "system", "content": CHAT_SYSTEM_PROMPT.format(context=context)}
         user_msg = {"role": "user", "content": message}
 
-        llm = ChatOpenAI(model=settings.llm_model, temperature=0, streaming=True, api_key=settings.llm_api_key or settings.openai_api_key or "none", base_url=settings.llm_base_url or None)
+        llm = get_llm(temperature=0, streaming=True)
         all_messages = [system_msg, *history, user_msg]
 
         full_response: list[str] = []
