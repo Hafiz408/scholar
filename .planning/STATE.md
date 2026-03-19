@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** A student can upload their actual textbooks, set a real deadline, and have every note, chat answer, and quiz question grounded in — and only in — those specific books.
-**Current focus:** Phase 4 — Agents Orchestrator (in progress — plan 3 complete)
+**Current focus:** Phase 4 — Agents Orchestrator (complete — all 4 plans done)
 
 ## Current Position
 
 Phase: 4 of 7 (Agents Orchestrator)
-Plan: 3 of 4 in current phase
-Status: In progress — 04-03 complete (Session Chat agent, SSE chat endpoint, CHAT-01..04)
-Last activity: 2026-03-19 — Completed 04-03 Session Chat Agent (CHAT-01..04)
+Plan: 4 of 4 in current phase
+Status: Complete — 04-04 complete (Quiz Agent, quiz generate/submit endpoints, QUIZ-01..04)
+Last activity: 2026-03-19 — Completed 04-04 Quiz Agent (QUIZ-01..04)
 
-Progress: [█████████░] 62%
+Progress: [██████████] 69%
 
 ## Performance Metrics
 
@@ -30,7 +30,7 @@ Progress: [█████████░] 62%
 | 01-infrastructure | 3/3 | 11 min | 3.7 min |
 | 02-ingestion-pipeline | 4/5 | 8 min | 2 min |
 | 03-retrieval-engine | 3/3 | 14 min | 4.7 min |
-| 04-agents-orchestrator | 3/4 | 25 min | 8.3 min |
+| 04-agents-orchestrator | 4/4 | 32 min | 8 min |
 
 **Recent Trend:**
 - Last 5 plans: 5 min
@@ -41,6 +41,7 @@ Progress: [█████████░] 62%
 | Phase 04-agents-orchestrator P01 | 15 | 3 tasks | 9 files |
 | Phase 04-agents-orchestrator P02 | 8 | 2 tasks | 2 files |
 | Phase 04-agents-orchestrator P03 | 2 | 2 tasks | 2 files |
+| Phase 04-agents-orchestrator P04 | 7 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,7 @@ Recent decisions affecting current work:
 - [Phase 04-agents-orchestrator]: streaming=True in ChatOpenAI constructor required alongside .astream() — prevents full-response buffering in note_generator
 - [Phase 04-agents-orchestrator-03]: chat router uses prefix=/sessions — coexists with sessions router under same prefix; goal_id used as LangGraph thread_id for per-goal history isolation
 - [Phase 04-agents-orchestrator-03]: Defensive import fallback for Checkpoint/CheckpointMetadata: base -> types -> plain dict handles langgraph version differences
+- [Phase 04-agents-orchestrator-04]: QuizQuestionPublic model strips correct_index at HTTP layer — security boundary explicit in router, not agent; router prefix=/sessions (not /quiz) to match /sessions/{id}/quiz/* paths; ALTER TABLE guard pattern for idempotent SQLite column additions
 
 ### Pending Todos
 
@@ -78,10 +80,10 @@ None yet.
 
 ### Blockers/Concerns
 
-None — Phase 4 plans 01-03 complete, ready for plan 04-04 (quiz).
+None — Phase 4 complete (all 4 plans done). Ready for Phase 5.
 
 ## Session Continuity
 
 Last session: 2026-03-19
-Stopped at: Completed 04-agents-orchestrator-03-PLAN.md
+Stopped at: Completed 04-agents-orchestrator-04-PLAN.md
 Resume file: None

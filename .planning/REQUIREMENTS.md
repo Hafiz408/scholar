@@ -45,10 +45,10 @@
 
 ### Session — Quiz
 
-- [ ] **QUIZ-01**: User can generate a 5-question MCQ quiz for a session, grounded in session notes and retrieved context
-- [ ] **QUIZ-02**: Each question has 4 options with one unambiguously correct answer and a plausible distractor set
-- [ ] **QUIZ-03**: User can submit quiz answers and receive a score (0.0–1.0) with per-question explanation
-- [ ] **QUIZ-04**: Quiz score is stored in study_sessions.quiz_score; session is marked complete after submission
+- [x] **QUIZ-01**: User can generate a 5-question MCQ quiz for a session, grounded in session notes and retrieved context
+- [x] **QUIZ-02**: Each question has 4 options with one unambiguously correct answer and a plausible distractor set
+- [x] **QUIZ-03**: User can submit quiz answers and receive a score (0.0–1.0) with per-question explanation
+- [x] **QUIZ-04**: Quiz score is stored in study_sessions.quiz_score; session is marked complete after submission
 
 ### Observability
 
@@ -133,10 +133,10 @@
 | CHAT-02 | Phase 4 | Complete |
 | CHAT-03 | Phase 4 | Complete |
 | CHAT-04 | Phase 4 | Complete |
-| QUIZ-01 | Phase 4 | Pending |
-| QUIZ-02 | Phase 4 | Pending |
-| QUIZ-03 | Phase 4 | Pending |
-| QUIZ-04 | Phase 4 | Pending |
+| QUIZ-01 | Phase 4 | Complete |
+| QUIZ-02 | Phase 4 | Complete |
+| QUIZ-03 | Phase 4 | Complete |
+| QUIZ-04 | Phase 4 | Complete |
 | OBS-01 | Phase 4 | Complete |
 | API-INT-01 | Phase 5 | Pending |
 | FE-01 | Phase 6 | Pending |
