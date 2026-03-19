@@ -12,7 +12,19 @@ logger = logging.getLogger(__name__)
 
 BATCH_SIZE = 50
 
-openai_client = OpenAI(api_key=settings.openai_api_key)
+
+def _get_embedding_client() -> OpenAI:
+    """Build an OpenAI-compatible client for embeddings from settings.
+
+    Works with any provider that speaks the OpenAI embeddings API:
+    - OpenAI:  EMBEDDING_BASE_URL unset, EMBEDDING_API_KEY (or OPENAI_API_KEY)
+    - Ollama:  EMBEDDING_BASE_URL=http://localhost:11434/v1, EMBEDDING_API_KEY=ollama
+    - Groq, Together, LM Studio, etc.: set their base URL and API key accordingly
+    """
+    return OpenAI(
+        api_key=settings.embedding_api_key or settings.openai_api_key or "none",
+        base_url=settings.embedding_base_url or None,
+    )
 
 
 def _chunk_pages(pages: list[dict], source_id: str, source_title: str) -> list[dict]:
@@ -52,9 +64,9 @@ def _embed_and_store_sync(pages: list[dict], source_id: str, source_title: str) 
             batch = chunks[batch_start: batch_start + BATCH_SIZE]
 
             # Generate embeddings for the batch
-            resp = openai_client.embeddings.create(
+            resp = _get_embedding_client().embeddings.create(
                 input=[c["content"] for c in batch],
-                model="text-embedding-3-small",
+                model=settings.embedding_model,
             )
             embeddings = [np.array(e.embedding) for e in resp.data]
 

@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS chat_history (
 );
 """
 
-PGVECTOR_SCHEMA = """
+def _pgvector_schema(dimensions: int) -> str:
+    return f"""
 CREATE EXTENSION IF NOT EXISTS vector;
 
 CREATE TABLE IF NOT EXISTS knowledge_chunks (
@@ -39,7 +40,7 @@ CREATE TABLE IF NOT EXISTS knowledge_chunks (
     page_number INTEGER,
     chunk_index INTEGER,
     content TEXT NOT NULL,
-    embedding vector(1536),
+    embedding vector({dimensions}),
     created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -66,7 +67,7 @@ def init_pgvector_schema():
     conn = psycopg2.connect(settings.database_url)
     conn.autocommit = True
     with conn.cursor() as cur:
-        cur.execute(PGVECTOR_SCHEMA)
+        cur.execute(_pgvector_schema(settings.embedding_dimensions))
     conn.close()
 
 
