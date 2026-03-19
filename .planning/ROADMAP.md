@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Infrastructure** - Docker, PostgreSQL, pgvector, and project scaffold ready for development
 - [x] **Phase 2: Ingestion Pipeline** - PDF and URL ingestion into PageIndex and pgvector with status tracking
-- [ ] **Phase 3: Retrieval Engine** - Router, PageIndex retriever, vector retriever, and hybrid retriever passing accuracy gate
+- [x] **Phase 3: Retrieval Engine** - Router, PageIndex retriever, vector retriever, and hybrid retriever passing accuracy gate (completed 2026-03-19)
 - [ ] **Phase 4: Agents & Orchestrator** - Planner, note generator, session chat, and quiz agents with LangGraph + LangSmith
 - [ ] **Phase 5: API Layer** - All remaining API endpoints (goals, sessions, chat, quiz) wired and testable
 - [ ] **Phase 6: Frontend** - Next.js UI: knowledge page, goal form, goal detail, study session with SSE streaming
@@ -147,7 +147,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 |-------|----------------|--------|-----------|
 | 1. Infrastructure | 3/3 | Complete | 2026-03-18 |
 | 2. Ingestion Pipeline | 4/4 | Complete | 2026-03-19 |
-| 3. Retrieval Engine | 2/3 | In Progress|  |
+| 3. Retrieval Engine | 3/3 | Complete   | 2026-03-19 |
 | 4. Agents & Orchestrator | 0/4 | Not started | - |
 | 5. API Layer | 0/2 | Not started | - |
 | 6. Frontend | 0/4 | Not started | - |

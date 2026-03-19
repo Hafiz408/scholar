@@ -20,7 +20,7 @@
 - [x] **RETR-02**: Router falls back to "vector" strategy when no pageindex_doc_id is available for any source
 - [x] **RETR-03**: PageIndex retriever fetches chapter-level chunks from books that have a PageIndex tree
 - [x] **RETR-04**: Vector retriever performs cosine similarity search filtered by source_id against pgvector
-- [ ] **RETR-05**: Hybrid retriever merges PageIndex + vector results with weighted reranking (0.6 / 0.4), deduplicated by content hash
+- [x] **RETR-05**: Hybrid retriever merges PageIndex + vector results with weighted reranking (0.6 / 0.4), deduplicated by content hash
 
 ### Goals & Planning
 
@@ -116,7 +116,7 @@
 | RETR-02 | Phase 3 | Complete |
 | RETR-03 | Phase 3 | Complete |
 | RETR-04 | Phase 3 | Complete |
-| RETR-05 | Phase 3 | Pending |
+| RETR-05 | Phase 3 | Complete |
 | GOAL-01 | Phase 4 | Pending |
 | GOAL-02 | Phase 4 | Pending |
 | GOAL-03 | Phase 4 | Pending |

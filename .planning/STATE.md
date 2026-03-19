@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** A student can upload their actual textbooks, set a real deadline, and have every note, chat answer, and quiz question grounded in — and only in — those specific books.
-**Current focus:** Phase 3 — Retrieval Engine
+**Current focus:** Phase 3 — Retrieval Engine COMPLETE — Next: Phase 4 Study Agents
 
 ## Current Position
 
 Phase: 3 of 7 (Retrieval Engine)
 Plan: 3 of 3 in current phase
-Status: In progress — 03-01 Query Router + 03-02 Leaf Retrievers complete
-Last activity: 2026-03-19 — Completed 03-01 Query Router Agent
+Status: Complete — all 3 plans done (03-01 Query Router, 03-02 Leaf Retrievers, 03-03 Hybrid Retriever)
+Last activity: 2026-03-19 — Completed 03-03 Hybrid Retriever (RETR-05)
 
-Progress: [██████░░░░] 34%
+Progress: [████████░░] 43%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 3.2 min
-- Total execution time: 0.3 hours
+- Total plans completed: 7
+- Average duration: 3.4 min
+- Total execution time: 0.4 hours
 
 **By Phase:**
 
@@ -29,13 +29,14 @@ Progress: [██████░░░░] 34%
 |-------|-------|-------|----------|
 | 01-infrastructure | 3/3 | 11 min | 3.7 min |
 | 02-ingestion-pipeline | 4/5 | 8 min | 2 min |
-| 03-retrieval-engine | 2/3 | 6 min | 3 min |
+| 03-retrieval-engine | 3/3 | 14 min | 4.7 min |
 
 **Recent Trend:**
 - Last 5 plans: 3.2 min
 - Trend: —
 
 *Updated after each plan completion*
+| Phase 03-retrieval-engine P03 | 8 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -59,6 +60,8 @@ Recent decisions affecting current work:
 - [Phase 02-ingestion-pipeline-04]: UploadFile bytes read in endpoint before background task; GET /knowledge/ redirects from /knowledge (standard FastAPI behavior); pgvector delete in router wrapped in try/except
 - [Phase 03-retrieval-engine-02]: Poll budget 18x5s=90s for PageIndex (30-90s on large docs); np.array required by pgvector adapter; embedding passed twice in SQL tuple for score + ORDER BY
 - [Phase 03-retrieval-engine-01]: asyncio_mode=auto in pytest.ini fixes pytest-asyncio 0.23.0 crash on __init__.py; RouterDecision Field description carries per-strategy examples inline as classifier prompt; asyncio.to_thread bridges sync LangChain into async handlers
+- [Phase 03-retrieval-engine]: model_copy(update={'relevance_score': score}) avoids mutating input RetrievedChunk objects in merge_results
+- [Phase 03-retrieval-engine]: _get_sources_with_pageindex helper returns (doc_id, source_id, title) triples; separate from router's _get_pageindex_doc_ids which returns only doc_ids
 
 ### Pending Todos
 
@@ -71,5 +74,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-19
-Stopped at: Completed 03-retrieval-engine-01-PLAN.md
+Stopped at: Completed 03-retrieval-engine-03-PLAN.md
 Resume file: None
