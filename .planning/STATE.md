@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** A student can upload their actual textbooks, set a real deadline, and have every note, chat answer, and quiz question grounded in — and only in — those specific books.
-**Current focus:** Phase 15 — GitHub Actions CI
+**Current focus:** Phase 16 — Real RAGAS Benchmark
 
 ## Current Position
 
-Phase: 15 of 16 (GitHub Actions CI)
+Phase: 16 of 16 (Real RAGAS Benchmark)
 Plan: 1 of 1 in current phase
-Status: Phase 15 complete
-Last activity: 2026-03-22 — Phase 15 Plan 01 complete: GitHub Actions CI workflow with pgvector/pg16 service and -m "not integration" pytest exclusion
+Status: Phase 16 complete
+Last activity: 2026-03-22 — Phase 16 Plan 01 complete: --output-dir CLI argument wired into all three result write paths plus ASCII summary table to stdout
 
-Progress: [██████████████████░] ~97% (Phase 15 Plan 1 complete)
+Progress: [████████████████████] 100% (Phase 16 Plan 1 complete)
 
 ## Performance Metrics
 
@@ -44,6 +44,7 @@ Progress: [██████████████████░] ~97% (Phas
 | 13-notion-mcp-export | 3/3 | 10 min | 3.3 min |
 | 14-frontend-v2-components | 3/4 | 10 min | 3.3 min |
 | 15-github-actions-ci | 1/1 | 2 min | 2.0 min |
+| 16-real-ragas-benchmark | 1/1 | 3 min | 3.0 min |
 
 ## Accumulated Context
 
@@ -76,6 +77,7 @@ Recent decisions affecting v2.0 work:
 - [Phase 14-02]: useState function initializer used for thread_id to avoid SSR localStorage access pitfall in 'use client' component; cancelRef pattern for SSE cleanup on unmount
 - [Phase 14-03]: AdaptiveAlert uses undefined sentinel (not boolean) to distinguish "not triggered" from "triggered with no session data" (null); NotionExportButton initializes directly to 'done' state when initialNotionUrl provided on mount
 - [Phase 15-01]: pgvector/pgvector:pg16 image (not postgres:16) — pgvector compiled in; init_pgvector_schema() runs CREATE EXTENSION so no separate psql step needed; -m "not integration" (not --ignore) preserves 2 mocked tests in test_router.py while excluding accuracy gate; PYTHONPATH=/opt/pageindex via PageIndex git clone; SQLITE_PATH=/tmp/scholar_ci.db for CI
+- [Phase 16-01]: --output-dir defaults to None in argparse (not RESULTS_DIR) so resolution happens in one ternary after parse_args(); output_dir.mkdir(parents=True, exist_ok=True) called before timestamp setup; Step 5 RESULTS_DIR.mkdir() removed; ASCII table uses f-strings only — zero new pip dependencies
 
 ### Pending Todos
 
@@ -88,5 +90,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Completed 15-01-PLAN.md
+Stopped at: Completed 16-01-PLAN.md
 Resume file: None

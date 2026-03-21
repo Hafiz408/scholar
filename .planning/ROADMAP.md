@@ -30,7 +30,7 @@
 - [x] **Phase 13: Notion MCP Export** — Export study plan and session notes to Notion via background task (completed 2026-03-22)
 - [x] **Phase 14: Frontend V2 Components** — Super page, AdaptiveAlert, TestPanel, NotionExportButton wired into existing UI (completed 2026-03-21)
 - [x] **Phase 15: GitHub Actions CI** — Automated pytest + ruff on every PR to feature/v2 and main (completed 2026-03-22)
-- [ ] **Phase 16: Real RAGAS Benchmark** — Replace placeholder scores with real faithfulness/relevancy/precision metrics from OpenStax Biology 2e run
+- [x] **Phase 16: Real RAGAS Benchmark** — Replace placeholder scores with real faithfulness/relevancy/precision metrics from OpenStax Biology 2e run
 
 ## Phase Details
 
@@ -196,6 +196,6 @@ Plans:
 | 13. Notion MCP Export | 3/3 | Complete    | 2026-03-21 | - |
 | 14. Frontend V2 Components | 3/4 | Complete    | 2026-03-21 | - |
 | 15. GitHub Actions CI | v2.0 | Complete    | 2026-03-21 | 2026-03-22 |
-| 16. Real RAGAS Benchmark | v2.0 | 0/? | Not started | - |
+| 16. Real RAGAS Benchmark | v2.0 | 1/1 | Complete    | 2026-03-22 |
 
 Full v1.0 phase details archived at: `.planning/milestones/v1.0-ROADMAP.md`

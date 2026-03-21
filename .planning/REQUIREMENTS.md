@@ -72,7 +72,7 @@
 
 ### Evaluation (EVAL)
 
-- [ ] **EVAL-01**: `eval/run_ragas.py` updated with `--output-dir` argument and summary table output
+- [x] **EVAL-01**: `eval/run_ragas.py` updated with `--output-dir` argument and summary table output
 - [ ] **EVAL-02**: Real RAGAS benchmark run with OpenStax Biology 2e; JSON results committed to `eval/results/`
 - [ ] **EVAL-03**: README comparison table updated with real faithfulness, answer relevancy, context precision, and avg latency scores
 
@@ -129,7 +129,7 @@
 | CI-01 | Phase 15 | Complete |
 | CI-02 | Phase 15 | Complete |
 | CI-03 | Phase 15 | Complete |
-| EVAL-01 | Phase 16 | Pending |
+| EVAL-01 | Phase 16 | Complete |
 | EVAL-02 | Phase 16 | Pending |
 | EVAL-03 | Phase 16 | Pending |
 
