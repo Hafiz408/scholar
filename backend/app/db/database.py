@@ -38,6 +38,16 @@ CREATE TABLE IF NOT EXISTS quiz_questions (
     created_at TEXT,
     FOREIGN KEY (session_id) REFERENCES study_sessions(id)
 );
+
+CREATE TABLE IF NOT EXISTS cumulative_tests (
+    id TEXT PRIMARY KEY,
+    goal_id TEXT NOT NULL,
+    questions TEXT NOT NULL,
+    score REAL,
+    weak_session_numbers TEXT,
+    created_at TEXT,
+    FOREIGN KEY (goal_id) REFERENCES study_goals(id)
+);
 """
 
 def _pgvector_schema(dimensions: int) -> str:
