@@ -1,151 +1,100 @@
-"""PageIndex builder — submit PDFs to the PageIndex cloud API and poll for readiness.
+"""PageIndex builder — build a hierarchical document tree using the open-source PageIndex library.
 
-The pageindex Python package v0.1.0 is an empty stub with no client class.
-We call the REST API directly via httpx, mirroring the patterns documented
-in the plan (submit_document, is_retrieval_ready, get_document, delete_document).
+Calls page_index_main() locally (no cloud service required). The resulting tree
+is saved as JSON to data/uploads/<source_id>_tree.json and the source_id is
+returned as the doc_id for later retrieval.
 
-All failures (missing key, network errors, timeouts, API errors) are caught
-and return None so the vector-only ingestion pipeline continues unblocked.
+All failures return None so the vector-only pipeline continues unblocked.
 """
 import asyncio
+import json
 import logging
-from typing import Any, Dict, Optional
-
-import httpx
+import os
+from pathlib import Path
+from typing import Optional
 
 from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Polling parameters matching the plan specification.
-_MAX_POLL_ATTEMPTS = 30
-_POLL_INTERVAL_SECS = 10
+# Configure litellm env vars at module load so PageIndex picks them up on import.
+# PageIndex uses litellm internally; OPENAI_API_KEY is the key it reads.
+_api_key = settings.llm_api_key or settings.openai_api_key
+if _api_key:
+    os.environ.setdefault("OPENAI_API_KEY", _api_key)
+
+# For OpenAI-compatible providers (e.g. Mistral), prefix the model with "openai/"
+# so litellm routes through the custom base URL set via litellm.api_base.
+_PAGEINDEX_MODEL = (
+    f"openai/{settings.llm_model}" if settings.llm_base_url else settings.llm_model
+)
 
 
-def _headers() -> Dict[str, str]:
-    return {"Authorization": f"Bearer {settings.pageindex_api_key}"}
+def _tree_path(source_id: str) -> Path:
+    return Path(settings.upload_dir) / f"{source_id}_tree.json"
 
 
-def _submit_document(file_path: str) -> Dict[str, Any]:
-    """Synchronous REST call to submit a PDF.  Runs in asyncio.to_thread."""
-    with open(file_path, "rb") as fh:
-        response = httpx.post(
-            f"{settings.pageindex_base_url}/documents",
-            headers=_headers(),
-            files={"file": fh},
-            timeout=60.0,
-        )
-    response.raise_for_status()
-    return response.json()
+def _build_tree_sync(file_path: str) -> dict:
+    """Synchronous PageIndex call. Runs in asyncio.to_thread to avoid blocking."""
+    import litellm
+    from pageindex import ConfigLoader, page_index_main
+
+    if settings.llm_base_url:
+        litellm.api_base = settings.llm_base_url
+
+    opt = ConfigLoader().load()
+    opt.model = _PAGEINDEX_MODEL
+    opt.if_add_node_id = True
+    opt.if_add_node_text = True
+    opt.if_add_node_summary = True
+
+    return page_index_main(file_path, opt)
 
 
-def _is_retrieval_ready(doc_id: str) -> bool:
-    """Synchronous check whether a document is ready for retrieval.  Runs in asyncio.to_thread."""
-    response = httpx.get(
-        f"{settings.pageindex_base_url}/documents/{doc_id}/ready",
-        headers=_headers(),
-        timeout=30.0,
-    )
-    response.raise_for_status()
-    data = response.json()
-    return bool(data.get("ready", False))
-
-
-def _get_document(doc_id: str) -> Dict[str, Any]:
-    """Synchronous fetch of document metadata.  Runs in asyncio.to_thread."""
-    response = httpx.get(
-        f"{settings.pageindex_base_url}/documents/{doc_id}",
-        headers=_headers(),
-        timeout=30.0,
-    )
-    response.raise_for_status()
-    return response.json()
-
-
-async def build_pageindex_tree(file_path: Optional[str], doc_title: str) -> Optional[str]:
-    """Submit a PDF to PageIndex and poll until retrieval is ready.
-
-    Returns the doc_id string on success, or None on any failure (URL sources,
-    missing/invalid API key, timeout, API errors). Never raises — all failures
-    are caught so vector-only ingestion can continue unblocked.
+async def build_pageindex_tree(
+    file_path: Optional[str],
+    doc_title: str,
+    source_id: str = "",
+) -> Optional[str]:
+    """Build a PageIndex tree from a PDF and save it to disk.
 
     Args:
-        file_path: Local path to the PDF file. None means a URL source, which
-                   PageIndex does not support — returns None immediately.
-        doc_title: Human-readable title for the document (used for logging).
+        file_path: Local path to the PDF. None means a URL source — skipped immediately.
+        doc_title: Human-readable title used for logging.
+        source_id: The knowledge source UUID; used to name the tree file.
 
     Returns:
-        doc_id string if PageIndex successfully indexed the document, else None.
+        source_id on success (used as pageindex_doc_id in the DB), None on any failure.
     """
-    # URL sources are not supported by PageIndex — skip immediately.
     if file_path is None:
-        logger.info("PageIndex: skipping URL source (file_path is None) for '%s'", doc_title)
+        logger.info("PageIndex: skipping URL source for '%s'", doc_title)
         return None
 
     try:
-        # submit_document is synchronous — run in thread to avoid blocking the event loop.
-        result = await asyncio.to_thread(_submit_document, file_path)
-        doc_id: str = result["doc_id"]
-        logger.info("PageIndex: submitted '%s' → doc_id=%s", doc_title, doc_id)
+        logger.info("PageIndex: building tree for '%s'", doc_title)
+        tree = await asyncio.to_thread(_build_tree_sync, file_path)
 
-        # Poll until retrieval is ready (max 30 attempts × 10 s = 5 minutes).
-        for attempt in range(_MAX_POLL_ATTEMPTS):
-            await asyncio.sleep(_POLL_INTERVAL_SECS)
+        out = _tree_path(source_id)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(tree, ensure_ascii=False), encoding="utf-8")
+        logger.info("PageIndex: saved tree → %s", out)
+        return source_id
 
-            # is_retrieval_ready is synchronous — run in thread.
-            ready = await asyncio.to_thread(_is_retrieval_ready, doc_id)
-            if ready:
-                logger.info(
-                    "PageIndex: '%s' ready after %d attempt(s)", doc_title, attempt + 1
-                )
-                return doc_id
-
-            # Also check whether the document entered a failed state.
-            doc = await asyncio.to_thread(_get_document, doc_id)
-            if doc.get("status") == "failed":
-                logger.warning(
-                    "PageIndex: document '%s' (doc_id=%s) entered failed state — "
-                    "falling back to vector-only",
-                    doc_title,
-                    doc_id,
-                )
-                return None
-
-        # 30 attempts exhausted without becoming ready.
-        logger.warning(
-            "PageIndex timed out for '%s' (doc_id=%s) after %d attempts — "
-            "falling back to vector-only",
-            doc_title,
-            doc_id,
-            _MAX_POLL_ATTEMPTS,
-        )
-        return None
-
-    except Exception as e:
+    except Exception as exc:
         logger.warning(
             "PageIndex failed for '%s': %s — falling back to vector-only",
             doc_title,
-            e,
+            exc,
         )
         return None
 
 
 def delete_pageindex_doc(doc_id: str) -> None:
-    """Best-effort deletion of a PageIndex document.
-
-    Catches all exceptions and never raises — deletion failure must not affect
-    any caller.
-
-    Args:
-        doc_id: The PageIndex document ID to delete.
-    """
+    """Delete the locally stored tree file. Never raises."""
     try:
-        httpx.delete(
-            f"{settings.pageindex_base_url}/documents/{doc_id}",
-            headers=_headers(),
-            timeout=10.0,
-        )
-        logger.info("PageIndex: deleted doc_id=%s", doc_id)
-    except Exception as e:
-        logger.warning("PageIndex delete failed for %s: %s", doc_id, e)
-        # Best-effort — never raise.
+        path = _tree_path(doc_id)
+        if path.exists():
+            path.unlink()
+            logger.info("PageIndex: deleted tree %s", path)
+    except Exception as exc:
+        logger.warning("PageIndex: delete failed for doc_id=%s: %s", doc_id, exc)

@@ -44,3 +44,13 @@ RULES:
 - Questions must test understanding, not memorization of exact phrasing
 - Base ALL questions strictly on the provided notes content
 """
+
+PAGEINDEX_TREE_SEARCH_PROMPT = """You are a document navigator. Given a document's hierarchical outline and a user query, identify the most relevant section IDs.
+
+Document outline:
+{tree_skeleton}
+
+User query: {query}
+
+Return ONLY a JSON array of the {top_k} most relevant section IDs, ordered by relevance. Output nothing else.
+Example: ["2.1", "3", "1.4"]"""

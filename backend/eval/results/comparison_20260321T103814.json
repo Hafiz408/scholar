@@ -1,0 +1,15 @@
+{
+  "run_at": "20260321T103814",
+  "pageindex": {
+    "faithfulness": 0.5,
+    "answer_relevancy": 0.5,
+    "context_precision": 0.5,
+    "avg_latency_ms": 636
+  },
+  "vector": {
+    "faithfulness": 0.5,
+    "answer_relevancy": 0.5,
+    "context_precision": 0.5,
+    "avg_latency_ms": 1319
+  }
+}

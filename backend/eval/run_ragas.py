@@ -151,8 +151,22 @@ async def ensure_ingested(book_path: str) -> str:
 # ---------------------------------------------------------------------------
 
 
+def _get_llm_client() -> openai.AsyncOpenAI:
+    """Return a module-level singleton AsyncOpenAI client (connection-pooled)."""
+    return openai.AsyncOpenAI(
+        api_key=settings.llm_api_key or settings.openai_api_key or None,
+        base_url=settings.llm_base_url or None,
+        max_retries=4,
+    )
+
+
+_llm_client: openai.AsyncOpenAI | None = None
+
+INTER_QUESTION_DELAY_S = 1.5  # polite pacing to avoid rate-limit bursts
+
+
 async def generate_answer(question: str, chunks: list) -> str:
-    """Generate an answer using gpt-4o-mini given retrieved chunks as context.
+    """Generate an answer using the configured LLM given retrieved chunks as context.
 
     Args:
         question: The question to answer.
@@ -161,12 +175,12 @@ async def generate_answer(question: str, chunks: list) -> str:
     Returns:
         Generated answer string.
     """
+    global _llm_client
+    if _llm_client is None:
+        _llm_client = _get_llm_client()
+
     context = "\n\n".join(chunk.content for chunk in chunks) if chunks else "(no context retrieved)"
-    client = openai.AsyncOpenAI(
-        api_key=settings.llm_api_key or settings.openai_api_key or None,
-            base_url=settings.llm_base_url or None,
-    )
-    response = await client.chat.completions.create(
+    response = await _llm_client.chat.completions.create(
         model=settings.llm_model or "gpt-4o-mini",
         messages=[
             {
@@ -252,6 +266,8 @@ async def run_strategy(
         answer = await generate_answer(question, chunks)
         latency_ms = int((perf_counter() - t0) * 1000)
         latencies_ms.append(latency_ms)
+
+        await asyncio.sleep(INTER_QUESTION_DELAY_S)  # pace requests to avoid rate-limit bursts
 
         # RAGAS 0.2 column names: user_input, retrieved_contexts, response, reference
         sample = {

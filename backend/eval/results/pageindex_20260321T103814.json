@@ -1,0 +1,188 @@
+{
+  "faithfulness": 0.5,
+  "answer_relevancy": 0.5,
+  "context_precision": 0.5,
+  "avg_latency_ms": 636,
+  "per_question": [
+    {
+      "user_input": "How does the sodium-potassium pump maintain the resting membrane potential in neurons?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "Describe the molecular mechanism by which an action potential propagates along an unmyelinated axon.",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "What is the role of the electron transport chain in oxidative phosphorylation, and how does each complex contribute to ATP synthesis?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "How does mRNA splicing occur in eukaryotes, and what is the role of the spliceosome in this process?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "How does the complement system work in the innate immune response, and what are the three pathways that activate it?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "Explain how calmodulin mediates calcium signaling in cells and describe two cellular processes it regulates.",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "How does homologous recombination during meiosis contribute to genetic diversity, and what molecular events occur during crossing over?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "How does the lac operon demonstrate negative and positive regulation of gene expression in bacteria?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "Describe the mechanism of CRISPR-Cas9 gene editing. How does the guide RNA direct Cas9 to its target, and what DNA repair pathways determine the editing outcome?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "How do type II diabetes and insulin resistance develop at the cellular and molecular level?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "How does the theory of evolution by natural selection explain the diversity of life observed across all domains of life?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "Compare and contrast the structures and functions of prokaryotic and eukaryotic cells, highlighting key evolutionary innovations in eukaryotes.",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "How do feedback mechanisms regulate homeostasis across different organ systems in animals? Provide examples from at least three systems.",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "How do the processes of transcription and translation differ between bacteria and eukaryotes, and what are the implications of these differences for gene regulation?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "How do plant and animal cells differ in structure, and how do these differences reflect their distinct functional requirements?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "How has the development of antibiotic resistance in bacteria exemplified the principles of natural selection, and what mechanisms do bacteria use to acquire resistance?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "Compare the energy yields and metabolic processes of aerobic respiration versus fermentation in cells that experience oxygen deprivation.",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "How do adaptive immune responses differ from innate immune responses, and how do the two systems cooperate to eliminate pathogens?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "How does gene flow, genetic drift, mutation, and natural selection each act as a mechanism of microevolution, and under what conditions does each predominate?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "How does the carbon cycle connect the living and non-living components of ecosystems, and what is the impact of human activities on this cycle?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "What is the role of ATP synthase in oxidative phosphorylation?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "What is the difference between mitosis and meiosis, and why is each process important?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "What is a nucleosome, and how does its structure contribute to DNA packaging and gene regulation?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "What is the function of the rough endoplasmic reticulum, and how does it differ from the smooth endoplasmic reticulum?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "How does photosystem II function in the light-dependent reactions of photosynthesis?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "What is the Hardy-Weinberg principle, and what conditions must be met for a population to be in Hardy-Weinberg equilibrium?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "What is the role of the Golgi apparatus in cell secretion?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "What is a point mutation, and what are the possible consequences for protein function?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "How does turgor pressure maintain plant structure, and what happens when a plant wilts?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    },
+    {
+      "user_input": "What is the role of hemoglobin in oxygen transport, and how does the Bohr effect facilitate oxygen delivery to metabolically active tissues?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "context_precision": 0.5
+    }
+  ]
+}

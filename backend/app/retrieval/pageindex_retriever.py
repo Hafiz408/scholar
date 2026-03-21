@@ -1,81 +1,102 @@
-"""PageIndex retriever — submit a retrieval task and poll until completed.
+"""PageIndex retriever — navigate a locally stored document tree using LLM reasoning.
 
-Implements RETR-03: submit POST /retrieval/, poll GET /retrieval/{id}/ until
-status == "completed", then map retrieved_nodes to RetrievedChunk list.
+Loads the JSON tree saved by pageindex_builder, flattens it to a section
+skeleton (id + title + summary), asks the LLM to pick the most relevant
+section IDs for the query, then returns the full text of those sections as
+RetrievedChunk objects.
 
-All failures and timeouts return [] — never raise — so the hybrid retriever
-can fall back to vector-only without disruption.
+All failures return [] — never raise — so the hybrid retriever falls back
+to vector-only without disruption.
 """
-import asyncio
+import json
 import logging
+import re
+from pathlib import Path
+from typing import Optional
 
-import httpx
+from openai import AsyncOpenAI
 
+from app.agents.prompts import PAGEINDEX_TREE_SEARCH_PROMPT
 from app.config import settings
 from app.models.schemas import RetrievedChunk
 
 logger = logging.getLogger(__name__)
 
-# Poll budget: 18 attempts x 5 s = 90 s (PageIndex can take 30-90 s on large docs).
-_MAX_POLL_ATTEMPTS = 18
-_POLL_INTERVAL_SECS = 5
+# Module-level LLM client singleton (connection-pooled).
+_llm_client: Optional[AsyncOpenAI] = None
 
 
-def _submit_retrieval(doc_id: str, query: str) -> str:
-    """Synchronous POST to /retrieval/.  Returns retrieval_id.  Runs in asyncio.to_thread."""
-    response = httpx.post(
-        f"{settings.pageindex_base_url}/retrieval/",
-        json={"doc_id": doc_id, "query": query},
-        headers={"Authorization": f"Bearer {settings.pageindex_api_key}"},
-        timeout=30.0,
+def _get_llm_client() -> AsyncOpenAI:
+    global _llm_client
+    if _llm_client is None:
+        _llm_client = AsyncOpenAI(
+            api_key=settings.llm_api_key or settings.openai_api_key or None,
+            base_url=settings.llm_base_url or None,
+        )
+    return _llm_client
+
+
+def _tree_path(doc_id: str) -> Path:
+    return Path(settings.upload_dir) / f"{doc_id}_tree.json"
+
+
+def _load_tree(doc_id: str) -> Optional[dict]:
+    """Load the saved JSON tree for doc_id. Returns None if not found."""
+    path = _tree_path(doc_id)
+    if not path.exists():
+        logger.warning("PageIndex: tree file not found for doc_id=%s", doc_id)
+        return None
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _flatten_skeleton(nodes: list, depth: int = 0) -> str:
+    """Recursively flatten tree nodes to a compact id→title→summary outline."""
+    lines = []
+    indent = "  " * depth
+    for node in nodes:
+        node_id = node.get("id", "?")
+        title = node.get("title", "")
+        summary = (node.get("summary") or "")[:200]
+        lines.append(f"{indent}[{node_id}] {title}: {summary}")
+        children = node.get("nodes") or []
+        if children:
+            lines.append(_flatten_skeleton(children, depth + 1))
+    return "\n".join(lines)
+
+
+def _collect_nodes_by_ids(nodes: list, target_ids: set) -> list:
+    """Walk the tree depth-first and return nodes whose id is in target_ids."""
+    result = []
+    for node in nodes:
+        if node.get("id") in target_ids:
+            result.append(node)
+        children = node.get("nodes") or []
+        if children:
+            result.extend(_collect_nodes_by_ids(children, target_ids))
+    return result
+
+
+async def _ask_llm_for_node_ids(skeleton: str, query: str, top_k: int) -> list[str]:
+    """Call the LLM to select relevant section IDs from the document outline."""
+    prompt = PAGEINDEX_TREE_SEARCH_PROMPT.format(
+        tree_skeleton=skeleton,
+        query=query,
+        top_k=top_k,
     )
-    response.raise_for_status()
-    return response.json()["retrieval_id"]
-
-
-def _poll_retrieval(retrieval_id: str) -> dict:
-    """Synchronous GET /retrieval/{id}/.  Returns the response JSON.  Runs in asyncio.to_thread."""
-    response = httpx.get(
-        f"{settings.pageindex_base_url}/retrieval/{retrieval_id}/",
-        headers={"Authorization": f"Bearer {settings.pageindex_api_key}"},
-        timeout=30.0,
+    client = _get_llm_client()
+    response = await client.chat.completions.create(
+        model=settings.llm_model,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0,
     )
-    response.raise_for_status()
-    return response.json()
+    content = response.choices[0].message.content.strip()
 
-
-def _parse_retrieved_nodes(
-    nodes: list,
-    source_id: str,
-    source_title: str,
-) -> list:
-    """Map a PageIndex retrieved_nodes list to a flat list of RetrievedChunk.
-
-    Args:
-        nodes: List of node dicts from the PageIndex response, each containing
-               an optional "title" and a "relevant_contents" list.
-        source_id: The knowledge source UUID string.
-        source_title: The human-readable title of the source.
-
-    Returns:
-        Flat list of RetrievedChunk instances; empty list if nodes is empty.
-    """
-    chunks = []
-    for rank, node in enumerate(nodes):
-        section_title = node.get("title")
-        for item in node.get("relevant_contents", []):
-            chunks.append(
-                RetrievedChunk(
-                    source_id=source_id,
-                    source_title=source_title,
-                    content=item["relevant_content"],
-                    page_number=item.get("page_index"),
-                    section_title=section_title,
-                    relevance_score=1.0 / (1 + rank),
-                    retrieval_method="pageindex",
-                )
-            )
-    return chunks
+    # Extract a JSON array from the response (guard against prose wrapping).
+    match = re.search(r"\[.*?\]", content, re.DOTALL)
+    if not match:
+        logger.warning("PageIndex: LLM returned no JSON array: %r", content[:200])
+        return []
+    return json.loads(match.group())
 
 
 async def fetch_pageindex_chunks(
@@ -85,62 +106,73 @@ async def fetch_pageindex_chunks(
     source_title: str,
     top_k: int = 5,
 ) -> list:
-    """Submit a retrieval task to PageIndex and return the resulting chunks.
+    """Retrieve relevant chunks from a locally stored PageIndex tree.
 
-    Implements the submit-poll-parse pattern (RETR-03):
-    1. POST /retrieval/ to create a retrieval task.
-    2. Poll GET /retrieval/{id}/ every 5 s for up to 90 s.
-    3. On completion, parse retrieved_nodes into RetrievedChunk list.
-    4. On timeout or any error, log a warning and return [].
+    1. Load the JSON tree from disk.
+    2. Flatten the tree to a skeleton outline.
+    3. Ask the LLM to pick the top_k most relevant section IDs.
+    4. Extract the full text from those sections.
+    5. Return as RetrievedChunk list ordered by LLM rank.
 
     Args:
-        doc_id: PageIndex document ID.  If None, returns [] immediately.
-        query: The retrieval query string.
-        source_id: Knowledge source UUID string (for RetrievedChunk).
-        source_title: Human-readable source title (for RetrievedChunk).
-        top_k: Not used in the API call directly; kept for interface symmetry.
+        doc_id: The source_id used as the tree filename stem.
+        query: The user's search query.
+        source_id: Knowledge source UUID (for RetrievedChunk metadata).
+        source_title: Human-readable source title (for RetrievedChunk metadata).
+        top_k: Maximum number of sections to return.
 
     Returns:
-        List of RetrievedChunk; empty list on timeout or failure.
+        List of RetrievedChunk; empty list on any failure.
     """
-    # Guard: URL sources have no PageIndex doc — never attempt an HTTP call.
     if doc_id is None:
         return []
 
     try:
-        # Submit retrieval task (synchronous HTTP — run in thread).
-        retrieval_id = await asyncio.to_thread(_submit_retrieval, doc_id, query)
+        tree = _load_tree(doc_id)
+        if tree is None:
+            return []
+
+        nodes = tree.get("structure") or []
+        if not nodes:
+            logger.warning("PageIndex: empty structure in tree for doc_id=%s", doc_id)
+            return []
+
+        skeleton = _flatten_skeleton(nodes)
+        node_ids = await _ask_llm_for_node_ids(skeleton, query, top_k)
+        if not node_ids:
+            return []
+
         logger.debug(
-            "PageIndex: submitted retrieval for doc_id=%s retrieval_id=%s",
-            doc_id,
-            retrieval_id,
+            "PageIndex: LLM selected node_ids=%s for doc_id=%s", node_ids, doc_id
         )
 
-        # Poll until completed or budget exhausted.
-        for _ in range(_MAX_POLL_ATTEMPTS):
-            await asyncio.sleep(_POLL_INTERVAL_SECS)
+        # Preserve LLM-ranked order: id → rank position.
+        id_rank = {nid: rank for rank, nid in enumerate(node_ids)}
+        target_ids = set(node_ids)
+        matched = _collect_nodes_by_ids(nodes, target_ids)
 
-            data = await asyncio.to_thread(_poll_retrieval, retrieval_id)
-            if data.get("status") == "completed":
-                logger.debug(
-                    "PageIndex: retrieval_id=%s completed", retrieval_id
+        chunks = []
+        for node in matched:
+            text = node.get("text") or node.get("summary") or ""
+            if not text:
+                continue
+            rank = id_rank.get(node.get("id", ""), len(matched))
+            chunks.append(
+                RetrievedChunk(
+                    source_id=source_id,
+                    source_title=source_title,
+                    content=text,
+                    page_number=node.get("start_index"),
+                    section_title=node.get("title"),
+                    relevance_score=1.0 / (1 + rank),
+                    retrieval_method="pageindex",
                 )
-                return _parse_retrieved_nodes(
-                    data.get("retrieved_nodes", []), source_id, source_title
-                )
+            )
 
-        # Poll budget exhausted without completion.
-        logger.warning(
-            "PageIndex retrieval timed out after 90s (retrieval_id=%s, doc_id=%s)",
-            retrieval_id,
-            doc_id,
-        )
-        return []
+        # Sort by relevance (higher score = lower rank index).
+        chunks.sort(key=lambda c: c.relevance_score, reverse=True)
+        return chunks[:top_k]
 
     except Exception as exc:
-        logger.error(
-            "PageIndex retrieval failed (doc_id=%s): %s",
-            doc_id,
-            exc,
-        )
+        logger.error("PageIndex retrieval failed (doc_id=%s): %s", doc_id, exc)
         return []

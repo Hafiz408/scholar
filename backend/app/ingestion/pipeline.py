@@ -75,7 +75,7 @@ async def run_ingestion(
 
             # Stage 2: PageIndex (PDF only; URL returns None immediately)
             await _update_status(db, source_id, "indexing_pageindex")
-            pageindex_doc_id = await build_pageindex_tree(file_path, title)
+            pageindex_doc_id = await build_pageindex_tree(file_path, title, source_id=source_id)
             # build_pageindex_tree never raises — returns None on any failure
 
             # Stage 3: pgvector embeddings

@@ -52,3 +52,14 @@ frontend/node_modules/
 *.pem
 *.key
 *.crt
+
+# Planning / internal GSD files
+.planning/
+
+# Test data
+"Test book.pdf"
+Test book.pdf
+
+# Build artifacts
+frontend/tsconfig.tsbuildinfo
+frontend/package-lock.json

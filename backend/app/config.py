@@ -9,8 +9,6 @@ class Settings(BaseSettings):
     langchain_tracing_v2: bool = False
     langchain_project: str = "scholar"
     environment: str = "development"
-    pageindex_api_key: str = ""
-    pageindex_base_url: str = "https://api.pageindex.ai"
     sqlite_path: str = "./data/scholar.db"
     upload_dir: str = "./data/uploads"
     max_upload_size_mb: int = 50
