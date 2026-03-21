@@ -13,10 +13,10 @@
 ### Vision Ingestion (VIS)
 
 - [x] **VIS-01**: `get_vision_llm()` added to `llm_factory.py` using `vision_model` setting — raises `ValueError` if vision_model is empty
-- [ ] **VIS-02**: `vision_extractor.py` extracts diagram/chart/table/equation descriptions from image-heavy PDF pages via vision LLM
-- [ ] **VIS-03**: Vision extraction is opt-in — `vision_model=""` means no LLM call, ingestion continues unchanged
-- [ ] **VIS-04**: Vision extraction never blocks ingestion — exceptions are logged, pipeline continues
-- [ ] **VIS-05**: `pipeline.py` calls vision extractor after text extraction; appends visual descriptions to page text
+- [x] **VIS-02**: `vision_extractor.py` extracts diagram/chart/table/equation descriptions from image-heavy PDF pages via vision LLM
+- [x] **VIS-03**: Vision extraction is opt-in — `vision_model=""` means no LLM call, ingestion continues unchanged
+- [x] **VIS-04**: Vision extraction never blocks ingestion — exceptions are logged, pipeline continues
+- [x] **VIS-05**: `pipeline.py` calls vision extractor after text extraction; appends visual descriptions to page text
 - [x] **VIS-06**: `vision_max_pages` config setting caps pages processed per document (cost guard)
 
 ### Adaptive Learning (ADP)
@@ -94,10 +94,10 @@
 | OBS-01 | Phase 8 | Complete |
 | OBS-02 | Phase 8 | Complete |
 | VIS-01 | Phase 9 | Complete |
-| VIS-02 | Phase 9 | Pending |
-| VIS-03 | Phase 9 | Pending |
-| VIS-04 | Phase 9 | Pending |
-| VIS-05 | Phase 9 | Pending |
+| VIS-02 | Phase 9 | Complete |
+| VIS-03 | Phase 9 | Complete |
+| VIS-04 | Phase 9 | Complete |
+| VIS-05 | Phase 9 | Complete |
 | VIS-06 | Phase 9 | Complete |
 | ADP-01 | Phase 10 | Pending |
 | ADP-02 | Phase 10 | Pending |
