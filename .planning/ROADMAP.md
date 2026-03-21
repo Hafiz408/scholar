@@ -109,7 +109,11 @@ Plans:
   2. Sending a chat message when no sources are indexed returns an SSE `error` event with the text "No books indexed yet" — the server does not crash or return HTTP 5xx
   3. The frontend `thread_id` (a localStorage UUID) controls conversation continuity — the same `thread_id` from a previous request continues the same conversation thread server-side
   4. The SSE event format from `/super/chat/stream` is identical to the existing `/chat/stream` format (same event names and field structure)
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 12-01-PLAN.md — Create super_agent.py + routers/super.py + register in main.py
+- [ ] 12-02-PLAN.md — TDD: pytest suite covering SUP-01 through SUP-04
 
 ### Phase 13: Notion MCP Export
 **Goal**: Students can export their study plan and session notes to Notion with one click; the export runs in the background without blocking the UI
@@ -169,8 +173,8 @@ Plans:
 | 8. LangSmith Activation | 1/1 | Complete   | 2026-03-21 | - |
 | 9. Vision Ingestion | 3/3 | Complete   | 2026-03-21 | - |
 | 10. Adaptive Planner | 2/3 | Complete    | 2026-03-21 | - |
-| 11. Final Test Agent + Orchestrator | 4/4 | Complete   | 2026-03-21 | - |
-| 12. Super Agent | v2.0 | 0/? | Not started | - |
+| 11. Final Test Agent + Orchestrator | 4/4 | Complete    | 2026-03-21 | - |
+| 12. Super Agent | v2.0 | 0/2 | Not started | - |
 | 13. Notion MCP Export | v2.0 | 0/? | Not started | - |
 | 14. Frontend V2 Components | v2.0 | 0/? | Not started | - |
 | 15. GitHub Actions CI | v2.0 | 0/? | Not started | - |
