@@ -28,6 +28,7 @@ export interface StudyGoal {
   sessions_per_week: number;
   status: "active" | "complete";
   created_at: string;
+  notion_page_url?: string | null;
 }
 
 export interface StudySession {
@@ -78,6 +79,29 @@ export interface QuizResult {
   score: number;
   total_questions: number;
   correct_count: number;
+  per_question: Array<{
+    question_id: string;
+    correct: boolean;
+    explanation: string;
+  }>;
+  followup_session_added?: boolean;
+  followup_session?: StudySession | null;
+}
+
+export interface TestQuestion {
+  id: string;
+  session_number: number;
+  question: string;
+  options: string[];
+  // correct_index intentionally omitted — never sent to frontend
+}
+
+export interface TestResult {
+  score: number;
+  total_questions: number;
+  correct_count: number;
+  goal_complete: boolean;
+  weak_session_numbers: number[];
   per_question: Array<{
     question_id: string;
     correct: boolean;

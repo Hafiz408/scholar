@@ -5,6 +5,8 @@ import type {
   RetrievedChunk,
   QuizQuestion,
   QuizResult,
+  TestQuestion,
+  TestResult,
 } from '@/types'
 
 const API_BASE = '/api'
@@ -139,5 +141,34 @@ export async function submitQuiz(
   return res.json()
 }
 
+// ─── Final test endpoints ─────────────────────────────────────────────────────
+
+export async function generateFinalTest(goalId: string): Promise<TestQuestion[]> {
+  const res = await fetch(`${API_BASE}/goals/${goalId}/test/generate`, { method: 'POST' })
+  if (!res.ok) throw new Error(`generateFinalTest failed: ${res.status}`)
+  return res.json()
+}
+
+export async function submitFinalTest(
+  goalId: string,
+  answers: Record<string, number>
+): Promise<TestResult> {
+  const res = await fetch(`${API_BASE}/goals/${goalId}/test/submit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ answers }),
+  })
+  if (!res.ok) throw new Error(`submitFinalTest failed: ${res.status}`)
+  return res.json()
+}
+
+// ─── Notion export endpoint ───────────────────────────────────────────────────
+
+export async function exportToNotion(goalId: string): Promise<{ status: string }> {
+  const res = await fetch(`${API_BASE}/goals/${goalId}/export/notion`, { method: 'POST' })
+  if (!res.ok) throw new Error(`exportToNotion failed: ${res.status}`)
+  return res.json()
+}
+
 // Re-export types used by other modules
-export type { KnowledgeSource, StudyPlan, StudySession, RetrievedChunk, QuizQuestion, QuizResult }
+export type { KnowledgeSource, StudyPlan, StudySession, RetrievedChunk, QuizQuestion, QuizResult, TestQuestion, TestResult }
