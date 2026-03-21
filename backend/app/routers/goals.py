@@ -1,8 +1,9 @@
 import logging
 import aiosqlite
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 from app.agents.orchestrator import create_goal_with_plan, get_goal_plan
+from app.agents.notion_mcp import run_notion_export
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -77,3 +78,19 @@ async def manual_adapt(goal_id: str) -> dict:
             logger.error("adapt failed for session %s: %s", sess["id"], e)
 
     return {"followup_sessions_added": len(added), "followup_sessions": added}
+
+
+@router.post("/{goal_id}/export/notion")
+async def export_to_notion(goal_id: str, background_tasks: BackgroundTasks) -> dict:
+    """Export goal study plan and session notes to Notion as a background task."""
+    if not settings.notion_api_key:
+        raise HTTPException(status_code=400, detail="notion_api_key is not configured")
+    if not settings.notion_parent_page_id:
+        raise HTTPException(status_code=400, detail="notion_parent_page_id is not configured")
+    background_tasks.add_task(
+        run_notion_export,
+        goal_id,
+        settings.notion_api_key,
+        settings.notion_parent_page_id,
+    )
+    return {"status": "export_started"}
