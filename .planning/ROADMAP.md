@@ -23,7 +23,7 @@
 **v2.0 Adaptive Learning + Multimodal + Super Agent**
 
 - [x] **Phase 8: LangSmith Activation** — Wire tracing env vars so every agent call appears in LangSmith dashboard (completed 2026-03-21)
-- [ ] **Phase 9: Vision Ingestion** — Extend ingestion pipeline to extract diagram/chart descriptions from image-heavy PDF pages via vision LLM
+- [x] **Phase 9: Vision Ingestion** — Extend ingestion pipeline to extract diagram/chart descriptions from image-heavy PDF pages via vision LLM (completed 2026-03-21)
 - [ ] **Phase 10: Adaptive Planner** — Auto-insert follow-up study session when quiz score falls below 65%
 - [ ] **Phase 11: Final Test Agent + Orchestrator** — Cross-session cumulative MCQ test that marks goal complete at ≥ 70%; expand ScholarState for V2 fields
 - [ ] **Phase 12: Super Agent** — Cross-KB persistent chat across all uploaded sources
@@ -156,7 +156,7 @@ Plans:
 | 6. Frontend | v1.0 | 4/4 | Complete | 2026-03-19 |
 | 7. Evaluation | v1.0 | 2/2 | Complete | 2026-03-21 |
 | 8. LangSmith Activation | 1/1 | Complete   | 2026-03-21 | - |
-| 9. Vision Ingestion | 2/3 | In Progress|  | - |
+| 9. Vision Ingestion | 3/3 | Complete   | 2026-03-21 | - |
 | 10. Adaptive Planner | v2.0 | 0/? | Not started | - |
 | 11. Final Test Agent + Orchestrator | v2.0 | 0/? | Not started | - |
 | 12. Super Agent | v2.0 | 0/? | Not started | - |

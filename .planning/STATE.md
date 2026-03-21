@@ -10,16 +10,16 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 ## Current Position
 
 Phase: 9 of 16 (Vision Ingestion)
-Plan: 2 of 2 in current phase (plan complete)
+Plan: 3 of 3 in current phase (phase complete)
 Status: In progress
-Last activity: 2026-03-22 — Phase 9 Plan 02 complete: vision_extractor.py created and Stage 1.5 wired into pipeline.py
+Last activity: 2026-03-22 — Phase 9 Plan 03 complete: full pytest test suite for VIS-01 through VIS-06, 8 tests all passing
 
-Progress: [█████████░░░░░░] ~56% (Phase 9 Plan 02 complete)
+Progress: [█████████░░░░░░] ~58% (Phase 9 Plan 03 complete)
 
 ## Performance Metrics
 
 **Velocity (v1.0 baseline):**
-- Total plans completed: 21
+- Total plans completed: 22
 - Average duration: 3.6 min
 - Total execution time: ~1.3 hours
 
@@ -35,7 +35,7 @@ Progress: [█████████░░░░░░] ~56% (Phase 9 Plan 02 
 | 06-frontend | 4/4 | 9 min | 2.3 min |
 | 07-evaluation | 1/1 | 3 min | 3.0 min |
 | 08-langsmith-activation | 1/1 | 2 min | 2.0 min |
-| 09-vision-ingestion | 2/2 | 8 min | 4.0 min |
+| 09-vision-ingestion | 3/3 | 13 min | 4.3 min |
 
 *Updated after each plan completion*
 
@@ -54,6 +54,7 @@ Recent decisions affecting v2.0 work:
 - Phase 8: Guard injection with `if settings.langsmith_api_key` to silently disable tracing when key absent
 - Phase 9: get_vision_llm() uses falsy check (`if not settings.vision_model`) not `is not None` to catch empty string Pydantic default; no streaming param as vision calls are single-invoke
 - Phase 9 Plan 02: Stage 1.5 import scoped inside source_type == 'pdf' block; 150 DPI render balances clarity vs token cost; processed counter increments only on actual LLM calls
+- Phase 9 Plan 03: Patch augment_pages_with_vision on ve_mod (not pipeline_mod) to intercept local imports inside pipeline function body; async def coroutine mocks required for awaited pipeline stage functions
 
 ### Pending Todos
 
@@ -66,5 +67,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Completed 09-02-PLAN.md
+Stopped at: Completed 09-03-PLAN.md
 Resume file: None
