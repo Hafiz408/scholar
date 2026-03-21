@@ -86,6 +86,12 @@ def init_db():
         conn.commit()
     except Exception:
         pass  # column already exists
+    # Add notion_page_url column if it doesn't exist (ALTER TABLE guard)
+    try:
+        conn.execute("ALTER TABLE study_goals ADD COLUMN notion_page_url TEXT")
+        conn.commit()
+    except Exception:
+        pass  # column already exists
     conn.close()
 
 
