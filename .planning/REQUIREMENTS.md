@@ -58,11 +58,11 @@
 
 ### Frontend (FE)
 
-- [ ] **FE-01**: `/super` page with full-height chat, `thread_id` from localStorage, source count in header
-- [ ] **FE-02**: Super agent page linked in main navigation sidebar
-- [ ] **FE-03**: `AdaptiveAlert.tsx` — dismissible banner shown when follow-up session added
-- [ ] **FE-04**: `TestPanel.tsx` — "Take Final Test" shown when all sessions complete; confetti on pass
-- [ ] **FE-05**: `NotionExportButton.tsx` — polls for `notion_page_url` after export starts
+- [x] **FE-01**: `/super` page with full-height chat, `thread_id` from localStorage, source count in header
+- [x] **FE-02**: Super agent page linked in main navigation sidebar
+- [x] **FE-03**: `AdaptiveAlert.tsx` — dismissible banner shown when follow-up session added
+- [x] **FE-04**: `TestPanel.tsx` — "Take Final Test" shown when all sessions complete; confetti on pass
+- [x] **FE-05**: `NotionExportButton.tsx` — polls for `notion_page_url` after export starts
 
 ### CI/CD (CI)
 
@@ -121,11 +121,11 @@
 | NTN-03 | Phase 13 | Complete |
 | NTN-04 | Phase 13 | Complete |
 | NTN-05 | Phase 13 | Complete |
-| FE-01 | Phase 14 | Pending |
-| FE-02 | Phase 14 | Pending |
-| FE-03 | Phase 14 | Pending |
-| FE-04 | Phase 14 | Pending |
-| FE-05 | Phase 14 | Pending |
+| FE-01 | Phase 14 | Complete |
+| FE-02 | Phase 14 | Complete |
+| FE-03 | Phase 14 | Complete |
+| FE-04 | Phase 14 | Complete |
+| FE-05 | Phase 14 | Complete |
 | CI-01 | Phase 15 | Pending |
 | CI-02 | Phase 15 | Pending |
 | CI-03 | Phase 15 | Pending |

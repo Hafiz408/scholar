@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** A student can upload their actual textbooks, set a real deadline, and have every note, chat answer, and quiz question grounded in — and only in — those specific books.
-**Current focus:** Phase 13 — next phase
+**Current focus:** Phase 14 — Frontend V2 Components
 
 ## Current Position
 
-Phase: 13 of 16 (Notion MCP Export)
-Plan: 3 of 3 in current phase
-Status: Phase 13 complete
-Last activity: 2026-03-22 — Phase 13 Plan 03 complete: NTN-01..NTN-05 pytest suite (10 tests, all GREEN)
+Phase: 14 of 16 (Frontend V2 Components)
+Plan: 1 of 4 in current phase
+Status: Phase 14 in progress
+Last activity: 2026-03-22 — Phase 14 Plan 01 complete: shared V2 foundation (types, api, sse, layout, h-screen fix)
 
-Progress: [████████████████░░] ~88% (Phase 13 complete)
+Progress: [█████████████████░] ~91% (Phase 14 Plan 1 complete)
 
 ## Performance Metrics
 
@@ -42,6 +42,7 @@ Progress: [████████████████░░] ~88% (Phase 1
 
 *Updated after each plan completion*
 | 13-notion-mcp-export | 3/3 | 10 min | 3.3 min |
+| 14-frontend-v2-components | 1/4 | 4 min | 4.0 min |
 
 ## Accumulated Context
 
@@ -70,6 +71,7 @@ Recent decisions affecting v2.0 work:
 - Phase 12 Plan 02: Tests went GREEN immediately (implementation pre-existed from Plan 01); LLM mock uses real async generator function (not AsyncMock) to satisfy async for protocol in astream(); aiosqlite mock requires nested async context managers for connect→execute→fetchall chain
 - [Phase 13-01]: notion_api_key/notion_parent_page_id use empty-string defaults (falsy pattern) matching vision_model; notion_page_url column added via idempotent ALTER TABLE guard in init_db()
 - [Phase 13-02]: run_notion_export opens its own aiosqlite connection (background task lifetime mismatch); sequential session child pages (goal_page_id required from step 1); asyncio.sleep(2**attempt) backoff; try/except wraps full export body to prevent silent failures
+- [Phase 14-01]: layout.tsx stays Server Component using next/link Link (no 'use client' needed); h-screen replaced with h-full in study page to avoid double-scroll in nested flex layout; streamSuperChat follows identical parseSSE pattern as streamChat
 
 ### Pending Todos
 
@@ -82,5 +84,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Completed 13-03-PLAN.md
+Stopped at: Completed 14-01-PLAN.md
 Resume file: None
