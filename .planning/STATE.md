@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 ## Current Position
 
 Phase: 13 of 16 (Notion MCP Export)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-03-22 — Phase 13 Plan 01 complete: Notion settings fields + SQLite schema column
+Last activity: 2026-03-22 — Phase 13 Plan 02 complete: Notion export agent + POST /goals/{id}/export/notion endpoint
 
-Progress: [█████████████░░] ~86% (Phase 13 Plan 01 complete)
+Progress: [█████████████░░] ~87% (Phase 13 Plan 02 complete)
 
 ## Performance Metrics
 
@@ -41,7 +41,7 @@ Progress: [█████████████░░] ~86% (Phase 13 Plan 01
 | 12-super-agent | 2/2 | 4 min | 2.0 min |
 
 *Updated after each plan completion*
-| 13-notion-mcp-export | 1/3 | 3 min | 3.0 min |
+| 13-notion-mcp-export | 2/3 | 6 min | 3.0 min |
 
 ## Accumulated Context
 
@@ -69,6 +69,7 @@ Recent decisions affecting v2.0 work:
 - Phase 12 Plan 01: top_k=8 for super agent (larger cross-source pool); checkpoint channel_values excludes goal_id; broader try/except Exception yields SSE error event before re-raising to prevent silent broken streams
 - Phase 12 Plan 02: Tests went GREEN immediately (implementation pre-existed from Plan 01); LLM mock uses real async generator function (not AsyncMock) to satisfy async for protocol in astream(); aiosqlite mock requires nested async context managers for connect→execute→fetchall chain
 - [Phase 13-01]: notion_api_key/notion_parent_page_id use empty-string defaults (falsy pattern) matching vision_model; notion_page_url column added via idempotent ALTER TABLE guard in init_db()
+- [Phase 13-02]: run_notion_export opens its own aiosqlite connection (background task lifetime mismatch); sequential session child pages (goal_page_id required from step 1); asyncio.sleep(2**attempt) backoff; try/except wraps full export body to prevent silent failures
 
 ### Pending Todos
 
@@ -81,5 +82,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Completed 13-01-PLAN.md
+Stopped at: Completed 13-02-PLAN.md
 Resume file: None

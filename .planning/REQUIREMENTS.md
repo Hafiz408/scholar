@@ -45,11 +45,11 @@
 
 ### Notion Export (NTN)
 
-- [ ] **NTN-01**: `notion_mcp.py` creates goal page and session child pages via Notion API
+- [x] **NTN-01**: `notion_mcp.py` creates goal page and session child pages via Notion API
 - [x] **NTN-02**: Empty `notion_api_key` → error returned immediately, no HTTP call
-- [ ] **NTN-03**: HTTP 429 retried with exponential backoff (1s, 2s, 4s — max 3 retries)
+- [x] **NTN-03**: HTTP 429 retried with exponential backoff (1s, 2s, 4s — max 3 retries)
 - [x] **NTN-04**: `notion_page_url` column added to `study_goals` SQLite table
-- [ ] **NTN-05**: `POST /goals/{id}/export/notion` is a `BackgroundTask` — returns `{"status": "export_started"}` immediately
+- [x] **NTN-05**: `POST /goals/{id}/export/notion` is a `BackgroundTask` — returns `{"status": "export_started"}` immediately
 
 ### Orchestrator (ORC)
 
@@ -116,11 +116,11 @@
 | SUP-02 | Phase 12 | Complete |
 | SUP-03 | Phase 12 | Complete |
 | SUP-04 | Phase 12 | Complete |
-| NTN-01 | Phase 13 | Pending |
+| NTN-01 | Phase 13 | Complete |
 | NTN-02 | Phase 13 | Complete |
-| NTN-03 | Phase 13 | Pending |
+| NTN-03 | Phase 13 | Complete |
 | NTN-04 | Phase 13 | Complete |
-| NTN-05 | Phase 13 | Pending |
+| NTN-05 | Phase 13 | Complete |
 | FE-01 | Phase 14 | Pending |
 | FE-02 | Phase 14 | Pending |
 | FE-03 | Phase 14 | Pending |

@@ -128,8 +128,8 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 13-01-PLAN.md — Add notion_api_key/notion_parent_page_id to config + notion_page_url column to SQLite
-- [ ] 13-02-PLAN.md — Create notion_mcp.py agent + wire POST /goals/{id}/export/notion endpoint
+- [x] 13-01-PLAN.md — Add notion_api_key/notion_parent_page_id to config + notion_page_url column to SQLite
+- [x] 13-02-PLAN.md — Create notion_mcp.py agent + wire POST /goals/{id}/export/notion endpoint
 - [ ] 13-03-PLAN.md — TDD: pytest suite covering NTN-01 through NTN-05
 
 ### Phase 14: Frontend V2 Components
