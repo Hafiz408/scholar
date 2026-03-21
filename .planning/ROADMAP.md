@@ -74,7 +74,12 @@ Plans:
   3. The quiz submission response body includes `followup_session_added: true` and a populated `followup_session` object when a follow-up is inserted
   4. Submitting a quiz with score ≥ 65% returns `followup_session_added: false` and does not alter the plan
   5. `POST /goals/{id}/adapt` triggers adaptive replanning manually and returns the updated session list
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [x] 10-01-PLAN.md — Create adaptive_planner.py agent + add ADAPTIVE_PLANNER_SYSTEM_PROMPT to prompts.py
+- [ ] 10-02-PLAN.md — Wire adaptive planner into quiz submit response + add POST /goals/{id}/adapt endpoint
+- [ ] 10-03-PLAN.md — TDD: pytest suite covering ADP-01 through ADP-05
 
 ### Phase 11: Final Test Agent + Orchestrator
 **Goal**: Students can take a cumulative cross-session MCQ test after completing all sessions; passing (≥ 70%) marks the goal complete
@@ -157,7 +162,7 @@ Plans:
 | 7. Evaluation | v1.0 | 2/2 | Complete | 2026-03-21 |
 | 8. LangSmith Activation | 1/1 | Complete   | 2026-03-21 | - |
 | 9. Vision Ingestion | 3/3 | Complete   | 2026-03-21 | - |
-| 10. Adaptive Planner | v2.0 | 0/? | Not started | - |
+| 10. Adaptive Planner | v2.0 | 1/3 | In progress | - |
 | 11. Final Test Agent + Orchestrator | v2.0 | 0/? | Not started | - |
 | 12. Super Agent | v2.0 | 0/? | Not started | - |
 | 13. Notion MCP Export | v2.0 | 0/? | Not started | - |

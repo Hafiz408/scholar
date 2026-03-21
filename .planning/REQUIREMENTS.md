@@ -21,10 +21,10 @@
 
 ### Adaptive Learning (ADP)
 
-- [ ] **ADP-01**: `adaptive_planner.py` generates a follow-up session when quiz score < 65%
-- [ ] **ADP-02**: Follow-up session inserted immediately after the completed session (other session numbers incremented)
+- [x] **ADP-01**: `adaptive_planner.py` generates a follow-up session when quiz score < 65%
+- [x] **ADP-02**: Follow-up session inserted immediately after the completed session (other session numbers incremented)
 - [ ] **ADP-03**: Quiz submission response includes `followup_session_added` and `followup_session` fields
-- [ ] **ADP-04**: Adaptive planner wrapped in try/except — quiz submission succeeds even if planner errors
+- [x] **ADP-04**: Adaptive planner wrapped in try/except — quiz submission succeeds even if planner errors
 - [ ] **ADP-05**: `POST /goals/{id}/adapt` endpoint for manual adaptive replanning
 
 ### Final Test (TST)
@@ -99,10 +99,10 @@
 | VIS-04 | Phase 9 | Complete |
 | VIS-05 | Phase 9 | Complete |
 | VIS-06 | Phase 9 | Complete |
-| ADP-01 | Phase 10 | Pending |
-| ADP-02 | Phase 10 | Pending |
+| ADP-01 | Phase 10 | Complete |
+| ADP-02 | Phase 10 | Complete |
 | ADP-03 | Phase 10 | Pending |
-| ADP-04 | Phase 10 | Pending |
+| ADP-04 | Phase 10 | Complete |
 | ADP-05 | Phase 10 | Pending |
 | TST-01 | Phase 11 | Pending |
 | TST-02 | Phase 11 | Pending |
