@@ -1,9 +1,12 @@
 import aiosqlite
 import json
+import logging
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.config import settings
 from app.agents.quiz_agent import generate_quiz, evaluate_quiz, QuizQuestion, QuizResult
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/sessions", tags=["quiz"])
 
@@ -69,7 +72,7 @@ async def generate_session_quiz(session_id: str) -> list[QuizQuestionPublic]:
 
 
 @router.post("/{session_id}/quiz/submit")
-async def submit_session_quiz(session_id: str, body: QuizSubmitRequest) -> QuizResult:
+async def submit_session_quiz(session_id: str, body: QuizSubmitRequest) -> dict:
     """Submit quiz answers — returns score and per-question results. Marks session complete."""
     async with aiosqlite.connect(settings.sqlite_path) as db:
         db.row_factory = aiosqlite.Row
@@ -100,4 +103,18 @@ async def submit_session_quiz(session_id: str, body: QuizSubmitRequest) -> QuizR
         )
         await db.commit()
 
-    return result
+    # Attempt adaptive planning AFTER score is committed — ADP-04
+    followup_result = {"followup_session_added": False, "followup_session": None}
+    try:
+        from app.agents.adaptive_planner import handle_quiz_failure
+        followup_result = await handle_quiz_failure(session_id)
+    except Exception as e:
+        logger.error("Adaptive planner failed for session %s: %s", session_id, e)
+
+    return {
+        "score": result.score,
+        "total_questions": result.total_questions,
+        "correct_count": result.correct_count,
+        "per_question": [pq.model_dump() for pq in result.per_question],
+        **followup_result,
+    }
