@@ -28,7 +28,7 @@
 - [x] **Phase 11: Final Test Agent + Orchestrator** — Cross-session cumulative MCQ test that marks goal complete at ≥ 70%; expand ScholarState for V2 fields (completed 2026-03-21)
 - [x] **Phase 12: Super Agent** — Cross-KB persistent chat across all uploaded sources (completed 2026-03-21)
 - [x] **Phase 13: Notion MCP Export** — Export study plan and session notes to Notion via background task (completed 2026-03-22)
-- [ ] **Phase 14: Frontend V2 Components** — Super page, AdaptiveAlert, TestPanel, NotionExportButton wired into existing UI
+- [x] **Phase 14: Frontend V2 Components** — Super page, AdaptiveAlert, TestPanel, NotionExportButton wired into existing UI (completed 2026-03-21)
 - [ ] **Phase 15: GitHub Actions CI** — Automated pytest + ruff on every PR to feature/v2 and main
 - [ ] **Phase 16: Real RAGAS Benchmark** — Replace placeholder scores with real faithfulness/relevancy/precision metrics from OpenStax Biology 2e run
 
@@ -158,7 +158,10 @@ Plans:
   1. Opening a test PR to `feature/v2` triggers the CI workflow; pytest and ruff both run and the check appears in the GitHub PR status
   2. The CI workflow completes without requiring any live LLM API calls — `test_router_accuracy_gate.py` is excluded
   3. Integration tests that require PostgreSQL pass in CI via the PostgreSQL service container (no local DB needed)
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 15-01-PLAN.md — Create .github/workflows/ci.yml with ruff, pytest, and pgvector service container
 
 ### Phase 16: Real RAGAS Benchmark
 **Goal**: The README benchmark table shows real faithfulness, answer relevancy, context precision, and latency scores from an actual run against OpenStax Biology 2e — replacing all placeholder dashes
@@ -187,7 +190,7 @@ Plans:
 | 11. Final Test Agent + Orchestrator | 4/4 | Complete    | 2026-03-21 | - |
 | 12. Super Agent | 2/2 | Complete    | 2026-03-21 | - |
 | 13. Notion MCP Export | 3/3 | Complete    | 2026-03-21 | - |
-| 14. Frontend V2 Components | 3/4 | In Progress|  | - |
+| 14. Frontend V2 Components | 3/4 | Complete    | 2026-03-21 | - |
 | 15. GitHub Actions CI | v2.0 | 0/? | Not started | - |
 | 16. Real RAGAS Benchmark | v2.0 | 0/? | Not started | - |
 
