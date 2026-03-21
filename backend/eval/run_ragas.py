@@ -3,9 +3,13 @@
 Usage (inside Docker container):
     docker compose exec backend python eval/run_ragas.py --book-path /app/data/uploads/bio2e.pdf
     docker compose exec backend python eval/run_ragas.py --book-path /app/data/uploads/bio2e.pdf --dry-run
+    docker compose exec backend python eval/run_ragas.py \
+      --book-path /app/data/uploads/bio2e.pdf \
+      --output-dir eval/results/
 
 Evaluates both retrieval strategies (pageindex and vector) against the 30-item
-golden Q&A dataset in golden_qa.json, writing three JSON result files to eval/results/.
+golden Q&A dataset in golden_qa.json, writing three JSON result files to eval/results/
+(or the directory specified by --output-dir).
 """
 
 import argparse
@@ -360,7 +364,15 @@ async def main() -> None:
         default=False,
         help="Skip RAGAS evaluate() call and write mock scores (0.5) — useful for testing script structure",
     )
+    parser.add_argument(
+        "--output-dir",
+        default=None,
+        help="Directory to write result JSON files (default: eval/results/ relative to script)",
+    )
     args = parser.parse_args()
+
+    output_dir = Path(args.output_dir) if args.output_dir else RESULTS_DIR
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     # Step 1: Idempotent ingestion
     logger.info("Ensuring PDF is ingested: %s", args.book_path)
@@ -393,8 +405,7 @@ async def main() -> None:
         )
     )
 
-    # Step 5: Prepare results directory and timestamp
-    RESULTS_DIR.mkdir(exist_ok=True)
+    # Step 5: Prepare timestamp (output_dir already created above)
     ts = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%S")
 
     # Step 6: Run pageindex strategy
@@ -406,7 +417,7 @@ async def main() -> None:
         evaluator_llm=evaluator_llm,
         dry_run=args.dry_run,
     )
-    pi_path = RESULTS_DIR / f"pageindex_{ts}.json"
+    pi_path = output_dir / f"pageindex_{ts}.json"
     with open(pi_path, "w") as f:
         json.dump(pi_scores, f, indent=2, default=str)
     logger.info("Wrote pageindex results to %s", pi_path)
@@ -420,7 +431,7 @@ async def main() -> None:
         evaluator_llm=evaluator_llm,
         dry_run=args.dry_run,
     )
-    vec_path = RESULTS_DIR / f"vector_{ts}.json"
+    vec_path = output_dir / f"vector_{ts}.json"
     with open(vec_path, "w") as f:
         json.dump(vec_scores, f, indent=2, default=str)
     logger.info("Wrote vector results to %s", vec_path)
@@ -431,7 +442,7 @@ async def main() -> None:
         "pageindex": {k: v for k, v in pi_scores.items() if k != "per_question"},
         "vector": {k: v for k, v in vec_scores.items() if k != "per_question"},
     }
-    cmp_path = RESULTS_DIR / f"comparison_{ts}.json"
+    cmp_path = output_dir / f"comparison_{ts}.json"
     with open(cmp_path, "w") as f:
         json.dump(comparison, f, indent=2, default=str)
     logger.info("Wrote comparison to %s", cmp_path)
