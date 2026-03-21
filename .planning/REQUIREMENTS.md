@@ -66,9 +66,9 @@
 
 ### CI/CD (CI)
 
-- [ ] **CI-01**: `.github/workflows/ci.yml` runs pytest + ruff on PRs to `feature/v2` and `main`
-- [ ] **CI-02**: `test_router_accuracy_gate.py` excluded from CI (requires live LLM)
-- [ ] **CI-03**: CI uses PostgreSQL service container for integration tests
+- [x] **CI-01**: `.github/workflows/ci.yml` runs pytest + ruff on PRs to `feature/v2` and `main`
+- [x] **CI-02**: `test_router_accuracy_gate.py` excluded from CI (requires live LLM)
+- [x] **CI-03**: CI uses PostgreSQL service container for integration tests
 
 ### Evaluation (EVAL)
 
@@ -126,9 +126,9 @@
 | FE-03 | Phase 14 | Complete |
 | FE-04 | Phase 14 | Complete |
 | FE-05 | Phase 14 | Complete |
-| CI-01 | Phase 15 | Pending |
-| CI-02 | Phase 15 | Pending |
-| CI-03 | Phase 15 | Pending |
+| CI-01 | Phase 15 | Complete |
+| CI-02 | Phase 15 | Complete |
+| CI-03 | Phase 15 | Complete |
 | EVAL-01 | Phase 16 | Pending |
 | EVAL-02 | Phase 16 | Pending |
 | EVAL-03 | Phase 16 | Pending |

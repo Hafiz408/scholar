@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** A student can upload their actual textbooks, set a real deadline, and have every note, chat answer, and quiz question grounded in — and only in — those specific books.
-**Current focus:** Phase 14 — Frontend V2 Components
+**Current focus:** Phase 15 — GitHub Actions CI
 
 ## Current Position
 
-Phase: 14 of 16 (Frontend V2 Components)
-Plan: 3 of 4 in current phase
-Status: Phase 14 in progress
-Last activity: 2026-03-22 — Phase 14 Plan 03 complete: V2 goal-detail components (AdaptiveAlert, TestPanel, NotionExportButton)
+Phase: 15 of 16 (GitHub Actions CI)
+Plan: 1 of 1 in current phase
+Status: Phase 15 complete
+Last activity: 2026-03-22 — Phase 15 Plan 01 complete: GitHub Actions CI workflow with pgvector/pg16 service and -m "not integration" pytest exclusion
 
-Progress: [█████████████████░] ~94% (Phase 14 Plan 3 complete)
+Progress: [██████████████████░] ~97% (Phase 15 Plan 1 complete)
 
 ## Performance Metrics
 
@@ -43,6 +43,7 @@ Progress: [█████████████████░] ~94% (Phase 1
 *Updated after each plan completion*
 | 13-notion-mcp-export | 3/3 | 10 min | 3.3 min |
 | 14-frontend-v2-components | 3/4 | 10 min | 3.3 min |
+| 15-github-actions-ci | 1/1 | 2 min | 2.0 min |
 
 ## Accumulated Context
 
@@ -74,6 +75,7 @@ Recent decisions affecting v2.0 work:
 - [Phase 14-01]: layout.tsx stays Server Component using next/link Link (no 'use client' needed); h-screen replaced with h-full in study page to avoid double-scroll in nested flex layout; streamSuperChat follows identical parseSSE pattern as streamChat
 - [Phase 14-02]: useState function initializer used for thread_id to avoid SSR localStorage access pitfall in 'use client' component; cancelRef pattern for SSE cleanup on unmount
 - [Phase 14-03]: AdaptiveAlert uses undefined sentinel (not boolean) to distinguish "not triggered" from "triggered with no session data" (null); NotionExportButton initializes directly to 'done' state when initialNotionUrl provided on mount
+- [Phase 15-01]: pgvector/pgvector:pg16 image (not postgres:16) — pgvector compiled in; init_pgvector_schema() runs CREATE EXTENSION so no separate psql step needed; -m "not integration" (not --ignore) preserves 2 mocked tests in test_router.py while excluding accuracy gate; PYTHONPATH=/opt/pageindex via PageIndex git clone; SQLITE_PATH=/tmp/scholar_ci.db for CI
 
 ### Pending Todos
 
@@ -86,5 +88,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Completed 14-03-PLAN.md
+Stopped at: Completed 15-01-PLAN.md
 Resume file: None

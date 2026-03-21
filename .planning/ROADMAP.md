@@ -29,7 +29,7 @@
 - [x] **Phase 12: Super Agent** — Cross-KB persistent chat across all uploaded sources (completed 2026-03-21)
 - [x] **Phase 13: Notion MCP Export** — Export study plan and session notes to Notion via background task (completed 2026-03-22)
 - [x] **Phase 14: Frontend V2 Components** — Super page, AdaptiveAlert, TestPanel, NotionExportButton wired into existing UI (completed 2026-03-21)
-- [ ] **Phase 15: GitHub Actions CI** — Automated pytest + ruff on every PR to feature/v2 and main
+- [x] **Phase 15: GitHub Actions CI** — Automated pytest + ruff on every PR to feature/v2 and main (completed 2026-03-22)
 - [ ] **Phase 16: Real RAGAS Benchmark** — Replace placeholder scores with real faithfulness/relevancy/precision metrics from OpenStax Biology 2e run
 
 ## Phase Details
@@ -161,7 +161,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 15-01-PLAN.md — Create .github/workflows/ci.yml with ruff, pytest, and pgvector service container
+- [x] 15-01-PLAN.md — Create .github/workflows/ci.yml with ruff, pytest, and pgvector service container
 
 ### Phase 16: Real RAGAS Benchmark
 **Goal**: The README benchmark table shows real faithfulness, answer relevancy, context precision, and latency scores from an actual run against OpenStax Biology 2e — replacing all placeholder dashes
@@ -191,7 +191,7 @@ Plans:
 | 12. Super Agent | 2/2 | Complete    | 2026-03-21 | - |
 | 13. Notion MCP Export | 3/3 | Complete    | 2026-03-21 | - |
 | 14. Frontend V2 Components | 3/4 | Complete    | 2026-03-21 | - |
-| 15. GitHub Actions CI | v2.0 | 0/? | Not started | - |
+| 15. GitHub Actions CI | v2.0 | 1/1 | Complete | 2026-03-22 |
 | 16. Real RAGAS Benchmark | v2.0 | 0/? | Not started | - |
 
 Full v1.0 phase details archived at: `.planning/milestones/v1.0-ROADMAP.md`
