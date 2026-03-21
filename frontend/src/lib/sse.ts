@@ -119,3 +119,55 @@ export function streamChat(
 
   return () => ctrl.abort()
 }
+
+/**
+ * Stream super agent chat response via POST /super/chat/stream.
+ * thread_id must be a localStorage UUID (per SUP-03 — never generate server-side).
+ * Returns a cleanup function for useEffect.
+ */
+export function streamSuperChat(
+  message: string,
+  threadId: string,
+  onToken: (token: string) => void,
+  onCitations: (chunks: RetrievedChunk[]) => void,
+  onDone: () => void,
+  onError: (msg: string) => void
+): () => void {
+  const ctrl = new AbortController()
+
+  ;(async () => {
+    try {
+      const res = await fetch('/api/super/chat/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, thread_id: threadId }),
+        signal: ctrl.signal,
+      })
+      if (!res.ok || !res.body) {
+        onError(`Super chat stream failed: ${res.status}`)
+        return
+      }
+      for await (const { event, data } of parseSSE(res.body.getReader())) {
+        if (event === 'token') {
+          const parsed = JSON.parse(data) as { content: string }
+          onToken(parsed.content)
+        } else if (event === 'citations') {
+          const parsed = JSON.parse(data) as { chunks: RetrievedChunk[] }
+          onCitations(parsed.chunks)
+        } else if (event === 'done') {
+          onDone()
+          break
+        } else if (event === 'error') {
+          onError(data)
+          break
+        }
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name !== 'AbortError') {
+        onError('Super chat stream error')
+      }
+    }
+  })()
+
+  return () => ctrl.abort()
+}

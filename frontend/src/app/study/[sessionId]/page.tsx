@@ -24,7 +24,7 @@ export default function StudySessionPage({ params }: PageProps) {
 
   if (loadError) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-full">
         <p className="text-red-500">{loadError}</p>
       </div>
     )
@@ -32,14 +32,14 @@ export default function StudySessionPage({ params }: PageProps) {
 
   if (!session) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-full">
         <p className="text-gray-500 animate-pulse">Loading session...</p>
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-3 gap-4 h-screen p-4 overflow-hidden">
+    <div className="grid grid-cols-3 gap-4 h-full p-4 overflow-hidden">
       {/* Notes panel */}
       <div className="col-span-1 overflow-y-auto border rounded-lg p-4">
         <h2 className="font-semibold mb-3">Notes</h2>
