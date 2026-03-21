@@ -63,3 +63,5 @@ Test book.pdf
 # Build artifacts
 frontend/tsconfig.tsbuildinfo
 frontend/package-lock.json
+*.md
+/backend/data/uploads
