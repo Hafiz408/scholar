@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - feature/v2
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: scholar
+          POSTGRES_PASSWORD: scholar
+          POSTGRES_DB: scholar
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Clone PageIndex
+        run: git clone --depth=1 https://github.com/VectifyAI/PageIndex.git /opt/pageindex
+
+      - name: Install Python dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Lint with ruff
+        uses: astral-sh/ruff-action@v3
+        with:
+          src: "./backend"
+
+      - name: Run tests (excluding live-LLM gate)
+        working-directory: backend
+        run: pytest tests/ -m "not integration"
+        env:
+          DATABASE_URL: postgresql://scholar:scholar@localhost:5432/scholar
+          PYTHONPATH: /opt/pageindex
+          SQLITE_PATH: /tmp/scholar_ci.db
