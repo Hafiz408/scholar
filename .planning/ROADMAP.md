@@ -180,7 +180,7 @@ Plans:
 | 10. Adaptive Planner | 2/3 | Complete    | 2026-03-21 | - |
 | 11. Final Test Agent + Orchestrator | 4/4 | Complete    | 2026-03-21 | - |
 | 12. Super Agent | 2/2 | Complete    | 2026-03-21 | - |
-| 13. Notion MCP Export | v2.0 | 0/3 | Not started | - |
+| 13. Notion MCP Export | 1/3 | In Progress|  | - |
 | 14. Frontend V2 Components | v2.0 | 0/? | Not started | - |
 | 15. GitHub Actions CI | v2.0 | 0/? | Not started | - |
 | 16. Real RAGAS Benchmark | v2.0 | 0/? | Not started | - |

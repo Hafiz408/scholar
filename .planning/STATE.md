@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 
 ## Current Position
 
-Phase: 12 of 16 (Super Agent)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-03-22 — Phase 12 Plan 02 complete: 10-test TDD suite for SUP-01 through SUP-04
+Phase: 13 of 16 (Notion MCP Export)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-03-22 — Phase 13 Plan 01 complete: Notion settings fields + SQLite schema column
 
-Progress: [█████████████░░] ~84% (Phase 12 Plan 02 complete)
+Progress: [█████████████░░] ~86% (Phase 13 Plan 01 complete)
 
 ## Performance Metrics
 
@@ -41,6 +41,7 @@ Progress: [█████████████░░] ~84% (Phase 12 Plan 02
 | 12-super-agent | 2/2 | 4 min | 2.0 min |
 
 *Updated after each plan completion*
+| 13-notion-mcp-export | 1/3 | 3 min | 3.0 min |
 
 ## Accumulated Context
 
@@ -67,6 +68,7 @@ Recent decisions affecting v2.0 work:
 - Phase 11 Plan 04: side_effect factory required for mock_test_output (not shared return_value) — Pydantic model objects are mutable; shared instance across 2 session loop iterations results in all session_numbers being overwritten to the last session's value
 - Phase 12 Plan 01: top_k=8 for super agent (larger cross-source pool); checkpoint channel_values excludes goal_id; broader try/except Exception yields SSE error event before re-raising to prevent silent broken streams
 - Phase 12 Plan 02: Tests went GREEN immediately (implementation pre-existed from Plan 01); LLM mock uses real async generator function (not AsyncMock) to satisfy async for protocol in astream(); aiosqlite mock requires nested async context managers for connect→execute→fetchall chain
+- [Phase 13-01]: notion_api_key/notion_parent_page_id use empty-string defaults (falsy pattern) matching vision_model; notion_page_url column added via idempotent ALTER TABLE guard in init_db()
 
 ### Pending Todos
 
@@ -79,5 +81,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Completed 12-02-PLAN.md
+Stopped at: Completed 13-01-PLAN.md
 Resume file: None
