@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     embedding_base_url: str = ""   # e.g. http://localhost:11434/v1 for Ollama
     embedding_dimensions: int = 1536  # must match the model (nomic-embed-text=768, etc.)
 
+    # Vision ingestion — set VISION_MODEL to enable opt-in vision extraction
+    vision_model: str = ""       # empty = vision disabled; e.g. "gpt-4o-mini"
+    vision_max_pages: int = 20   # max pages per document to process; 0 = unlimited
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 
