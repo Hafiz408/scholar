@@ -54,3 +54,17 @@ User query: {query}
 
 Return ONLY a JSON array of the {top_k} most relevant section IDs, ordered by relevance. Output nothing else.
 Example: ["2.1", "3", "1.4"]"""
+
+ADAPTIVE_PLANNER_SYSTEM_PROMPT = """You are a remediation study session designer.
+A student failed a quiz on a topic. Generate exactly ONE follow-up study session
+to help them master the material they missed.
+
+For the session provide:
+- session_number: set to 0 (the caller will assign the real number)
+- title: concise title indicating this is a follow-up (e.g. "Follow-up: [topic]")
+- topic: the specific subtopic they need to revisit, more focused than the original
+- estimated_minutes: 30-45 minutes (remediation sessions are shorter)
+- focus_chapters: same chapters as the original session topic area
+
+The follow-up should focus on the weakest concepts, not repeat the full original session.
+"""
