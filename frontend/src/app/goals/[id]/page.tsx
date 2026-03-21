@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { getGoalPlan } from '@/lib/api'
 import ProgressBar from '@/components/ProgressBar'
 import StudyPlan from '@/components/StudyPlan'
+import TestPanel from '@/components/TestPanel'
+import NotionExportButton from '@/components/NotionExportButton'
 import type { StudyPlan as StudyPlanType } from '@/types'
 
 export default function GoalDetailPage({ params }: { params: { id: string } }) {
@@ -38,6 +40,7 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
 
   const completed = plan.sessions.filter(s => s.status === 'complete').length
   const total = plan.sessions.length
+  const allSessionsComplete = plan.sessions.length > 0 && plan.sessions.every(s => s.status === 'complete')
 
   return (
     <div className="p-8 max-w-2xl">
@@ -52,6 +55,17 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
         <h2 className="text-lg font-semibold text-gray-800 mb-4">Study Sessions</h2>
         <StudyPlan sessions={plan.sessions} />
       </div>
+
+      <div className="mt-6">
+        <NotionExportButton
+          goalId={goalId}
+          initialNotionUrl={plan.goal.notion_page_url}
+        />
+      </div>
+
+      {allSessionsComplete && (
+        <TestPanel goalId={goalId} />
+      )}
     </div>
   )
 }
