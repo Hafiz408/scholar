@@ -52,6 +52,10 @@ async def run_ingestion(
             if source_type == "pdf":
                 pages, meta = await asyncio.to_thread(extract_pdf, file_path)
                 page_count = meta["total_pages"]
+
+                # Stage 1.5: Vision augmentation (opt-in, PDF only — VIS-05)
+                from app.ingestion.vision_extractor import augment_pages_with_vision
+                pages = await augment_pages_with_vision(pages, file_path)
             else:
                 # URL source
                 extracted = await extract_url(url)
