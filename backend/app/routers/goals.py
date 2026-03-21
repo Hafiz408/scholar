@@ -1,6 +1,11 @@
+import logging
+import aiosqlite
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.agents.orchestrator import create_goal_with_plan, get_goal_plan
+from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/goals", tags=["goals"])
 
@@ -42,3 +47,33 @@ async def get_goal(goal_id: str) -> dict:
     if result is None:
         raise HTTPException(status_code=404, detail="Goal not found")
     return result
+
+
+@router.post("/{goal_id}/adapt")
+async def manual_adapt(goal_id: str) -> dict:
+    """Manually trigger adaptive replanning for all failed sessions of a goal."""
+    # Fetch all completed sessions with quiz_score < 65% for this goal
+    async with aiosqlite.connect(settings.sqlite_path) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute(
+            """SELECT id FROM study_sessions
+               WHERE goal_id = ? AND status = 'complete' AND quiz_score < 0.65
+               ORDER BY session_number""",
+            (goal_id,),
+        ) as cur:
+            failed_sessions = await cur.fetchall()
+
+    if not failed_sessions:
+        return {"followup_sessions_added": 0, "followup_sessions": []}
+
+    added = []
+    for sess in failed_sessions:
+        try:
+            from app.agents.adaptive_planner import handle_quiz_failure
+            result = await handle_quiz_failure(sess["id"])
+            if result["followup_session_added"]:
+                added.append(result["followup_session"])
+        except Exception as e:
+            logger.error("adapt failed for session %s: %s", sess["id"], e)
+
+    return {"followup_sessions_added": len(added), "followup_sessions": added}
