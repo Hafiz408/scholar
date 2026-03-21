@@ -27,7 +27,7 @@
 - [x] **Phase 10: Adaptive Planner** — Auto-insert follow-up study session when quiz score falls below 65% (completed 2026-03-22)
 - [x] **Phase 11: Final Test Agent + Orchestrator** — Cross-session cumulative MCQ test that marks goal complete at ≥ 70%; expand ScholarState for V2 fields (completed 2026-03-21)
 - [x] **Phase 12: Super Agent** — Cross-KB persistent chat across all uploaded sources (completed 2026-03-21)
-- [ ] **Phase 13: Notion MCP Export** — Export study plan and session notes to Notion via background task
+- [x] **Phase 13: Notion MCP Export** — Export study plan and session notes to Notion via background task (completed 2026-03-22)
 - [ ] **Phase 14: Frontend V2 Components** — Super page, AdaptiveAlert, TestPanel, NotionExportButton wired into existing UI
 - [ ] **Phase 15: GitHub Actions CI** — Automated pytest + ruff on every PR to feature/v2 and main
 - [ ] **Phase 16: Real RAGAS Benchmark** — Replace placeholder scores with real faithfulness/relevancy/precision metrics from OpenStax Biology 2e run
@@ -130,7 +130,7 @@ Plans:
 Plans:
 - [x] 13-01-PLAN.md — Add notion_api_key/notion_parent_page_id to config + notion_page_url column to SQLite
 - [x] 13-02-PLAN.md — Create notion_mcp.py agent + wire POST /goals/{id}/export/notion endpoint
-- [ ] 13-03-PLAN.md — TDD: pytest suite covering NTN-01 through NTN-05
+- [x] 13-03-PLAN.md — TDD: pytest suite covering NTN-01 through NTN-05
 
 ### Phase 14: Frontend V2 Components
 **Goal**: All V2 backend capabilities are accessible from the frontend — super chat, adaptive alerts, final test, and Notion export are visible and functional in the UI
@@ -180,7 +180,7 @@ Plans:
 | 10. Adaptive Planner | 2/3 | Complete    | 2026-03-21 | - |
 | 11. Final Test Agent + Orchestrator | 4/4 | Complete    | 2026-03-21 | - |
 | 12. Super Agent | 2/2 | Complete    | 2026-03-21 | - |
-| 13. Notion MCP Export | 1/3 | In Progress|  | - |
+| 13. Notion MCP Export | 3/3 | Complete    | 2026-03-22 | - |
 | 14. Frontend V2 Components | v2.0 | 0/? | Not started | - |
 | 15. GitHub Actions CI | v2.0 | 0/? | Not started | - |
 | 16. Real RAGAS Benchmark | v2.0 | 0/? | Not started | - |
