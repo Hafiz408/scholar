@@ -3,16 +3,17 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { generateQuiz, submitQuiz } from '@/lib/api'
-import type { QuizQuestion, QuizResult } from '@/types'
+import type { QuizQuestion, QuizResult, StudySession } from '@/types'
 
 type QuizPhase = 'idle' | 'generating' | 'active' | 'results'
 
 interface QuizPanelProps {
   sessionId: string
   goalId: string
+  onFollowupAdded?: (session: StudySession | null) => void
 }
 
-export default function QuizPanel({ sessionId, goalId }: QuizPanelProps) {
+export default function QuizPanel({ sessionId, goalId, onFollowupAdded }: QuizPanelProps) {
   const router = useRouter()
   const [phase, setPhase] = useState<QuizPhase>('idle')
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
@@ -45,6 +46,9 @@ export default function QuizPanel({ sessionId, goalId }: QuizPanelProps) {
       const quizResult = await submitQuiz(sessionId, { answers })
       setResult(quizResult)
       setPhase('results')
+      if (quizResult.followup_session_added && onFollowupAdded) {
+        onFollowupAdded(quizResult.followup_session ?? null)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit quiz')
     }
