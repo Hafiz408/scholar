@@ -125,7 +125,12 @@ Plans:
   3. Calling the export endpoint with `notion_api_key` absent or empty returns an error immediately — no HTTP call to Notion is attempted
   4. When Notion API returns HTTP 429, the client retries with exponential backoff (1s, 2s, 4s) up to 3 times before surfacing the error
   5. The created Notion page has one parent page for the goal and child pages for each session's notes
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 13-01-PLAN.md — Add notion_api_key/notion_parent_page_id to config + notion_page_url column to SQLite
+- [ ] 13-02-PLAN.md — Create notion_mcp.py agent + wire POST /goals/{id}/export/notion endpoint
+- [ ] 13-03-PLAN.md — TDD: pytest suite covering NTN-01 through NTN-05
 
 ### Phase 14: Frontend V2 Components
 **Goal**: All V2 backend capabilities are accessible from the frontend — super chat, adaptive alerts, final test, and Notion export are visible and functional in the UI
@@ -174,8 +179,8 @@ Plans:
 | 9. Vision Ingestion | 3/3 | Complete   | 2026-03-21 | - |
 | 10. Adaptive Planner | 2/3 | Complete    | 2026-03-21 | - |
 | 11. Final Test Agent + Orchestrator | 4/4 | Complete    | 2026-03-21 | - |
-| 12. Super Agent | 2/2 | Complete   | 2026-03-21 | - |
-| 13. Notion MCP Export | v2.0 | 0/? | Not started | - |
+| 12. Super Agent | 2/2 | Complete    | 2026-03-21 | - |
+| 13. Notion MCP Export | v2.0 | 0/3 | Not started | - |
 | 14. Frontend V2 Components | v2.0 | 0/? | Not started | - |
 | 15. GitHub Actions CI | v2.0 | 0/? | Not started | - |
 | 16. Real RAGAS Benchmark | v2.0 | 0/? | Not started | - |
