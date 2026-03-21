@@ -24,7 +24,7 @@
 
 - [x] **Phase 8: LangSmith Activation** — Wire tracing env vars so every agent call appears in LangSmith dashboard (completed 2026-03-21)
 - [x] **Phase 9: Vision Ingestion** — Extend ingestion pipeline to extract diagram/chart descriptions from image-heavy PDF pages via vision LLM (completed 2026-03-21)
-- [ ] **Phase 10: Adaptive Planner** — Auto-insert follow-up study session when quiz score falls below 65%
+- [x] **Phase 10: Adaptive Planner** — Auto-insert follow-up study session when quiz score falls below 65% (completed 2026-03-22)
 - [ ] **Phase 11: Final Test Agent + Orchestrator** — Cross-session cumulative MCQ test that marks goal complete at ≥ 70%; expand ScholarState for V2 fields
 - [ ] **Phase 12: Super Agent** — Cross-KB persistent chat across all uploaded sources
 - [ ] **Phase 13: Notion MCP Export** — Export study plan and session notes to Notion via background task
@@ -78,8 +78,8 @@ Plans:
 
 Plans:
 - [x] 10-01-PLAN.md — Create adaptive_planner.py agent + add ADAPTIVE_PLANNER_SYSTEM_PROMPT to prompts.py
-- [ ] 10-02-PLAN.md — Wire adaptive planner into quiz submit response + add POST /goals/{id}/adapt endpoint
-- [ ] 10-03-PLAN.md — TDD: pytest suite covering ADP-01 through ADP-05
+- [x] 10-02-PLAN.md — Wire adaptive planner into quiz submit response + add POST /goals/{id}/adapt endpoint
+- [x] 10-03-PLAN.md — TDD: pytest suite covering ADP-01 through ADP-05
 
 ### Phase 11: Final Test Agent + Orchestrator
 **Goal**: Students can take a cumulative cross-session MCQ test after completing all sessions; passing (≥ 70%) marks the goal complete
