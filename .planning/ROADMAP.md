@@ -142,7 +142,12 @@ Plans:
   3. After a quiz score < 65% is submitted, a dismissible `AdaptiveAlert` banner appears on the goal detail page indicating a follow-up session was added
   4. When all sessions on a goal are complete, a "Take Final Test" button appears; submitting a passing score triggers a confetti animation
   5. The Notion export button on the goal detail page becomes a link showing "View in Notion" once `notion_page_url` is populated (polled after export starts)
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 14-01-PLAN.md — Foundation: extend types/api/sse, add nav sidebar to layout, fix h-screen in study page
+- [ ] 14-02-PLAN.md — Super Agent page at /super with localStorage thread_id and SSE streaming
+- [ ] 14-03-PLAN.md — AdaptiveAlert, TestPanel, NotionExportButton components wired into goal and study pages
 
 ### Phase 15: GitHub Actions CI
 **Goal**: Every pull request to feature/v2 and main automatically runs the test suite and linter so regressions are caught before merge
@@ -180,8 +185,8 @@ Plans:
 | 10. Adaptive Planner | 2/3 | Complete    | 2026-03-21 | - |
 | 11. Final Test Agent + Orchestrator | 4/4 | Complete    | 2026-03-21 | - |
 | 12. Super Agent | 2/2 | Complete    | 2026-03-21 | - |
-| 13. Notion MCP Export | 3/3 | Complete    | 2026-03-22 | - |
-| 14. Frontend V2 Components | v2.0 | 0/? | Not started | - |
+| 13. Notion MCP Export | 3/3 | Complete    | 2026-03-21 | - |
+| 14. Frontend V2 Components | v2.0 | 0/3 | Not started | - |
 | 15. GitHub Actions CI | v2.0 | 0/? | Not started | - |
 | 16. Real RAGAS Benchmark | v2.0 | 0/? | Not started | - |
 
