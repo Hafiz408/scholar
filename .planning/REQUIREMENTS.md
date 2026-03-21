@@ -38,10 +38,10 @@
 
 ### Super Agent (SUP)
 
-- [ ] **SUP-01**: `super_agent.py` retrieves context from ALL ready knowledge sources (not session-scoped)
-- [ ] **SUP-02**: Empty knowledge base returns SSE error event "No books indexed yet" (no crash)
-- [ ] **SUP-03**: `thread_id` comes from frontend (localStorage UUID) — never generated server-side
-- [ ] **SUP-04**: `POST /super/chat/stream` SSE endpoint with same event format as `/chat/stream`
+- [x] **SUP-01**: `super_agent.py` retrieves context from ALL ready knowledge sources (not session-scoped)
+- [x] **SUP-02**: Empty knowledge base returns SSE error event "No books indexed yet" (no crash)
+- [x] **SUP-03**: `thread_id` comes from frontend (localStorage UUID) — never generated server-side
+- [x] **SUP-04**: `POST /super/chat/stream` SSE endpoint with same event format as `/chat/stream`
 
 ### Notion Export (NTN)
 
@@ -112,10 +112,10 @@
 | TST-06 | Phase 11 | Complete |
 | ORC-01 | Phase 11 | Complete |
 | ORC-02 | Phase 11 | Complete |
-| SUP-01 | Phase 12 | Pending |
-| SUP-02 | Phase 12 | Pending |
-| SUP-03 | Phase 12 | Pending |
-| SUP-04 | Phase 12 | Pending |
+| SUP-01 | Phase 12 | Complete |
+| SUP-02 | Phase 12 | Complete |
+| SUP-03 | Phase 12 | Complete |
+| SUP-04 | Phase 12 | Complete |
 | NTN-01 | Phase 13 | Pending |
 | NTN-02 | Phase 13 | Pending |
 | NTN-03 | Phase 13 | Pending |

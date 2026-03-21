@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** A student can upload their actual textbooks, set a real deadline, and have every note, chat answer, and quiz question grounded in — and only in — those specific books.
-**Current focus:** Phase 11 — Final Test Agent Orchestrator (complete)
+**Current focus:** Phase 12 — Super Agent
 
 ## Current Position
 
-Phase: 11 of 16 (Final Test Agent Orchestrator)
-Plan: 4 of 4 in current phase
+Phase: 12 of 16 (Super Agent)
+Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-03-22 — Phase 11 Plan 04 complete: full pytest suite TST-01 through TST-06 and ORC-01/ORC-02, 15 tests all passing
+Last activity: 2026-03-22 — Phase 12 Plan 01 complete: super_agent.py + routers/super.py + main.py registration
 
-Progress: [████████████░░░] ~78% (Phase 11 complete)
+Progress: [█████████████░░] ~82% (Phase 12 Plan 01 complete)
 
 ## Performance Metrics
 
@@ -38,6 +38,7 @@ Progress: [████████████░░░] ~78% (Phase 11 complet
 | 09-vision-ingestion | 3/3 | 13 min | 4.3 min |
 | 10-adaptive-planner | 3/3 | 7 min | 2.3 min |
 | 11-final-test-agent-orchestrator | 4/4 | 13 min | 3.25 min |
+| 12-super-agent | 1/1 | 2 min | 2.0 min |
 
 *Updated after each plan completion*
 
@@ -64,6 +65,7 @@ Recent decisions affecting v2.0 work:
 - Phase 11 Plan 02: Per-session LLM calls chosen over batch call to avoid context limits; q.session_number enforced post-LLM-call (loop variable always authoritative); retrieval failure per session is non-fatal (warn + skip)
 - Phase 11 Plan 03: FINAL_TEST_PASS_THRESHOLD=0.70 and WEAK_SESSION_THRESHOLD=0.50 named as separate constants; TestQuestion cast to QuizQuestion to reuse evaluate_quiz(); _compute_weak_sessions reads server-side stored data to prevent client manipulation of session_number
 - Phase 11 Plan 04: side_effect factory required for mock_test_output (not shared return_value) — Pydantic model objects are mutable; shared instance across 2 session loop iterations results in all session_numbers being overwritten to the last session's value
+- Phase 12 Plan 01: top_k=8 for super agent (larger cross-source pool); checkpoint channel_values excludes goal_id; broader try/except Exception yields SSE error event before re-raising to prevent silent broken streams
 
 ### Pending Todos
 
@@ -76,5 +78,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Completed 11-04-PLAN.md
+Stopped at: Completed 12-01-PLAN.md
 Resume file: None
