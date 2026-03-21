@@ -31,7 +31,7 @@
 
 - [ ] **TST-01**: `test_agent.py` generates cross-session MCQ test (1-2 questions per completed session, max 15 total)
 - [ ] **TST-02**: Test questions grounded in retrieved context (not training data)
-- [ ] **TST-03**: `cumulative_tests` SQLite table created via migration
+- [x] **TST-03**: `cumulative_tests` SQLite table created via migration
 - [ ] **TST-04**: `POST /goals/{id}/test/generate` returns test only when all sessions complete (400 otherwise)
 - [ ] **TST-05**: `POST /goals/{id}/test/submit` scores answers; score ≥ 70% → goal status = `complete`
 - [ ] **TST-06**: Submit response includes `weak_session_numbers` (sessions with < 50% correct)
@@ -53,8 +53,8 @@
 
 ### Orchestrator (ORC)
 
-- [ ] **ORC-01**: `ScholarState` expanded with V2 fields (`sessions_complete`, `weak_session_ids`, `followup_sessions_added`, `final_test_id`, `goal_complete`)
-- [ ] **ORC-02**: `update_goal_progress()` function added to orchestrator
+- [x] **ORC-01**: `ScholarState` expanded with V2 fields (`sessions_complete`, `weak_session_ids`, `followup_sessions_added`, `final_test_id`, `goal_complete`)
+- [x] **ORC-02**: `update_goal_progress()` function added to orchestrator
 
 ### Frontend (FE)
 
@@ -106,12 +106,12 @@
 | ADP-05 | Phase 10 | Complete |
 | TST-01 | Phase 11 | Pending |
 | TST-02 | Phase 11 | Pending |
-| TST-03 | Phase 11 | Pending |
+| TST-03 | Phase 11 | Complete |
 | TST-04 | Phase 11 | Pending |
 | TST-05 | Phase 11 | Pending |
 | TST-06 | Phase 11 | Pending |
-| ORC-01 | Phase 11 | Pending |
-| ORC-02 | Phase 11 | Pending |
+| ORC-01 | Phase 11 | Complete |
+| ORC-02 | Phase 11 | Complete |
 | SUP-01 | Phase 12 | Pending |
 | SUP-02 | Phase 12 | Pending |
 | SUP-03 | Phase 12 | Pending |
