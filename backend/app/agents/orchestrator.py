@@ -9,8 +9,15 @@ from app.agents.planner import generate_plan, StudyPlanOutput
 
 
 class ScholarState(TypedDict):
+    # Existing fields — do NOT change
     messages: list[dict]
     goal_id: str
+    # V2 additions (ORC-01)
+    sessions_complete: bool
+    weak_session_ids: list[str]
+    followup_sessions_added: int
+    final_test_id: str | None
+    goal_complete: bool
 
 
 def build_graph(checkpointer: AsyncSqliteSaver):
@@ -88,6 +95,35 @@ async def create_goal_with_plan(
         "goal_id": goal_id,
         "session_count": len(plan_output.sessions),
         "rationale": plan_output.rationale,
+    }
+
+
+async def update_goal_progress(goal_id: str) -> dict:
+    """Return computed progress state for a goal (ORC-02)."""
+    async with aiosqlite.connect(settings.sqlite_path) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute(
+            "SELECT status FROM study_goals WHERE id=?", (goal_id,)
+        ) as cur:
+            goal = await cur.fetchone()
+        async with db.execute(
+            "SELECT id, status, quiz_score FROM study_sessions WHERE goal_id=? ORDER BY session_number",
+            (goal_id,),
+        ) as cur:
+            sessions = await cur.fetchall()
+    if goal is None:
+        return {}
+    total = len(sessions)
+    completed = sum(1 for s in sessions if s["status"] == "complete")
+    weak_ids = [
+        s["id"] for s in sessions
+        if s["quiz_score"] is not None and s["quiz_score"] < 0.65
+    ]
+    return {
+        "sessions_complete": total > 0 and completed == total,
+        "weak_session_ids": weak_ids,
+        "followup_sessions_added": 0,
+        "goal_complete": goal["status"] == "complete",
     }
 
 
