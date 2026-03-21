@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     vision_model: str = ""       # empty = vision disabled; e.g. "gpt-4o-mini"
     vision_max_pages: int = 20   # max pages per document to process; 0 = unlimited
 
+    # Notion export — both required for export; empty = export disabled
+    notion_api_key: str = ""         # Bearer token from Notion integration
+    notion_parent_page_id: str = ""  # Notion page ID to create goal pages under
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 
