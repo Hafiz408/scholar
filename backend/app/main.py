@@ -35,11 +35,13 @@ from app.routers.goals import router as goals_router
 from app.routers.sessions import router as sessions_router
 from app.routers.chat import router as chat_router
 from app.routers.quiz import router as quiz_router
+from app.routers.test import router as test_router
 
 app.include_router(goals_router)
 app.include_router(sessions_router)
 app.include_router(chat_router)
 app.include_router(quiz_router)
+app.include_router(test_router)
 
 
 @app.get("/health")
