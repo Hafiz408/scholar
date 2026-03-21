@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 ## Current Position
 
 Phase: 10 of 16 (Adaptive Planner)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-03-22 — Phase 10 Plan 01 complete: adaptive_planner.py with handle_quiz_failure, generate_followup_session, insert_followup_session; ADAPTIVE_PLANNER_SYSTEM_PROMPT added to prompts.py
+Last activity: 2026-03-22 — Phase 10 Plan 02 complete: quiz.py enriched with followup_session_added/followup_session; POST /goals/{goal_id}/adapt endpoint added to goals.py
 
-Progress: [██████████░░░░░] ~61% (Phase 10 Plan 01 complete)
+Progress: [██████████░░░░░] ~63% (Phase 10 Plan 02 complete)
 
 ## Performance Metrics
 
@@ -36,7 +36,7 @@ Progress: [██████████░░░░░] ~61% (Phase 10 Plan 01
 | 07-evaluation | 1/1 | 3 min | 3.0 min |
 | 08-langsmith-activation | 1/1 | 2 min | 2.0 min |
 | 09-vision-ingestion | 3/3 | 13 min | 4.3 min |
-| 10-adaptive-planner | 1/3 | 2 min | 2.0 min |
+| 10-adaptive-planner | 2/3 | 5 min | 2.5 min |
 
 *Updated after each plan completion*
 
@@ -57,6 +57,7 @@ Recent decisions affecting v2.0 work:
 - Phase 9 Plan 02: Stage 1.5 import scoped inside source_type == 'pdf' block; 150 DPI render balances clarity vs token cost; processed counter increments only on actual LLM calls
 - Phase 9 Plan 03: Patch augment_pages_with_vision on ve_mod (not pipeline_mod) to intercept local imports inside pipeline function body; async def coroutine mocks required for awaited pipeline stage functions
 - Phase 10 Plan 01: PASS_THRESHOLD strict less-than (< 0.65); insert_followup_session() accepts caller-owned db connection for atomic UPDATE+INSERT; handle_quiz_failure() always fetches session_number fresh by UUID to avoid stale data in multi-session adapt
+- Phase 10 Plan 02: submit_session_quiz return type changed to dict to allow **followup_result spread; handle_quiz_failure imported lazily inside try block; manual_adapt processes sessions in session_number ASC order with per-session error isolation
 
 ### Pending Todos
 
@@ -69,5 +70,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Completed 10-01-PLAN.md
+Stopped at: Completed 10-02-PLAN.md
 Resume file: None

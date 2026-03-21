@@ -162,7 +162,7 @@ Plans:
 | 7. Evaluation | v1.0 | 2/2 | Complete | 2026-03-21 |
 | 8. LangSmith Activation | 1/1 | Complete   | 2026-03-21 | - |
 | 9. Vision Ingestion | 3/3 | Complete   | 2026-03-21 | - |
-| 10. Adaptive Planner | v2.0 | 1/3 | In progress | - |
+| 10. Adaptive Planner | 2/3 | In Progress|  | - |
 | 11. Final Test Agent + Orchestrator | v2.0 | 0/? | Not started | - |
 | 12. Super Agent | v2.0 | 0/? | Not started | - |
 | 13. Notion MCP Export | v2.0 | 0/? | Not started | - |
