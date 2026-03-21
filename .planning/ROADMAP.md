@@ -97,7 +97,7 @@ Plans:
 Plans:
 - [ ] 11-01-PLAN.md — Extend ScholarState V2 + add update_goal_progress() + cumulative_tests DB table
 - [x] 11-02-PLAN.md — Create test_agent.py with per-session retrieval and session_number-tagged TestQuestion
-- [ ] 11-03-PLAN.md — Create test router (generate + submit endpoints) and register in main.py
+- [x] 11-03-PLAN.md — Create test router (generate + submit endpoints) and register in main.py
 - [ ] 11-04-PLAN.md — TDD: pytest suite covering TST-01 through TST-06 and ORC-01/ORC-02
 
 ### Phase 12: Super Agent
@@ -169,7 +169,7 @@ Plans:
 | 8. LangSmith Activation | 1/1 | Complete   | 2026-03-21 | - |
 | 9. Vision Ingestion | 3/3 | Complete   | 2026-03-21 | - |
 | 10. Adaptive Planner | 2/3 | Complete    | 2026-03-21 | - |
-| 11. Final Test Agent + Orchestrator | 2/4 | In Progress|  | - |
+| 11. Final Test Agent + Orchestrator | 3/4 | In Progress|  | - |
 | 12. Super Agent | v2.0 | 0/? | Not started | - |
 | 13. Notion MCP Export | v2.0 | 0/? | Not started | - |
 | 14. Frontend V2 Components | v2.0 | 0/? | Not started | - |

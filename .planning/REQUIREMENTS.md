@@ -32,9 +32,9 @@
 - [x] **TST-01**: `test_agent.py` generates cross-session MCQ test (1-2 questions per completed session, max 15 total)
 - [x] **TST-02**: Test questions grounded in retrieved context (not training data)
 - [x] **TST-03**: `cumulative_tests` SQLite table created via migration
-- [ ] **TST-04**: `POST /goals/{id}/test/generate` returns test only when all sessions complete (400 otherwise)
-- [ ] **TST-05**: `POST /goals/{id}/test/submit` scores answers; score ≥ 70% → goal status = `complete`
-- [ ] **TST-06**: Submit response includes `weak_session_numbers` (sessions with < 50% correct)
+- [x] **TST-04**: `POST /goals/{id}/test/generate` returns test only when all sessions complete (400 otherwise)
+- [x] **TST-05**: `POST /goals/{id}/test/submit` scores answers; score ≥ 70% → goal status = `complete`
+- [x] **TST-06**: Submit response includes `weak_session_numbers` (sessions with < 50% correct)
 
 ### Super Agent (SUP)
 
@@ -107,9 +107,9 @@
 | TST-01 | Phase 11 | Complete |
 | TST-02 | Phase 11 | Complete |
 | TST-03 | Phase 11 | Complete |
-| TST-04 | Phase 11 | Pending |
-| TST-05 | Phase 11 | Pending |
-| TST-06 | Phase 11 | Pending |
+| TST-04 | Phase 11 | Complete |
+| TST-05 | Phase 11 | Complete |
+| TST-06 | Phase 11 | Complete |
 | ORC-01 | Phase 11 | Complete |
 | ORC-02 | Phase 11 | Complete |
 | SUP-01 | Phase 12 | Pending |
