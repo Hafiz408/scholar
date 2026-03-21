@@ -196,6 +196,6 @@ Plans:
 | 13. Notion MCP Export | 3/3 | Complete    | 2026-03-21 | - |
 | 14. Frontend V2 Components | 3/4 | Complete    | 2026-03-21 | - |
 | 15. GitHub Actions CI | v2.0 | Complete    | 2026-03-21 | 2026-03-22 |
-| 16. Real RAGAS Benchmark | v2.0 | 1/1 | Complete    | 2026-03-22 |
+| 16. Real RAGAS Benchmark | 2/2 | Complete   | 2026-03-21 | 2026-03-22 |
 
 Full v1.0 phase details archived at: `.planning/milestones/v1.0-ROADMAP.md`

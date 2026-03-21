@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 ## Current Position
 
 Phase: 16 of 16 (Real RAGAS Benchmark)
-Plan: 1 of 1 in current phase
-Status: Phase 16 complete
-Last activity: 2026-03-22 — Phase 16 Plan 01 complete: --output-dir CLI argument wired into all three result write paths plus ASCII summary table to stdout
+Plan: 2 of 2 in current phase
+Status: Phase 16 complete — all plans done
+Last activity: 2026-03-22 — Phase 16 Plan 02 complete: real RAGAS benchmark run against test_book.pdf; comparison JSON committed; README benchmark table updated with real scores
 
-Progress: [████████████████████] 100% (Phase 16 Plan 1 complete)
+Progress: [████████████████████] 100% (Phase 16 Plan 2 complete — project done)
 
 ## Performance Metrics
 
@@ -45,6 +45,7 @@ Progress: [████████████████████] 100% (P
 | 14-frontend-v2-components | 3/4 | 10 min | 3.3 min |
 | 15-github-actions-ci | 1/1 | 2 min | 2.0 min |
 | 16-real-ragas-benchmark | 1/1 | 3 min | 3.0 min |
+| Phase 16-real-ragas-benchmark P02 | 14 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,7 @@ Recent decisions affecting v2.0 work:
 - [Phase 14-03]: AdaptiveAlert uses undefined sentinel (not boolean) to distinguish "not triggered" from "triggered with no session data" (null); NotionExportButton initializes directly to 'done' state when initialNotionUrl provided on mount
 - [Phase 15-01]: pgvector/pgvector:pg16 image (not postgres:16) — pgvector compiled in; init_pgvector_schema() runs CREATE EXTENSION so no separate psql step needed; -m "not integration" (not --ignore) preserves 2 mocked tests in test_router.py while excluding accuracy gate; PYTHONPATH=/opt/pageindex via PageIndex git clone; SQLITE_PATH=/tmp/scholar_ci.db for CI
 - [Phase 16-01]: --output-dir defaults to None in argparse (not RESULTS_DIR) so resolution happens in one ternary after parse_args(); output_dir.mkdir(parents=True, exist_ok=True) called before timestamp setup; Step 5 RESULTS_DIR.mkdir() removed; ASCII table uses f-strings only — zero new pip dependencies
+- [Phase 16-real-ragas-benchmark]: Phase 16-02: Ran RAGAS benchmark against test_book.pdf (no Biology 2e present); answer_relevancy=NaN (RAGAS needs OPENAI_API_KEY for embeddings, separate from LLM_API_KEY); README shows N/A† with explanatory footnote
 
 ### Pending Todos
 
@@ -85,10 +87,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- EVAL-02/EVAL-03: Real RAGAS run requires an ingested PDF with a PageIndex tree (~150 LLM calls). Deferred to Phase 16 intentionally — ensure a suitable PDF is available before starting that phase.
+- EVAL-02/EVAL-03: Completed. Real scores generated but with caveats: Biology 2e PDF not present (test_book.pdf used instead); OPENAI_API_KEY not configured so AnswerRelevancy=NaN; pgvector store empty so context_precision=0.00. For representative scores: upload Biology 2e + configure OPENAI_API_KEY + re-run benchmark.
 
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Completed 16-01-PLAN.md
+Stopped at: Completed 16-02-PLAN.md (final plan)
 Resume file: None
