@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 ## Current Position
 
 Phase: 11 of 16 (Final Test Agent Orchestrator)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-03-22 — Phase 11 Plan 01 complete: ScholarState V2 TypedDict + update_goal_progress() + cumulative_tests SQLite table
+Last activity: 2026-03-22 — Phase 11 Plan 02 complete: test_agent.py with TestQuestion, TestOutput, generate_test(), per-session retrieval
 
-Progress: [████████████░░░] ~69% (Phase 11 Plan 01 complete)
+Progress: [████████████░░░] ~71% (Phase 11 Plan 02 complete)
 
 ## Performance Metrics
 
@@ -37,7 +37,7 @@ Progress: [████████████░░░] ~69% (Phase 11 Plan 01
 | 08-langsmith-activation | 1/1 | 2 min | 2.0 min |
 | 09-vision-ingestion | 3/3 | 13 min | 4.3 min |
 | 10-adaptive-planner | 3/3 | 7 min | 2.3 min |
-| 11-final-test-agent-orchestrator | 1/3 | 2 min | 2.0 min |
+| 11-final-test-agent-orchestrator | 2/3 | 5 min | 2.5 min |
 
 *Updated after each plan completion*
 
@@ -61,6 +61,7 @@ Recent decisions affecting v2.0 work:
 - Phase 10 Plan 02: submit_session_quiz return type changed to dict to allow **followup_result spread; handle_quiz_failure imported lazily inside try block; manual_adapt processes sessions in session_number ASC order with per-session error isolation
 - Phase 10 Plan 03: Tests went GREEN immediately (implementation pre-existed from plans 01/02); patch settings at module level to redirect aiosqlite.connect to tmp_path DB
 - Phase 11 Plan 01: ScholarState extended additively (new V2 fields appended) so build_graph() needs no changes; cumulative_tests placed inside SQLITE_SCHEMA constant (not a separate migration) so init_db() handles it automatically; update_goal_progress() returns empty dict for unknown goal_id
+- Phase 11 Plan 02: Per-session LLM calls chosen over batch call to avoid context limits; q.session_number enforced post-LLM-call (loop variable always authoritative); retrieval failure per session is non-fatal (warn + skip)
 
 ### Pending Todos
 
@@ -73,5 +74,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Completed 11-01-PLAN.md
+Stopped at: Completed 11-02-PLAN.md
 Resume file: None

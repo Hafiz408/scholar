@@ -29,8 +29,8 @@
 
 ### Final Test (TST)
 
-- [ ] **TST-01**: `test_agent.py` generates cross-session MCQ test (1-2 questions per completed session, max 15 total)
-- [ ] **TST-02**: Test questions grounded in retrieved context (not training data)
+- [x] **TST-01**: `test_agent.py` generates cross-session MCQ test (1-2 questions per completed session, max 15 total)
+- [x] **TST-02**: Test questions grounded in retrieved context (not training data)
 - [x] **TST-03**: `cumulative_tests` SQLite table created via migration
 - [ ] **TST-04**: `POST /goals/{id}/test/generate` returns test only when all sessions complete (400 otherwise)
 - [ ] **TST-05**: `POST /goals/{id}/test/submit` scores answers; score ≥ 70% → goal status = `complete`
@@ -104,8 +104,8 @@
 | ADP-03 | Phase 10 | Complete |
 | ADP-04 | Phase 10 | Complete |
 | ADP-05 | Phase 10 | Complete |
-| TST-01 | Phase 11 | Pending |
-| TST-02 | Phase 11 | Pending |
+| TST-01 | Phase 11 | Complete |
+| TST-02 | Phase 11 | Complete |
 | TST-03 | Phase 11 | Complete |
 | TST-04 | Phase 11 | Pending |
 | TST-05 | Phase 11 | Pending |
