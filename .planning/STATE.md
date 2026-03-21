@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 ## Current Position
 
 Phase: 14 of 16 (Frontend V2 Components)
-Plan: 2 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: Phase 14 in progress
-Last activity: 2026-03-22 — Phase 14 Plan 02 complete: Super Agent chat page (app/super/page.tsx)
+Last activity: 2026-03-22 — Phase 14 Plan 03 complete: V2 goal-detail components (AdaptiveAlert, TestPanel, NotionExportButton)
 
-Progress: [█████████████████░] ~92% (Phase 14 Plan 2 complete)
+Progress: [█████████████████░] ~94% (Phase 14 Plan 3 complete)
 
 ## Performance Metrics
 
@@ -42,7 +42,7 @@ Progress: [█████████████████░] ~92% (Phase 1
 
 *Updated after each plan completion*
 | 13-notion-mcp-export | 3/3 | 10 min | 3.3 min |
-| 14-frontend-v2-components | 2/4 | 6 min | 3.0 min |
+| 14-frontend-v2-components | 3/4 | 10 min | 3.3 min |
 
 ## Accumulated Context
 
@@ -73,6 +73,7 @@ Recent decisions affecting v2.0 work:
 - [Phase 13-02]: run_notion_export opens its own aiosqlite connection (background task lifetime mismatch); sequential session child pages (goal_page_id required from step 1); asyncio.sleep(2**attempt) backoff; try/except wraps full export body to prevent silent failures
 - [Phase 14-01]: layout.tsx stays Server Component using next/link Link (no 'use client' needed); h-screen replaced with h-full in study page to avoid double-scroll in nested flex layout; streamSuperChat follows identical parseSSE pattern as streamChat
 - [Phase 14-02]: useState function initializer used for thread_id to avoid SSR localStorage access pitfall in 'use client' component; cancelRef pattern for SSE cleanup on unmount
+- [Phase 14-03]: AdaptiveAlert uses undefined sentinel (not boolean) to distinguish "not triggered" from "triggered with no session data" (null); NotionExportButton initializes directly to 'done' state when initialNotionUrl provided on mount
 
 ### Pending Todos
 
@@ -85,5 +86,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Completed 14-02-PLAN.md
+Stopped at: Completed 14-03-PLAN.md
 Resume file: None
