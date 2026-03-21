@@ -171,7 +171,11 @@ Plans:
   1. `eval/run_ragas.py --output-dir eval/results/` executes without error and prints a summary table of all four metrics to stdout
   2. JSON result files for the benchmark run are committed to `eval/results/` with real numeric values (no `—` placeholders)
   3. The README comparison table shows real scores for faithfulness, answer relevancy, context precision, and avg latency for both PageIndex and vector strategies
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 16-01-PLAN.md — Add --output-dir argument and ASCII summary table to run_ragas.py
+- [ ] 16-02-PLAN.md — Execute real benchmark run + commit results + update README
 
 ## Progress
 
@@ -191,7 +195,7 @@ Plans:
 | 12. Super Agent | 2/2 | Complete    | 2026-03-21 | - |
 | 13. Notion MCP Export | 3/3 | Complete    | 2026-03-21 | - |
 | 14. Frontend V2 Components | 3/4 | Complete    | 2026-03-21 | - |
-| 15. GitHub Actions CI | v2.0 | 1/1 | Complete | 2026-03-22 |
+| 15. GitHub Actions CI | v2.0 | Complete    | 2026-03-21 | 2026-03-22 |
 | 16. Real RAGAS Benchmark | v2.0 | 0/? | Not started | - |
 
 Full v1.0 phase details archived at: `.planning/milestones/v1.0-ROADMAP.md`
