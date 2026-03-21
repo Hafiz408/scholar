@@ -1,8 +1,10 @@
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from sqlalchemy import text
 
+from app.config import settings
 from app.database import get_engine
 from app.db.database import init_db, init_pgvector_schema
 from app.routers.knowledge import router as knowledge_router
@@ -10,11 +12,16 @@ from app.routers.knowledge import router as knowledge_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # LangSmith tracing — inject into os.environ so LangChain runtime picks them up.
+    # Only activate when LANGCHAIN_API_KEY is set; otherwise tracing is silently skipped.
+    if settings.langsmith_api_key:
+        os.environ["LANGCHAIN_API_KEY"] = settings.langsmith_api_key
+        os.environ["LANGCHAIN_TRACING_V2"] = "true"
+        os.environ["LANGCHAIN_PROJECT"] = settings.langchain_project
     init_db()
     init_pgvector_schema()
     from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
     from app.agents.orchestrator import build_graph
-    from app.config import settings
     async with AsyncSqliteSaver.from_conn_string(settings.sqlite_path) as checkpointer:
         app.state.checkpointer = checkpointer
         app.state.graph = build_graph(checkpointer)
