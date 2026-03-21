@@ -92,7 +92,13 @@ Plans:
   4. Submit response includes `weak_session_numbers` listing sessions where the student answered < 50% correctly
   5. `cumulative_tests` SQLite table exists after migration and stores test records correctly
   6. `ScholarState` includes V2 fields (`sessions_complete`, `weak_session_ids`, `followup_sessions_added`, `final_test_id`, `goal_complete`) and `update_goal_progress()` function is importable from the orchestrator module
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 11-01-PLAN.md — Extend ScholarState V2 + add update_goal_progress() + cumulative_tests DB table
+- [ ] 11-02-PLAN.md — Create test_agent.py with per-session retrieval and session_number-tagged TestQuestion
+- [ ] 11-03-PLAN.md — Create test router (generate + submit endpoints) and register in main.py
+- [ ] 11-04-PLAN.md — TDD: pytest suite covering TST-01 through TST-06 and ORC-01/ORC-02
 
 ### Phase 12: Super Agent
 **Goal**: Students can chat across their entire knowledge base — all uploaded sources — in a single persistent conversation
@@ -162,8 +168,8 @@ Plans:
 | 7. Evaluation | v1.0 | 2/2 | Complete | 2026-03-21 |
 | 8. LangSmith Activation | 1/1 | Complete   | 2026-03-21 | - |
 | 9. Vision Ingestion | 3/3 | Complete   | 2026-03-21 | - |
-| 10. Adaptive Planner | 2/3 | In Progress|  | - |
-| 11. Final Test Agent + Orchestrator | v2.0 | 0/? | Not started | - |
+| 10. Adaptive Planner | 2/3 | Complete    | 2026-03-21 | - |
+| 11. Final Test Agent + Orchestrator | v2.0 | 0/4 | Not started | - |
 | 12. Super Agent | v2.0 | 0/? | Not started | - |
 | 13. Notion MCP Export | v2.0 | 0/? | Not started | - |
 | 14. Frontend V2 Components | v2.0 | 0/? | Not started | - |
