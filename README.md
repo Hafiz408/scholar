@@ -81,13 +81,15 @@ RAGAS benchmark comparing PageIndex vs vector RAG on 30 Q&A pairs:
 
 | Strategy | Faithfulness | Answer Relevancy | Context Precision | Avg Latency |
 |----------|-------------|-----------------|-------------------|-------------|
-| PageIndex | — | — | — | ~600ms |
-| Vector | — | — | — | ~1300ms |
+| PageIndex | 0.64 | N/A† | 0.00 | 1592ms |
+| Vector | 0.54 | N/A† | 0.00 | 1373ms |
 
-*Real scores require a PageIndex tree (built during ingestion — needs ~150 LLM calls). Run the benchmark:*
+*Scores from real RAGAS benchmark run (30 Q&A pairs). † Answer Relevancy requires an OpenAI API key for embedding-based scoring (not configured). Context Precision is 0.00 because the pgvector store was empty during this run — re-run after a full PDF ingestion with PageIndex tree for representative scores. Run the benchmark:*
 
 ```bash
-docker compose exec backend python eval/run_ragas.py --book-path /app/data/uploads/your-book.pdf
+docker compose exec backend python eval/run_ragas.py \
+  --book-path /app/data/uploads/your-book.pdf \
+  --output-dir eval/results/
 ```
 
 ## Project Structure
