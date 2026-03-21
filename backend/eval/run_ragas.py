@@ -447,9 +447,23 @@ async def main() -> None:
         json.dump(comparison, f, indent=2, default=str)
     logger.info("Wrote comparison to %s", cmp_path)
 
-    # Step 9: Print comparison to stdout
-    print("\n=== Benchmark Comparison ===")
+    # Step 9: Print comparison JSON to stdout
+    print("\n=== Benchmark Comparison (JSON) ===")
     print(json.dumps(comparison, indent=2, default=str))
+
+    # Step 10: Print human-readable ASCII summary table
+    pi = comparison["pageindex"]
+    vec = comparison["vector"]
+    print("\n=== RAGAS Benchmark Summary ===")
+    print(f"{'Strategy':<12} {'Faithfulness':>14} {'Answer Rel.':>12} {'Ctx Prec.':>11} {'Avg Latency':>12}")
+    print("-" * 55)
+    for name, scores in [("PageIndex", pi), ("Vector", vec)]:
+        f = scores.get("faithfulness") or 0
+        a = scores.get("answer_relevancy") or 0
+        c = scores.get("context_precision") or 0
+        lat = scores.get("avg_latency_ms", 0)
+        print(f"{name:<12} {f:>14.3f} {a:>12.3f} {c:>11.3f} {lat:>10}ms")
+    print()
 
 
 if __name__ == "__main__":
