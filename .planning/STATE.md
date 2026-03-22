@@ -2,19 +2,18 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-21)
+See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** A student can upload their actual textbooks, set a real deadline, and have every note, chat answer, and quiz question grounded in — and only in — those specific books.
-**Current focus:** Phase 16 — Real RAGAS Benchmark
+**Current focus:** v2.0 shipped — awaiting v3.0 milestone start
 
 ## Current Position
 
-Phase: 16 of 16 (Real RAGAS Benchmark)
-Plan: 2 of 2 in current phase
-Status: Phase 16 complete — all plans done
-Last activity: 2026-03-22 — Phase 16 Plan 02 complete: real RAGAS benchmark run against test_book.pdf; comparison JSON committed; README benchmark table updated with real scores
+Milestone: v2.0 Adaptive Learning + Multimodal + Super Agent — SHIPPED 2026-03-22
+Phase: 16 of 16 (Real RAGAS Benchmark) — COMPLETE
+Status: All v2.0 phases complete; milestone archived; git tag v2.0 created
 
-Progress: [████████████████████] 100% (Phase 16 Plan 2 complete — project done)
+Progress: [████████████████████] 100% (v2.0 shipped)
 
 ## Performance Metrics
 
