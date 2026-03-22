@@ -64,4 +64,9 @@ Test book.pdf
 frontend/tsconfig.tsbuildinfo
 frontend/package-lock.json
 *.md
+!README.md
+!backend/README.md
+!frontend/README.md
+!backend/tests/README.md
+!backend/eval/README.md
 /backend/data/uploads

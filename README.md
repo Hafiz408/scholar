@@ -1,110 +1,309 @@
-# Scholar V1
+# Scholar — Goal-Driven AI Study System
 
-**Goal-Driven AI Study System** — Upload textbooks, set a study goal, get a multi-session study plan, then work through each session with AI-generated notes, grounded chat, and quizzes.
+**Turn any textbook or URL into a personalised, goal-driven study course.**
 
-## How It Works
+Scholar ingests your PDFs and web pages into a persistent knowledge base, then uses an AI planner to build a multi-session study plan. Each session streams grounded notes, answers follow-up questions with citations, and tests understanding with a quiz. V2 adds adaptive replanning, a final cumulative test, a cross-book super agent, and Notion export.
 
-1. **Upload** a PDF textbook or URL → Scholar ingests it into both a PageIndex tree and a pgvector embedding store
-2. **Set a goal** → the Planner agent generates a sequenced multi-session study plan
-3. **Work a session** → AI streams notes grounded in your book, chat answers questions with citations, quiz tests your understanding
+---
 
-## Architecture
+## Features
 
-Scholar uses a **dual retrieval engine** — every chat message is routed to the best strategy:
+### V1 — Core Study Loop
+| Feature | Description |
+|---------|-------------|
+| **Multi-format ingestion** | Upload PDF or URL → PageIndex tree + pgvector embeddings created automatically |
+| **Dual retrieval engine** | Every query routed between PageIndex (structural) and vector RAG (semantic) |
+| **Goal-driven planner** | LLM generates a sequenced multi-session study plan from your goal + deadline |
+| **Streaming notes** | AI writes grounded session notes with textbook citations — streamed via SSE |
+| **Grounded chat** | Ask follow-up questions; every answer cites the exact source page |
+| **Quiz agent** | 5 MCQ questions per session grounded in your notes; score stored to progress |
+| **Session checkpointing** | LangGraph + SQLite checkpointer — browser refresh restores session state |
+| **LangSmith tracing** | Every agent call traced for cost, latency, and token usage |
+| **RAGAS benchmark** | PageIndex vs vector RAG evaluated on 30 Q&A pairs |
 
-| Strategy | How | Best for |
-|----------|-----|---------|
-| **PageIndex** | LLM navigates a hierarchical JSON tree of the document | Chapter/section questions, long-form context |
-| **Vector RAG** | Cosine similarity over pgvector embeddings | Factual lookups, cross-book search |
-| **Hybrid** | Both concurrently, merged 0.6/0.4 by score | Complex questions needing both depth and breadth |
+### V2 — Adaptive Learning + Super Agent
+| Feature | Description |
+|---------|-------------|
+| **Adaptive replanning** | Quiz score < 65 % → follow-up session automatically inserted into the plan |
+| **Final cumulative test** | After all sessions complete: cross-session MCQ test → goal marked `complete` on pass |
+| **Super Agent** | Chat across your entire knowledge base (all books combined) at `/super` |
+| **Vision ingestion** | Diagram/chart descriptions extracted from PDFs via a vision LLM (opt-in) |
+| **Notion export** | Export study plan + session notes to Notion as a background task |
+| **GitHub Actions CI** | `pytest` + `ruff` on every PR; live-LLM tests excluded via marker |
 
-A **Router agent** classifies each query and picks the strategy. If no PageIndex tree exists, it falls back to vector automatically.
-
-→ Full architecture, flow diagrams, and component details: **[docs/architecture.md](docs/architecture.md)**
+---
 
 ## Quick Start
 
 ```bash
+# 1. Clone and configure
+git clone https://github.com/Hafiz408/scholar.git
+cd scholar
 cp backend/.env.example backend/.env
-# Fill in LLM_API_KEY, EMBEDDING_API_KEY (Mistral or OpenAI)
+# Edit .env — fill in LLM_API_KEY and EMBEDDING_API_KEY at minimum
+
+# 2. Start the stack
 docker compose up
+
+# 3. Open the app
+open http://localhost:3000
 ```
 
-- Backend API: http://localhost:8000
-- Frontend: http://localhost:3000
-- API docs (Swagger): http://localhost:8000/docs
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:3000 |
+| Backend API | http://localhost:8000 |
+| Swagger docs | http://localhost:8000/docs |
+
+---
 
 ## Configuration
 
-```env
-# LLM — Mistral (free tier) or OpenAI
-LLM_API_KEY=your-key
-LLM_BASE_URL=https://api.mistral.ai/v1   # empty = OpenAI
-LLM_MODEL=mistral-small-latest
+Copy `backend/.env.example` to `backend/.env` and fill in the values you need:
 
-# Embeddings
-EMBEDDING_API_KEY=your-key
-EMBEDDING_BASE_URL=https://api.mistral.ai/v1
-EMBEDDING_MODEL=mistral-embed
-EMBEDDING_DIMENSIONS=1024
+```env
+# ── LLM ──────────────────────────────────────
+LLM_PROVIDER=openai               # openai | openai-compat | anthropic | google
+LLM_API_KEY=sk-...
+LLM_MODEL=gpt-4o-mini
+LLM_BASE_URL=                     # empty = OpenAI; set for Mistral / Ollama / Groq
+
+# ── Embeddings ───────────────────────────────
+EMBEDDING_API_KEY=sk-...
+EMBEDDING_MODEL=text-embedding-3-small
+EMBEDDING_DIMENSIONS=1536
+EMBEDDING_BASE_URL=               # empty = OpenAI-compatible default
+
+# ── Vision (V2, optional) ────────────────────
+VISION_MODEL=                     # empty = disabled; set e.g. "gpt-4o" to enable
+VISION_MAX_PAGES=20               # cost guard: max pages per document
+
+# ── Notion export (V2, optional) ─────────────
+NOTION_API_KEY=secret_...
+NOTION_PARENT_PAGE_ID=abc123...
+
+# ── Observability ────────────────────────────
+LANGSMITH_API_KEY=ls__...         # optional; enables LangSmith tracing if set
 ```
 
-PageIndex uses the same `LLM_*` settings automatically — no separate key needed.
+> PageIndex uses the same `LLM_*` settings — no separate key needed.
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                       Next.js 14 Frontend                   │
+│  /knowledge  /goals/[id]  /study/[sessionId]  /super        │
+└───────────────────────────┬─────────────────────────────────┘
+                            │  REST + SSE
+┌───────────────────────────▼─────────────────────────────────┐
+│                       FastAPI Backend                        │
+│                                                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌────────────────────┐│
+│  │  Ingestion   │  │  Retrieval   │  │       Agents       ││
+│  │  Pipeline    │  │  Engine      │  │                    ││
+│  │              │  │              │  │  Planner           ││
+│  │  pdf extract │  │  Router LLM  │  │  Note Generator    ││
+│  │  url extract │  │      ↓       │  │  Session Chat      ││
+│  │  vision OCR  │  │  PageIndex   │  │  Quiz Agent        ││
+│  │  PageIndex   │  │  Vector RAG  │  │  Adaptive Planner  ││
+│  │  pgvector    │  │  Hybrid 0.6/0│  │  Test Agent        ││
+│  └──────┬───────┘  └──────┬───────┘  │  Super Agent       ││
+│         │                 │          │  Notion MCP        ││
+│         └─────────────────┘          └────────────────────┘│
+│                                                             │
+│  ┌──────────────────────┐  ┌──────────────────────────────┐│
+│  │  SQLite              │  │  PostgreSQL + pgvector       ││
+│  │  goals / sessions    │  │  knowledge_chunks (vectors)  ││
+│  │  chat history        │  │                              ││
+│  │  cumulative tests    │  └──────────────────────────────┘│
+│  │  LangGraph state     │                                  ││
+│  └──────────────────────┘                                  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Dual Retrieval Engine
+
+Every query is classified by a Router LLM agent and dispatched to the best strategy:
+
+| Strategy | Mechanism | Best for |
+|----------|-----------|---------|
+| **PageIndex** | LLM navigates a hierarchical JSON tree of the book | Chapter/section questions, structural navigation |
+| **Vector RAG** | Cosine similarity over pgvector embeddings | Factual lookups, broad semantic search |
+| **Hybrid** | Both concurrently, merged at `0.6 × pageindex + 0.4 × vector` | Complex questions needing depth and breadth |
+
+If no PageIndex tree exists for a source, the router falls back to vector automatically.
+
+---
+
+## End-to-End User Flow
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant FE as Frontend
+    participant API as FastAPI
+    participant DB as SQLite
+    participant LLM as LLM Agents
+    participant PG as pgvector
+
+    User->>FE: Upload PDF
+    FE->>API: POST /knowledge/upload
+    API->>DB: Insert source (status=pending)
+    API-->>FE: { source_id }
+    API-)API: BackgroundTask: run_ingestion()
+    API->>PG: embed_and_store (chunks)
+    API->>DB: status = ready
+
+    User->>FE: Create goal
+    FE->>API: POST /goals
+    API->>LLM: generate_plan()
+    LLM-->>API: StudyPlanOutput (sessions)
+    API->>DB: Insert goal + sessions
+    API-->>FE: { goal_id, sessions }
+
+    User->>FE: Start session
+    FE->>API: POST /sessions/{id}/start (SSE)
+    API->>LLM: stream_notes()
+    LLM->>PG: retrieve context
+    LLM-->>FE: SSE notes_chunk events
+
+    User->>FE: Chat question
+    FE->>API: POST /chat/stream (SSE)
+    API->>PG: retrieve()
+    API->>LLM: stream answer
+    LLM-->>FE: SSE token + citation events
+
+    User->>FE: Submit quiz
+    FE->>API: POST /sessions/{id}/quiz/submit
+    API->>LLM: evaluate_quiz()
+    alt score < 65%
+        API->>LLM: generate_followup_session()
+        API->>DB: Insert follow-up session
+    end
+    API-->>FE: { score, followup_session_added }
+
+    User->>FE: Take final test
+    FE->>API: POST /goals/{id}/test/generate
+    API->>LLM: generate_test()
+    API-->>FE: questions (no correct_index)
+    User->>FE: Submit answers
+    FE->>API: POST /goals/{id}/test/submit
+    alt score >= 70%
+        API->>DB: goal.status = complete
+    end
+    API-->>FE: CumulativeTestResult
+```
+
+---
+
+## Retrieval Strategy Flow
+
+```mermaid
+flowchart TD
+    Q[User Query] --> R{Router LLM}
+    R -->|pageindex| PI[PageIndex Retriever]
+    R -->|vector| VR[Vector Retriever]
+    R -->|hybrid| BOTH[Both in parallel]
+    BOTH --> PI2[PageIndex chunks]
+    BOTH --> VR2[Vector chunks]
+    PI2 --> MERGE[Merge 0.6/0.4 + dedup]
+    VR2 --> MERGE
+    PI --> CTX[Context]
+    VR --> CTX
+    MERGE --> CTX
+    CTX --> LLM[LLM generates answer]
+    LLM --> SSE[SSE stream to browser]
+```
+
+---
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Backend | FastAPI + LangChain + LangGraph |
-| Vector store | PostgreSQL + pgvector |
-| Document tree | PageIndex (open-source, local library) |
-| Embeddings | OpenAI / Mistral compatible |
-| State & chat history | LangGraph AsyncSqliteSaver (SQLite) |
+| Backend framework | FastAPI 0.115 |
+| Agent orchestration | LangChain 0.3 + LangGraph 0.2 |
 | Observability | LangSmith |
+| Document tree | PageIndex (open-source, local) |
+| Vector store | PostgreSQL 16 + pgvector |
+| PDF extraction | pdfplumber + pypdf |
+| URL extraction | trafilatura |
+| Vision extraction | PyMuPDF + vision LLM (opt-in) |
+| LLM providers | OpenAI / Mistral / Anthropic / Google (via factory) |
+| Session state | LangGraph AsyncSqliteSaver |
 | Frontend | Next.js 14 + TypeScript + Tailwind CSS |
+| CI | GitHub Actions |
+| Evaluation | RAGAS |
 
-## Running Tests
+---
+
+## Test Suite
 
 ```bash
-# Run all tests inside Docker (recommended)
-docker compose exec backend pytest tests/ -v
+# Run all automated tests (inside Docker)
+docker compose exec backend pytest tests/ -m "not integration" -v
 
-# Or locally (requires backend deps installed)
-cd backend && pytest tests/ -v
+# Or locally (activate venv first)
+cd backend && pytest tests/ -m "not integration" -v
 ```
 
-49/50 tests pass. One test (`test_router_accuracy_gate`) requires a live LLM API key.
+**93 tests pass.** The single excluded test (`test_router_accuracy_gate`) requires a live LLM API key and is marked `@pytest.mark.integration`.
 
-## Evaluation
+---
 
-RAGAS benchmark comparing PageIndex vs vector RAG on 30 Q&A pairs:
+## RAGAS Benchmark
+
+PageIndex vs vector RAG evaluated on 30 Q&A pairs:
 
 | Strategy | Faithfulness | Answer Relevancy | Context Precision | Avg Latency |
 |----------|-------------|-----------------|-------------------|-------------|
-| PageIndex | 0.64 | N/A† | 0.00 | 1592ms |
-| Vector | 0.54 | N/A† | 0.00 | 1373ms |
+| PageIndex | 0.64 | N/A† | 0.00‡ | 1592ms |
+| Vector | 0.54 | N/A† | 0.00‡ | 1373ms |
 
-*Scores from real RAGAS benchmark run (30 Q&A pairs). † Answer Relevancy requires an OpenAI API key for embedding-based scoring (not configured). Context Precision is 0.00 because the pgvector store was empty during this run — re-run after a full PDF ingestion with PageIndex tree for representative scores. Run the benchmark:*
+† Answer Relevancy requires OpenAI embeddings for scoring (not configured).
+‡ Context Precision is 0.00 because pgvector store was empty during this benchmark run — re-run after full ingestion for representative scores.
 
+Results committed to `backend/eval/results/`. Re-run:
 ```bash
 docker compose exec backend python eval/run_ragas.py \
   --book-path /app/data/uploads/your-book.pdf \
   --output-dir eval/results/
 ```
 
+---
+
 ## Project Structure
 
 ```
 scholar/
-├── backend/
+├── backend/               # FastAPI app, agents, ingestion, retrieval, tests
 │   ├── app/
-│   │   ├── ingestion/        # pdf_extractor, url_extractor, embedder, pageindex_builder, pipeline
-│   │   ├── retrieval/        # router, vector_retriever, pageindex_retriever, hybrid_retriever
-│   │   ├── agents/           # planner, note_generator, session_chat, quiz_agent, orchestrator
-│   │   ├── routers/          # FastAPI routes: knowledge, goals, sessions, chat, quiz
-│   │   └── models/           # Pydantic schemas
-│   ├── eval/                 # golden_qa.json + run_ragas.py benchmark
-│   └── tests/                # pytest test suite (49/50 passing)
-├── frontend/                 # Next.js 14 app
-└── docs/                     # Architecture diagrams and design docs
+│   │   ├── agents/        # Planner, NoteGenerator, Chat, Quiz, Adaptive, Test, Super, Notion
+│   │   ├── ingestion/     # pdf_extractor, url_extractor, vision_extractor, embedder, pipeline
+│   │   ├── retrieval/     # router, pageindex_retriever, vector_retriever, hybrid_retriever
+│   │   ├── routers/       # FastAPI routes: knowledge, goals, sessions, chat, quiz, test, super
+│   │   ├── models/        # Pydantic schemas
+│   │   ├── db/            # SQLite + pgvector schema init
+│   │   ├── config.py      # Pydantic settings
+│   │   ├── llm_factory.py # Provider-agnostic LLM factory (chat + vision)
+│   │   └── main.py        # App startup, lifespan, router registration
+│   ├── eval/              # golden_qa.json + RAGAS runner + results/
+│   └── tests/             # pytest suite (93 tests)
+├── frontend/              # Next.js 14 app
+│   └── src/
+│       ├── app/           # Pages: knowledge, goals, study, super
+│       ├── components/    # UI components including V2: AdaptiveAlert, TestPanel, NotionExportButton
+│       └── lib/           # api.ts, sse.ts helpers
+├── docs/                  # architecture.md
+├── .github/workflows/     # ci.yml — pytest + ruff on PRs
+└── docker-compose.yml
 ```
+
+See subdirectory READMEs for detailed design:
+- [`backend/README.md`](backend/README.md) — API reference, agent descriptions, DB schema
+- [`frontend/README.md`](frontend/README.md) — pages, components, SSE streaming pattern
+- [`backend/eval/README.md`](backend/eval/README.md) — RAGAS evaluation guide
+- [`backend/tests/README.md`](backend/tests/README.md) — test strategy and coverage map

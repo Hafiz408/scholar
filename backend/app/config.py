@@ -6,8 +6,8 @@ class Settings(BaseSettings):
     database_url: str = "postgresql://scholar:scholar_dev_password@db:5432/scholar"
     openai_api_key: str = ""
     langsmith_api_key: str = ""
-    langchain_tracing_v2: bool = False
-    langchain_project: str = "scholar"
+    langchain_tracing_v2: bool = True
+    langchain_project: str = "scholar-v2"
     environment: str = "development"
     sqlite_path: str = "./data/scholar.db"
     upload_dir: str = "./data/uploads"
