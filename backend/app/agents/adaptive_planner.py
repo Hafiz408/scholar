@@ -138,7 +138,7 @@ async def handle_quiz_failure(session_id: str) -> dict:
         return {"followup_session_added": False, "followup_session": None}
 
     # Fetch knowledge source titles for the LLM prompt
-    source_ids = json.loads(row["knowledge_source_ids"])
+    source_ids = json.loads(row["knowledge_source_ids"] or "[]")
     source_titles = await _fetch_source_titles(source_ids)
 
     # Generate follow-up session via LLM

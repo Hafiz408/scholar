@@ -39,7 +39,7 @@ export default function GoalForm() {
     setError(null)
 
     try {
-      const studyPlan = await createGoal({
+      const { goal_id } = await createGoal({
         title,
         topic,
         source_ids: selectedSourceIds,
@@ -47,7 +47,7 @@ export default function GoalForm() {
         level,
         sessions_per_week: sessionsPerWeek,
       })
-      router.push(`/goals/${studyPlan.goal.id}`)
+      router.push(`/goals/${goal_id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create goal')
       setSubmitting(false)

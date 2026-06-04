@@ -2,6 +2,7 @@ import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from app.config import settings
@@ -29,6 +30,18 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Scholar API", version="0.1.0", lifespan=lifespan)
+
+# Allow the Next.js frontend (any localhost port) to call the API directly.
+# Needed because the frontend's /api proxy can pass through a trailing-slash
+# redirect to an absolute backend URL, which the browser treats as cross-origin.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?",
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(knowledge_router, prefix="/knowledge", tags=["knowledge"])
 
 from app.routers.goals import router as goals_router

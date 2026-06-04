@@ -15,6 +15,7 @@ export default function TestPanel({ goalId }: { goalId: string }) {
   const [result, setResult] = useState<TestResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [showConfetti, setShowConfetti] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
 
   async function handleGenerate() {
     setPhase('generating')
@@ -30,6 +31,8 @@ export default function TestPanel({ goalId }: { goalId: string }) {
   }
 
   async function handleSubmit() {
+    if (submitting || !allAnswered) return
+    setSubmitting(true)
     setError(null)
     const answers: Record<string, number> = {}
     questions.forEach((q, i) => { answers[q.id] = selectedAnswers[i] })
@@ -43,6 +46,8 @@ export default function TestPanel({ goalId }: { goalId: string }) {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit test')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -105,9 +110,9 @@ export default function TestPanel({ goalId }: { goalId: string }) {
               </div>
             </div>
           ))}
-          <button onClick={handleSubmit} disabled={!allAnswered}
+          <button onClick={handleSubmit} disabled={!allAnswered || submitting}
             className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-            Submit Test
+            {submitting ? 'Submitting...' : 'Submit Test'}
           </button>
         </div>
       )}

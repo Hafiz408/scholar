@@ -1,9 +1,13 @@
 import json
 import asyncio
+import logging
 import aiosqlite
+from app.config import settings
 from app.llm_factory import get_llm
 from app.agents.prompts import NOTE_SYSTEM_PROMPT
 from app.retrieval.hybrid_retriever import retrieve
+
+logger = logging.getLogger(__name__)
 
 
 def _format_context(chunks) -> str:
@@ -60,3 +64,7 @@ async def stream_notes(
     except asyncio.CancelledError:
         # Client disconnected — clean exit, no re-raise needed for SSE generators
         return
+    except Exception as exc:
+        logger.exception("Notes stream failed for session %s", session_id)
+        payload = json.dumps({"type": "error", "content": str(exc)})
+        yield f"event: error\ndata: {payload}\n\n"

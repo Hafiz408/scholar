@@ -21,6 +21,7 @@ export default function QuizPanel({ sessionId, goalId, onFollowupAdded }: QuizPa
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({})
   const [result, setResult] = useState<QuizResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
   async function handleStartQuiz() {
     setPhase('generating')
@@ -36,6 +37,8 @@ export default function QuizPanel({ sessionId, goalId, onFollowupAdded }: QuizPa
   }
 
   async function handleSubmit() {
+    if (submitting || !allAnswered) return
+    setSubmitting(true)
     setError(null)
     // Build answers map: question_id -> selected option index
     const answers: Record<string, number> = {}
@@ -51,6 +54,8 @@ export default function QuizPanel({ sessionId, goalId, onFollowupAdded }: QuizPa
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit quiz')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -126,10 +131,10 @@ export default function QuizPanel({ sessionId, goalId, onFollowupAdded }: QuizPa
           </div>
           <button
             onClick={handleSubmit}
-            disabled={!allAnswered}
+            disabled={!allAnswered || submitting}
             className="mt-2 w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Submit Quiz
+            {submitting ? 'Submitting...' : 'Submit Quiz'}
           </button>
         </div>
       )}

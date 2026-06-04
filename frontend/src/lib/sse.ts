@@ -1,6 +1,18 @@
 import type { RetrievedChunk } from '@/types'
 
 /**
+ * Extract a human-readable message from an SSE `error` event's data.
+ * Falls back to the raw data string when it is not JSON.
+ */
+function unwrapErrorData(data: string): string {
+  try {
+    return (JSON.parse(data) as { content: string }).content
+  } catch {
+    return data
+  }
+}
+
+/**
  * Minimal SSE parser for a ReadableStream of text.
  * Yields parsed { event, data } objects from the stream.
  */
@@ -60,6 +72,9 @@ export function streamNotes(
           const parsed = JSON.parse(data) as { total_chars: number }
           onDone(parsed.total_chars)
           break
+        } else if (event === 'error') {
+          onError(unwrapErrorData(data))
+          break
         }
       }
     } catch (err: unknown) {
@@ -107,6 +122,9 @@ export function streamChat(
           onCitations(parsed.chunks)
         } else if (event === 'done') {
           onDone()
+          break
+        } else if (event === 'error') {
+          onError(unwrapErrorData(data))
           break
         }
       }
@@ -158,7 +176,7 @@ export function streamSuperChat(
           onDone()
           break
         } else if (event === 'error') {
-          onError(data)
+          onError(unwrapErrorData(data))
           break
         }
       }

@@ -1,7 +1,7 @@
 import os
 import uuid
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 import aiosqlite
@@ -120,7 +120,12 @@ async def list_knowledge_sources():
                 page_count=row["page_count"] or 0,
                 pageindex_doc_id=row["pageindex_doc_id"],
                 status=row["status"],
-                created_at=datetime.fromisoformat(row["created_at"]),
+                # Tolerate a missing/non-string created_at so one bad row never 500s the whole list.
+                created_at=(
+                    datetime.fromisoformat(row["created_at"])
+                    if isinstance(row["created_at"], str)
+                    else datetime.now(timezone.utc)
+                ),
             )
         )
     return sources

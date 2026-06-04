@@ -1,0 +1,278 @@
+{
+  "faithfulness": 0.8944444444444444,
+  "answer_relevancy": 0.0,
+  "context_precision": 0.0,
+  "avg_latency_ms": 2578,
+  "per_question": [
+    {
+      "user_input": "How does the sodium-potassium pump maintain the resting membrane potential in neurons?",
+      "retrieved_contexts": [],
+      "response": "I don\u2019t have enough context to answer this question.",
+      "reference": "The sodium-potassium pump (Na+/K+-ATPase) actively transports 3 Na+ ions out of the cell and 2 K+ ions into the cell per ATP hydrolyzed, creating an electrochemical gradient. This net export of positive charge, combined with the selective permeability of the membrane to K+ through leak channels, establishes the resting membrane potential of approximately -70 mV inside relative to outside.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "Describe the molecular mechanism by which an action potential propagates along an unmyelinated axon.",
+      "retrieved_contexts": [],
+      "response": "I\u2019m sorry, but the provided context does not contain enough information to describe the molecular mechanism of action potential propagation along an unmyelinated axon.",
+      "reference": "When a local region of the axon depolarizes past threshold, voltage-gated Na+ channels open, allowing Na+ influx that further depolarizes the membrane. This depolarization spreads passively to adjacent membrane regions, triggering their voltage-gated Na+ channels to open. Inactivation of Na+ channels and opening of K+ channels causes repolarization and a brief hyperpolarization (refractory period), ensuring unidirectional propagation toward the axon terminal.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "What is the role of the electron transport chain in oxidative phosphorylation, and how does each complex contribute to ATP synthesis?",
+      "retrieved_contexts": [],
+      "response": "I don\u2019t have enough context to answer this question.",
+      "reference": "The electron transport chain (ETC) in the inner mitochondrial membrane transfers electrons from NADH and FADH2 through a series of protein complexes (I\u2013IV), releasing energy used to pump protons from the matrix into the intermembrane space. This creates a proton gradient (proton-motive force) that drives protons back through ATP synthase (Complex V), which couples proton flow to the phosphorylation of ADP to ATP via chemiosmosis.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "How does mRNA splicing occur in eukaryotes, and what is the role of the spliceosome in this process?",
+      "retrieved_contexts": [],
+      "response": "I\u2019m sorry, but the provided context does not contain enough information to answer that question.",
+      "reference": "In eukaryotes, pre-mRNA contains introns that must be removed and exons that are joined. The spliceosome \u2014 a large ribonucleoprotein complex composed of snRNPs \u2014 recognizes conserved splice-site sequences at intron-exon boundaries. It catalyzes two transesterification reactions: first, the 2'-OH of a branch-point adenosine attacks the 5' splice site forming a lariat intermediate; second, the free 3'-OH of the upstream exon attacks the 3' splice site, joining the exons and releasing the lariat intron.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "How does the complement system work in the innate immune response, and what are the three pathways that activate it?",
+      "retrieved_contexts": [],
+      "response": "I don\u2019t have enough context to answer this question accurately.",
+      "reference": "The complement system consists of plasma proteins that, when activated, form the membrane attack complex (MAC) to lyse pathogens, promote opsonization (coating pathogens for phagocytosis), and trigger inflammation. It is activated via three pathways: (1) the classical pathway, initiated by antibody-antigen complexes binding C1; (2) the lectin pathway, triggered by mannose-binding lectin recognizing carbohydrates on pathogens; and (3) the alternative pathway, initiated by spontaneous C3 hydrolysis on pathogen surfaces.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "Explain how calmodulin mediates calcium signaling in cells and describe two cellular processes it regulates.",
+      "retrieved_contexts": [],
+      "response": "I don\u2019t have enough context to answer this question accurately.",
+      "reference": "Calmodulin is a calcium-binding protein that changes conformation upon binding four Ca2+ ions, exposing hydrophobic regions that interact with target proteins. This calcium-calmodulin complex activates numerous enzymes and processes including calmodulin-dependent protein kinases (CaM kinases) involved in synaptic plasticity and gene expression, and myosin light chain kinase (MLCK) which phosphorylates myosin to trigger smooth muscle contraction.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "How does homologous recombination during meiosis contribute to genetic diversity, and what molecular events occur during crossing over?",
+      "retrieved_contexts": [],
+      "response": "I don\u2019t have enough context to answer this question accurately.\n\nIf you provide the relevant passage or notes, I can explain how homologous recombination during meiosis increases genetic diversity and describe the molecular events of crossing over.",
+      "reference": "During prophase I of meiosis, homologous chromosomes pair and synapse at the synaptonemal complex. Crossing over involves double-strand breaks in one chromosome mediated by the Spo11 enzyme; the broken ends invade the homologous chromosome (strand invasion), forming a Holliday junction that is resolved by cleavage, exchanging segments between maternal and paternal chromosomes. This shuffles allele combinations, producing gametes with novel genetic combinations distinct from either parent.",
+      "faithfulness": 0.25,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "How does the lac operon demonstrate negative and positive regulation of gene expression in bacteria?",
+      "retrieved_contexts": [],
+      "response": "I don\u2019t have any retrieved context to answer this question accurately.\n\nIf you\u2019d like, I can still give a general explanation of how the lac operon shows negative and positive regulation of gene expression in bacteria.",
+      "reference": "The lac operon shows negative regulation via the lac repressor: when lactose is absent, the repressor (encoded by lacI) binds the operator and blocks RNA polymerase. When lactose is present, allolactose (a lactose isomer) acts as an inducer, binding the repressor and causing conformational change that releases the operator. Positive regulation occurs via catabolite activator protein (CAP): when glucose is absent, elevated cAMP binds CAP, which then binds the promoter region and enhances RNA polymerase binding, maximizing transcription only when glucose is absent and lactose is present.",
+      "faithfulness": 0.3333333333333333,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "Describe the mechanism of CRISPR-Cas9 gene editing. How does the guide RNA direct Cas9 to its target, and what DNA repair pathways determine the editing outcome?",
+      "retrieved_contexts": [],
+      "response": "I\u2019m sorry, but the provided context does not contain enough information to describe CRISPR-Cas9 or its mechanism.",
+      "reference": "CRISPR-Cas9 uses a single guide RNA (sgRNA) complementary to the target DNA sequence to direct the Cas9 endonuclease to a specific genomic locus adjacent to a PAM (protospacer adjacent motif, typically NGG). Watson-Crick base pairing between the sgRNA and the target strand allows Cas9 to form an R-loop and introduce a blunt-ended double-strand break. The break is repaired either by nonhomologous end joining (NHEJ), which introduces insertions/deletions (indels) that disrupt gene function, or by homology-directed repair (HDR) using a donor template to introduce precise edits.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "How do type II diabetes and insulin resistance develop at the cellular and molecular level?",
+      "retrieved_contexts": [],
+      "response": "I\u2019m sorry, but the provided context does not contain enough information to answer how type II diabetes and insulin resistance develop at the cellular and molecular level.",
+      "reference": "In type II diabetes, target cells (especially muscle, liver, and adipose) become resistant to insulin signaling. Normally, insulin binds its receptor tyrosine kinase, triggering autophosphorylation and downstream phosphorylation of IRS proteins, activating the PI3K/Akt pathway that promotes GLUT4 transporter insertion into the plasma membrane for glucose uptake. In insulin resistance, chronic overnutrition activates serine kinases (e.g., JNK, IKK) that phosphorylate IRS-1 on serine residues instead of tyrosine, blunting signal transduction, impairing GLUT4 translocation, and resulting in hyperglycemia.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "How does the theory of evolution by natural selection explain the diversity of life observed across all domains of life?",
+      "retrieved_contexts": [],
+      "response": "I\u2019m sorry, but the provided context does not contain any information to answer that question.",
+      "reference": "Darwin's theory of evolution by natural selection proposes that heritable variation exists within populations; individuals with traits better suited to their environment survive and reproduce more successfully, passing those traits to offspring. Over generations, beneficial traits accumulate while deleterious ones diminish. Applied across billions of years and diverse environments, this process has produced the remarkable diversity of life from bacteria to complex eukaryotes, with all organisms sharing common ancestry evidenced by universal genetic code, conserved molecular mechanisms (e.g., ATP synthesis), and homologous structures across taxa.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "Compare and contrast the structures and functions of prokaryotic and eukaryotic cells, highlighting key evolutionary innovations in eukaryotes.",
+      "retrieved_contexts": [],
+      "response": "I\u2019m sorry, but the provided context does not contain any information about prokaryotic or eukaryotic cells, so I can\u2019t answer the comparison from the given material.",
+      "reference": "Prokaryotic cells lack a membrane-bound nucleus and organelles; their DNA is in a nucleoid region and they lack internal compartmentalization. Eukaryotic cells evolved a nucleus that separates transcription from translation, membrane-bound organelles (mitochondria, endoplasmic reticulum, Golgi), and a cytoskeleton. Key innovations include mitochondria (via endosymbiosis of alpha-proteobacteria), enabling aerobic respiration, and chloroplasts (in plants, via endosymbiosis of cyanobacteria). The cytoskeleton enables cell motility, division, and intracellular transport absent in prokaryotes.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "How do feedback mechanisms regulate homeostasis across different organ systems in animals? Provide examples from at least three systems.",
+      "retrieved_contexts": [],
+      "response": "I\u2019m sorry, but the provided context does not contain enough information to answer this question.",
+      "reference": "Homeostasis is maintained through negative feedback loops where deviations from a set point trigger corrective responses. In the endocrine system, the hypothalamus-pituitary axis regulates thyroid hormone via TRH \u2192 TSH \u2192 T3/T4 release; elevated T3/T4 feeds back to suppress TRH and TSH. In thermoregulation, hypothalamic sensors detect temperature changes, triggering vasodilation/sweating (heat) or vasoconstriction/shivering (cold). In blood pressure regulation, baroreceptors detect pressure changes and signal the cardiovascular center to adjust heart rate and vascular resistance via the autonomic nervous system.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "How do the processes of transcription and translation differ between bacteria and eukaryotes, and what are the implications of these differences for gene regulation?",
+      "retrieved_contexts": [],
+      "response": "I\u2019m sorry, but there is no provided context to answer this question from. Since I must use only the provided context, I can\u2019t reliably explain the differences between bacteria and eukaryotes or their gene regulation implications.",
+      "reference": "In bacteria, transcription and translation are coupled \u2014 ribosomes begin translating mRNA while it is still being transcribed, and mRNA requires no processing. In eukaryotes, transcription occurs in the nucleus, pre-mRNA undergoes 5' capping, 3' polyadenylation, and splicing to remove introns before export to the cytoplasm for translation. These differences enable eukaryotic regulation at additional levels: alternative splicing generates multiple proteins from one gene, nuclear export can be regulated, and mRNA stability in the cytoplasm is controlled by 3' UTR sequences and microRNAs.",
+      "faithfulness": 0.75,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "How do plant and animal cells differ in structure, and how do these differences reflect their distinct functional requirements?",
+      "retrieved_contexts": [],
+      "response": "I\u2019m sorry, but the provided context does not contain enough information to answer this question.",
+      "reference": "Plant cells have cell walls (cellulose), a large central vacuole for turgor pressure and storage, chloroplasts for photosynthesis, and plasmodesmata for cell-to-cell communication. Animal cells have centrioles (absent in most plant cells), lysosomes for intracellular digestion, and are generally more flexible due to lack of a cell wall. These differences reflect plants' sessile lifestyle requiring structural rigidity and autotrophic nutrition, while animals' motile lifestyle requires flexible membranes and heterotrophic digestion.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "How has the development of antibiotic resistance in bacteria exemplified the principles of natural selection, and what mechanisms do bacteria use to acquire resistance?",
+      "retrieved_contexts": [],
+      "response": "I\u2019m sorry, but the provided context does not contain any information about antibiotic resistance, natural selection, or bacterial resistance mechanisms, so I can\u2019t answer this from the given material.",
+      "reference": "Antibiotic resistance evolves through natural selection: within a bacterial population, rare individuals with mutations conferring resistance survive antibiotic treatment and reproduce, rapidly shifting the population toward resistance. Bacteria acquire resistance through four main mechanisms: enzymatic drug inactivation (e.g., beta-lactamases cleaving penicillin), target modification (altered penicillin-binding proteins in MRSA), efflux pumps that expel antibiotics, and reduced permeability via porin mutations. Horizontal gene transfer via plasmids, transformation, and conjugation spreads resistance genes between species rapidly.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "Compare the energy yields and metabolic processes of aerobic respiration versus fermentation in cells that experience oxygen deprivation.",
+      "retrieved_contexts": [],
+      "response": "I don\u2019t have any provided context to answer this question.",
+      "reference": "Aerobic cellular respiration produces approximately 30-32 ATP per glucose molecule via glycolysis, the citric acid cycle, and oxidative phosphorylation. In the absence of oxygen, fermentation allows continued glycolysis (net 2 ATP per glucose) by regenerating NAD+ from NADH: lactic acid fermentation (in muscle and some bacteria) converts pyruvate to lactate, while alcoholic fermentation (in yeast) produces ethanol and CO2. Fermentation is far less efficient but enables ATP production when oxygen is unavailable.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "How do adaptive immune responses differ from innate immune responses, and how do the two systems cooperate to eliminate pathogens?",
+      "retrieved_contexts": [],
+      "response": "I don\u2019t have any provided context to answer from, so I can\u2019t reliably explain the differences or cooperation between adaptive and innate immune responses based on the given material.",
+      "reference": "Innate immunity provides immediate, nonspecific defense using physical barriers (skin), phagocytic cells (neutrophils, macrophages), natural killer cells, and pattern recognition receptors (Toll-like receptors) that detect conserved pathogen-associated molecular patterns. Adaptive immunity is slower (days) but highly specific: B cells produce antibodies targeting specific antigens, and cytotoxic T cells kill infected cells. The systems cooperate: innate immune cells present antigens via MHC molecules to T cells, activating adaptive responses; antibodies and complement opsonize pathogens for phagocytosis; and memory cells from adaptive immunity enable faster responses upon re-exposure.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "How does gene flow, genetic drift, mutation, and natural selection each act as a mechanism of microevolution, and under what conditions does each predominate?",
+      "retrieved_contexts": [],
+      "response": "I\u2019m sorry, but there is no context provided to answer this question.",
+      "reference": "Microevolution is change in allele frequencies within a population over generations. Natural selection favors alleles that increase fitness and predominates when selective pressures are strong. Genetic drift causes random allele frequency changes and predominates in small populations (founder effect, bottleneck effect). Gene flow (migration between populations) introduces or removes alleles and reduces genetic differentiation between populations. Mutation is the ultimate source of new alleles; it is rare per locus per generation but provides the raw material for all other evolutionary mechanisms.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "How does the carbon cycle connect the living and non-living components of ecosystems, and what is the impact of human activities on this cycle?",
+      "retrieved_contexts": [],
+      "response": "I don\u2019t have enough context to answer this question accurately.\n\nIf you provide the relevant text or notes about the carbon cycle, I can explain:\n- how it links living and non-living parts of ecosystems, and\n- how human activities affect it.",
+      "reference": "The carbon cycle moves carbon between the atmosphere (CO2), living organisms, soil, and oceans. Autotrophs fix atmospheric CO2 via photosynthesis into organic compounds; heterotrophs obtain carbon through consumption; decomposers release CO2 back to the atmosphere via respiration. Long-term carbon is stored in fossil fuels and carbonate rocks. Human activities \u2014 primarily fossil fuel combustion, deforestation, and cement production \u2014 have significantly increased atmospheric CO2 concentrations, intensifying the greenhouse effect and driving climate change by disrupting the balance between carbon fixation and release.",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "What is the role of ATP synthase in oxidative phosphorylation?",
+      "retrieved_contexts": [],
+      "response": "I don\u2019t have enough context to answer that from the provided material.",
+      "reference": "ATP synthase (Complex V) is an enzyme located in the inner mitochondrial membrane that uses the energy of the proton gradient established by the electron transport chain to drive ATP synthesis. Protons flow down their electrochemical gradient through the F0 subunit, causing rotation of the central stalk that drives conformational changes in the F1 subunit's catalytic sites, coupling ADP phosphorylation to proton translocation through a mechanism called chemiosmosis.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "What is the difference between mitosis and meiosis, and why is each process important?",
+      "retrieved_contexts": [],
+      "response": "I\u2019m sorry, but I don\u2019t have any retrieved context to answer that question.",
+      "reference": "Mitosis produces two genetically identical diploid daughter cells and is used for growth, tissue repair, and asexual reproduction. Meiosis produces four genetically unique haploid gametes through two successive divisions (meiosis I and II) and is essential for sexual reproduction. Meiosis I separates homologous chromosomes (reducing ploidy), while meiosis II separates sister chromatids. Genetic diversity arises in meiosis through crossing over during prophase I and independent assortment of chromosomes.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "What is a nucleosome, and how does its structure contribute to DNA packaging and gene regulation?",
+      "retrieved_contexts": [],
+      "response": "I don\u2019t have enough context to answer this question.",
+      "reference": "A nucleosome is the fundamental repeating unit of chromatin, consisting of approximately 147 base pairs of DNA wrapped around an octamer of histone proteins (two copies each of H2A, H2B, H3, and H4). Nucleosome packaging compacts DNA and regulates gene expression: tightly packed heterochromatin is generally transcriptionally inactive, while loosely packed euchromatin is accessible to transcription machinery. Histone modifications (acetylation, methylation, phosphorylation) alter chromatin structure to activate or repress specific genes as part of epigenetic regulation.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "What is the function of the rough endoplasmic reticulum, and how does it differ from the smooth endoplasmic reticulum?",
+      "retrieved_contexts": [],
+      "response": "I don\u2019t have enough information from the provided context to answer this question.",
+      "reference": "The rough endoplasmic reticulum (rough ER) is studded with ribosomes and functions as the site of synthesis and initial folding of secretory, membrane, and lysosomal proteins. Newly synthesized proteins enter the ER lumen for quality control and glycosylation before being packaged into vesicles for transport to the Golgi apparatus. The smooth ER lacks ribosomes and functions in lipid synthesis, steroid hormone production, carbohydrate metabolism, and drug detoxification in liver cells, as well as calcium ion storage in muscle cells.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "How does photosystem II function in the light-dependent reactions of photosynthesis?",
+      "retrieved_contexts": [],
+      "response": "I don\u2019t have enough context to answer that from the provided material.",
+      "reference": "Photosystem II (PSII) absorbs light energy (optimally at 680 nm wavelength), which excites electrons in the P680 reaction center chlorophyll to a higher energy state. These high-energy electrons are transferred to the electron transport chain, replacing electrons lost from P680 via water splitting (photolysis): 2H2O \u2192 4H+ + 4e- + O2. This is the source of the oxygen released during photosynthesis. The protons generated contribute to the proton gradient used by ATP synthase to produce ATP via photophosphorylation.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "What is the Hardy-Weinberg principle, and what conditions must be met for a population to be in Hardy-Weinberg equilibrium?",
+      "retrieved_contexts": [],
+      "response": "I\u2019m sorry, but there is no provided context about the Hardy-Weinberg principle or Hardy-Weinberg equilibrium, so I can\u2019t answer from the given information.",
+      "reference": "The Hardy-Weinberg principle states that allele and genotype frequencies in a population remain constant across generations (p2 + 2pq + q2 = 1 for diploid loci), serving as a null model for detecting evolution. Five conditions must be met: (1) no mutations, (2) no gene flow (migration), (3) large population size (no genetic drift), (4) random mating, and (5) no natural selection. Deviation from expected frequencies indicates that one or more evolutionary forces are acting on the population.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "What is the role of the Golgi apparatus in cell secretion?",
+      "retrieved_contexts": [],
+      "response": "I don\u2019t have enough context to answer that.",
+      "reference": "The Golgi apparatus receives proteins and lipids from the endoplasmic reticulum via transport vesicles that fuse with the cis face. Inside the Golgi stacks (cisternae), cargo undergoes further glycosylation, phosphorylation, and sorting. The trans face packages processed molecules into secretory vesicles, lysosomes, or vesicles destined for the plasma membrane. The Golgi thus acts as the cell's processing and distribution center, directing correctly modified proteins to their final destinations.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "What is a point mutation, and what are the possible consequences for protein function?",
+      "retrieved_contexts": [],
+      "response": "I don\u2019t have enough context to answer this question.",
+      "reference": "A point mutation is a change in a single nucleotide base pair in the DNA sequence. Consequences depend on type and location: silent (synonymous) mutations change a codon to a synonymous codon encoding the same amino acid, with no effect on protein sequence. Missense mutations change one amino acid to another, potentially altering protein structure and function (e.g., sickle cell anemia from Glu\u2192Val in beta-globin). Nonsense mutations introduce a premature stop codon, producing a truncated, typically nonfunctional protein. Splice-site mutations disrupt mRNA processing, altering the final protein sequence.",
+      "faithfulness": 0.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "How does turgor pressure maintain plant structure, and what happens when a plant wilts?",
+      "retrieved_contexts": [],
+      "response": "I\u2019m sorry, but there is no provided context to answer this question.",
+      "reference": "Turgor pressure results from water entering plant cells by osmosis into the central vacuole, pushing the plasma membrane against the rigid cell wall, creating rigidity that supports non-woody plant structures. When soil water is scarce, plant cells lose water to their surroundings by osmosis (plasmolysis), the vacuole shrinks, turgor pressure drops, and the plant wilts. Guard cells surrounding stomata also lose turgor when water-stressed, causing stomata to close and limiting water loss through transpiration but also reducing CO2 uptake for photosynthesis.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    },
+    {
+      "user_input": "What is the role of hemoglobin in oxygen transport, and how does the Bohr effect facilitate oxygen delivery to metabolically active tissues?",
+      "retrieved_contexts": [],
+      "response": "I don\u2019t have enough context to answer this accurately.",
+      "reference": "Hemoglobin is a tetrameric protein in red blood cells that carries oxygen bound to the heme iron in each subunit. Oxygen binding is cooperative: binding of O2 to one subunit increases the affinity of the remaining subunits (sigmoidal dissociation curve). The Bohr effect describes how increased CO2 and H+ (produced in active tissues) lower hemoglobin's oxygen affinity by stabilizing the deoxygenated (T) conformation, promoting O2 release where it is needed most. At the lungs, lower CO2 and H+ shift hemoglobin back to the high-affinity (R) state, facilitating O2 loading.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0
+    }
+  ]
+}

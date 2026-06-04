@@ -1,10 +1,13 @@
 import json
 import asyncio
+import logging
 import time
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from app.llm_factory import get_llm
 from app.agents.prompts import CHAT_SYSTEM_PROMPT
 from app.retrieval.hybrid_retriever import retrieve
+
+logger = logging.getLogger(__name__)
 
 
 def _format_context(chunks) -> str:
@@ -30,7 +33,9 @@ async def stream_chat(
         context = _format_context(retrieval.chunks)
 
         # Load existing chat history from LangGraph checkpointer
-        config = {"configurable": {"thread_id": goal_id}}
+        # checkpoint_ns is required by AsyncSqliteSaver.aput(); empty string is the
+        # default namespace. Omitting it raises KeyError: 'checkpoint_ns' on save.
+        config = {"configurable": {"thread_id": goal_id, "checkpoint_ns": ""}}
         checkpoint_tuple = await checkpointer.aget_tuple(config)
 
         history: list[dict] = []
@@ -105,3 +110,7 @@ async def stream_chat(
 
     except asyncio.CancelledError:
         return
+    except Exception as exc:
+        logger.exception("Chat stream failed for session %s", session_id)
+        payload = json.dumps({"type": "error", "content": str(exc)})
+        yield f"event: error\ndata: {payload}\n\n"

@@ -48,7 +48,9 @@ services:
     environment:
       NODE_ENV: development
       WATCHPACK_POLLING: "true"
-      NEXT_PUBLIC_API_URL: http://localhost:8000
+      # The Next.js /api proxy runs server-side inside this container, so it must
+      # reach the backend by its compose service name, not localhost.
+      NEXT_PUBLIC_API_URL: http://backend:8000
     command: npm run dev
     restart: unless-stopped
 

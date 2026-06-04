@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
-from sse_starlette import EventSourceResponse
+from fastapi.responses import StreamingResponse
 from app.agents.super_agent import stream_super_chat
 
 router = APIRouter(prefix="/super", tags=["super"])
@@ -30,4 +30,8 @@ async def super_chat_stream(body: SuperChatRequest, request: Request):
                 break
             yield event
 
-    return EventSourceResponse(event_generator())
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )

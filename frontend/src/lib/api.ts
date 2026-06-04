@@ -22,6 +22,14 @@ export interface CreateGoalRequest {
   source_ids: string[]
 }
 
+// POST /goals returns a creation acknowledgement (not the full plan).
+// The full StudyPlan is fetched separately via getGoalPlan(goal_id).
+export interface CreateGoalResponse {
+  goal_id: string
+  session_count: number
+  rationale: string
+}
+
 export interface QuizSubmissionRequest {
   answers: Record<string, number> // question_id -> selected_index (0-3)
 }
@@ -67,7 +75,7 @@ export async function deleteSource(sourceId: string): Promise<void> {
 
 // ─── Goals endpoints ─────────────────────────────────────────────────────────
 
-export async function createGoal(data: CreateGoalRequest): Promise<StudyPlan> {
+export async function createGoal(data: CreateGoalRequest): Promise<CreateGoalResponse> {
   const res = await fetch(`${API_BASE}/goals`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

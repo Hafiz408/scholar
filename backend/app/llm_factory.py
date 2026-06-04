@@ -30,6 +30,8 @@ def get_llm(*, temperature: float = 0, streaming: bool = False) -> BaseChatModel
             streaming=streaming,
             api_key=settings.llm_api_key or settings.openai_api_key or "none",
             base_url=settings.llm_base_url or None,
+            timeout=settings.llm_timeout_seconds,
+            max_retries=2,
         )
 
     if provider == "anthropic":

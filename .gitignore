@@ -3,6 +3,10 @@
 .env.local
 .env.*.local
 
+# Local runtime artifacts (sqlite db, uploads, notion export logs)
+/data/
+/logs/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -70,3 +74,4 @@ frontend/package-lock.json
 !backend/tests/README.md
 !backend/eval/README.md
 /backend/data/uploads
+.pageindex_lib/

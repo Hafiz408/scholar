@@ -91,18 +91,24 @@ export default function KnowledgeUpload() {
         formData.append('file', acceptedFiles[0])
         // Do NOT set Content-Type — browser sets multipart boundary automatically
         const result = await uploadSource(formData)
-        setPendingSourceIds((prev) => [...prev, result.source_id])
-        setSources((prev) => [
-          ...prev,
-          {
-            id: result.source_id,
-            title: acceptedFiles[0].name,
-            source_type: 'pdf',
-            page_count: 0,
-            status: 'pending',
-            created_at: new Date().toISOString(),
-          } as KnowledgeSource,
-        ])
+        setPendingSourceIds((prev) =>
+          prev.includes(result.source_id) ? prev : [...prev, result.source_id]
+        )
+        setSources((prev) =>
+          prev.some((s) => s.id === result.source_id)
+            ? prev
+            : [
+                ...prev,
+                {
+                  id: result.source_id,
+                  title: acceptedFiles[0].name,
+                  source_type: 'pdf',
+                  page_count: 0,
+                  status: 'pending',
+                  created_at: new Date().toISOString(),
+                } as KnowledgeSource,
+              ]
+        )
       } catch (err) {
         setError(`Upload failed: ${String(err)}`)
       } finally {
@@ -117,6 +123,10 @@ export default function KnowledgeUpload() {
     maxSize: 50 * 1024 * 1024,
     multiple: false,
     onDrop,
+    onDropRejected: (rejections) => {
+      const reason = rejections[0]?.errors[0]?.message ?? 'File rejected'
+      setError(`Upload rejected: ${reason} (PDF only, up to 50 MB)`)
+    },
   })
 
   // Handle URL submit
@@ -129,19 +139,25 @@ export default function KnowledgeUpload() {
       const formData = new FormData()
       formData.append('url', urlInput.trim())
       const result = await uploadSource(formData)
-      setPendingSourceIds((prev) => [...prev, result.source_id])
-      setSources((prev) => [
-        ...prev,
-        {
-          id: result.source_id,
-          title: urlInput.trim(),
-          source_type: 'url',
-          url: urlInput.trim(),
-          page_count: 0,
-          status: 'pending',
-          created_at: new Date().toISOString(),
-        } as KnowledgeSource,
-      ])
+      setPendingSourceIds((prev) =>
+        prev.includes(result.source_id) ? prev : [...prev, result.source_id]
+      )
+      setSources((prev) =>
+        prev.some((s) => s.id === result.source_id)
+          ? prev
+          : [
+              ...prev,
+              {
+                id: result.source_id,
+                title: urlInput.trim(),
+                source_type: 'url',
+                url: urlInput.trim(),
+                page_count: 0,
+                status: 'pending',
+                created_at: new Date().toISOString(),
+              } as KnowledgeSource,
+            ]
+      )
       setUrlInput('')
     } catch (err) {
       setError(`URL submit failed: ${String(err)}`)

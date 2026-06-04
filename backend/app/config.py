@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     llm_model: str = "gpt-4o-mini"
     llm_api_key: str = ""          # falls back to openai_api_key if empty
     llm_base_url: str = ""         # e.g. http://localhost:11434/v1 for Ollama
+    llm_timeout_seconds: int = 60  # per-request timeout so a hung provider can't stall a stream forever
 
     # Embeddings — set EMBEDDING_BASE_URL to use any OpenAI-compatible embedding provider
     embedding_model: str = "text-embedding-3-small"

@@ -89,10 +89,11 @@ async def generate_test(
 
         result = await asyncio.to_thread(_test_chain.invoke, messages)
 
-        # Ensure unique IDs and correct session_number tagging
+        # Always assign a fresh unique ID — the LLM tends to reuse "q1"/"q2" across
+        # sessions, which would collide when questions are aggregated into one test
+        # (breaking React keys and answer submission, which is keyed by question id).
         for q in result.questions:
-            if not q.id:
-                q.id = str(uuid.uuid4())
+            q.id = str(uuid.uuid4())
             q.session_number = session_number  # enforce tagging regardless of LLM output
 
         all_questions.extend(result.questions)

@@ -20,11 +20,12 @@ Scholar uses two retrieval strategies — PageIndex (structural, LLM-navigated t
 
 | Strategy | Faithfulness | Answer Relevancy | Context Precision | Avg Latency |
 |----------|-------------|-----------------|-------------------|-------------|
-| PageIndex | 0.64 | N/A† | 0.00‡ | 1592ms |
-| Vector | 0.54 | N/A† | 0.00‡ | 1373ms |
+| PageIndex | 0.89 | 0.00† | 0.00† | 2578ms |
+| Vector | 0.94 | 0.02† | 0.02† | 1920ms |
 
-† Answer Relevancy requires OpenAI's `text-embedding` API for the RAGAS judge — not configured in this run.
-‡ Context Precision is 0.00 because pgvector was empty during this run. Re-run after full PDF ingestion.
+Run with a live OpenAI judge over a fully ingested book (pgvector populated + PageIndex tree built). **Faithfulness** is measured end-to-end and scores highly for both strategies (0.89–0.94), up from an earlier 0.64/0.54 run before the retrieval pipeline was fully functional.
+
+† Answer Relevancy and Context Precision are near-zero because the committed `golden_qa.json` targets **Biology 2e**, while this run used `Test book.pdf` (a different subject) — the reference answers don't correspond to the book's content. To get representative relevancy/precision, ingest Biology 2e (or regenerate `golden_qa.json` to match your book) and re-run.
 
 Full JSON results: [`results/comparison_20260321T233734.json`](results/comparison_20260321T233734.json)
 
@@ -133,18 +134,18 @@ sequenceDiagram
 ```json
 // comparison_{timestamp}.json
 {
-  "run_at": "20260321T233734",
+  "run_at": "20260604T200226",
   "pageindex": {
-    "faithfulness": 0.64,
-    "answer_relevancy": null,
+    "faithfulness": 0.89,
+    "answer_relevancy": 0.00,
     "context_precision": 0.00,
-    "avg_latency_ms": 1592
+    "avg_latency_ms": 2578
   },
   "vector": {
-    "faithfulness": 0.54,
-    "answer_relevancy": null,
-    "context_precision": 0.00,
-    "avg_latency_ms": 1373
+    "faithfulness": 0.94,
+    "answer_relevancy": 0.02,
+    "context_precision": 0.02,
+    "avg_latency_ms": 1920
   }
 }
 ```
@@ -170,11 +171,12 @@ sequenceDiagram
 
 ## Re-running for Representative Scores
 
-The committed results show `context_precision = 0.00` because pgvector was empty during the benchmark run. For accurate scores:
+The committed results show high **faithfulness** (0.89–0.94) but near-zero **answer_relevancy / context_precision** — because `golden_qa.json` targets OpenStax **Biology 2e** while the run used a different book (`Test book.pdf`), so the reference answers don't match the retrieved content. For representative scores across all metrics:
 
 1. Start the full Docker stack: `docker compose up`
-2. Upload OpenStax Biology 2e via the UI or `POST /knowledge/upload`
+2. Upload OpenStax Biology 2e via the UI or `POST /knowledge/upload` (or regenerate `golden_qa.json` to match your own book)
 3. Wait for `status = ready` on the source
-4. Run the benchmark command above
-5. Commit the new JSON files to `eval/results/`
+4. Ensure `OPENAI_API_KEY` is set (RAGAS uses it for the answer-relevancy judge)
+5. Run the benchmark command above
+6. Commit the new JSON files to `eval/results/`
 6. Update the table in the root `README.md`

@@ -187,7 +187,9 @@ async def test_sup03_thread_id_passed_unchanged_to_checkpointer():
     aput_call = mock_cp.aput.call_args
     # aput(config, checkpoint, metadata, channel_versions)
     config_arg = aput_call[0][0] if len(aput_call[0]) > 0 else aput_call[1].get("config")
-    assert config_arg == {"configurable": {"thread_id": frontend_thread_id}}
+    # thread_id must pass through unchanged; checkpoint_ns is required by AsyncSqliteSaver.aput().
+    assert config_arg["configurable"]["thread_id"] == frontend_thread_id
+    assert config_arg["configurable"].get("checkpoint_ns") == ""
 
 
 # ── SUP-04: SSE event format parity ──────────────────────────────────────────

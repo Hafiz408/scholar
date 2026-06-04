@@ -1,5 +1,6 @@
 import json
 import asyncio
+import logging
 import time
 import aiosqlite
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
@@ -7,6 +8,8 @@ from app.config import settings
 from app.llm_factory import get_llm
 from app.agents.prompts import CHAT_SYSTEM_PROMPT
 from app.retrieval.hybrid_retriever import retrieve
+
+logger = logging.getLogger(__name__)
 
 
 def _format_context(chunks) -> str:
@@ -51,7 +54,9 @@ async def stream_super_chat(
 
         # Load existing chat history from LangGraph checkpointer (SUP-03)
         # thread_id comes from the caller — never generated server-side
-        config = {"configurable": {"thread_id": thread_id}}
+        # checkpoint_ns is required by AsyncSqliteSaver.aput(); empty string is the
+        # default namespace. Omitting it raises KeyError: 'checkpoint_ns' on save.
+        config = {"configurable": {"thread_id": thread_id, "checkpoint_ns": ""}}
         checkpoint_tuple = await checkpointer.aget_tuple(config)
 
         history: list[dict] = []
@@ -128,6 +133,8 @@ async def stream_super_chat(
     except asyncio.CancelledError:
         return
     except Exception as e:
+        # The error event already informs the client; re-raising after the response
+        # body has started streaming only surfaces as a noisy ASGI exception.
+        logger.exception("Super chat stream failed for thread %s", thread_id)
         payload = json.dumps({"type": "error", "content": str(e)})
         yield f"event: error\ndata: {payload}\n\n"
-        raise

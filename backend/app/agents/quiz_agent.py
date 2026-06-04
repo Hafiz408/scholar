@@ -56,10 +56,10 @@ async def generate_quiz(
         },
     ]
     result = await asyncio.to_thread(_quiz_chain.invoke, messages)
-    # Ensure each question has a unique id
+    # Always assign a fresh unique id — answers are keyed by question id on submit,
+    # so LLM-reused ids (e.g. "q1"/"q2") would collide and corrupt scoring.
     for q in result.questions:
-        if not q.id:
-            q.id = str(uuid.uuid4())
+        q.id = str(uuid.uuid4())
     return result.questions
 
 

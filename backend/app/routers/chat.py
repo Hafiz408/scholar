@@ -2,7 +2,7 @@ import aiosqlite
 import json
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
-from sse_starlette import EventSourceResponse
+from fastapi.responses import StreamingResponse
 from app.config import settings
 from app.agents.session_chat import stream_chat
 
@@ -36,7 +36,7 @@ async def chat_in_session(
         raise HTTPException(status_code=404, detail="Session not found")
 
     goal_id = row["goal_id"]
-    source_ids = json.loads(row["knowledge_source_ids"])
+    source_ids = json.loads(row["knowledge_source_ids"] or "[]")
     checkpointer = request.app.state.checkpointer
 
     async def event_generator():
@@ -51,4 +51,8 @@ async def chat_in_session(
                 break
             yield event
 
-    return EventSourceResponse(event_generator())
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )

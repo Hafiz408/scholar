@@ -250,21 +250,22 @@ docker compose exec backend pytest tests/ -m "not integration" -v
 cd backend && pytest tests/ -m "not integration" -v
 ```
 
-**93 tests pass.** The single excluded test (`test_router_accuracy_gate`) requires a live LLM API key and is marked `@pytest.mark.integration`.
+**103 tests pass.** The single excluded test (`test_router_accuracy_gate`) requires a live LLM API key and is marked `@pytest.mark.integration`.
 
 ---
 
 ## RAGAS Benchmark
 
-PageIndex vs vector RAG evaluated on 30 Q&A pairs:
+PageIndex vs vector RAG evaluated on 30 Q&A pairs (OpenAI judge, full ingestion):
 
 | Strategy | Faithfulness | Answer Relevancy | Context Precision | Avg Latency |
 |----------|-------------|-----------------|-------------------|-------------|
-| PageIndex | 0.64 | N/A† | 0.00‡ | 1592ms |
-| Vector | 0.54 | N/A† | 0.00‡ | 1373ms |
+| PageIndex | 0.89 | 0.00† | 0.00† | 2578ms |
+| Vector | 0.94 | 0.02† | 0.02† | 1920ms |
 
-† Answer Relevancy requires OpenAI embeddings for scoring (not configured).
-‡ Context Precision is 0.00 because pgvector store was empty during this benchmark run — re-run after full ingestion for representative scores.
+**Faithfulness** (how well answers stay grounded in retrieved context) is now measured with a live OpenAI judge — both strategies score highly (0.89–0.94), up from an earlier 0.64/0.54 run.
+
+† Answer Relevancy and Context Precision are near-zero here because the committed `golden_qa.json` targets **Biology 2e**, while the benchmark ran against `Test book.pdf` (a different subject) — the reference answers don't match the book. For representative relevancy/precision, ingest Biology 2e (or regenerate `golden_qa.json` to match your book) and re-run.
 
 Results committed to `backend/eval/results/`. Re-run:
 ```bash
