@@ -57,8 +57,13 @@ frontend/node_modules/
 *.key
 *.crt
 
-# Planning / internal GSD files
+# Planning / internal AI-tooling files (local-only, never tracked)
 .planning/
+.claude/
+.superpowers/
+docs/superpowers/
+memory/
+.playwright-mcp/
 
 # Test data
 "Test book.pdf"
