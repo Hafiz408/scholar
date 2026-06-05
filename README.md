@@ -256,21 +256,22 @@ cd backend && pytest tests/ -m "not integration" -v
 
 ## RAGAS Benchmark
 
-PageIndex vs vector RAG evaluated on 30 Q&A pairs (OpenAI judge, full ingestion):
+PageIndex vs vector RAG, 30 Q&A pairs over a fully-ingested textbook, OpenAI judge — **all three metrics representative**:
 
 | Strategy | Faithfulness | Answer Relevancy | Context Precision | Avg Latency |
 |----------|-------------|-----------------|-------------------|-------------|
-| PageIndex | 0.89 | 0.00† | 0.00† | 2578ms |
-| Vector | 0.94 | 0.02† | 0.02† | 1920ms |
+| **PageIndex** | **0.94** | 0.81 | 0.77 | 2480ms |
+| **Vector** | 0.85 | **0.91** | **0.92** | 1780ms |
 
-**Faithfulness** (how well answers stay grounded in retrieved context) is now measured with a live OpenAI judge — both strategies score highly (0.89–0.94), up from an earlier 0.64/0.54 run.
+A genuine trade-off: **PageIndex** wins **faithfulness** — its larger structural sections give the LLM more grounding — while **Vector** wins **answer relevancy + context precision** by returning tighter, semantically-matched chunks. PageIndex pays ~700ms for its LLM tree-navigation step.
 
-† Answer Relevancy and Context Precision are near-zero here because the committed `golden_qa.json` targets **Biology 2e**, while the benchmark ran against `Test book.pdf` (a different subject) — the reference answers don't match the book. For representative relevancy/precision, ingest Biology 2e (or regenerate `golden_qa.json` to match your book) and re-run.
+> Run against the bundled textbook with a golden set generated to match it (`golden_qa_envsci.json`). The original `golden_qa.json` targets OpenStax **Biology 2e**; supply that book + `--golden-qa golden_qa.json` to benchmark against it.
 
 Results committed to `backend/eval/results/`. Re-run:
 ```bash
 docker compose exec backend python eval/run_ragas.py \
   --book-path /app/data/uploads/your-book.pdf \
+  --golden-qa eval/golden_qa_envsci.json \
   --output-dir eval/results/
 ```
 

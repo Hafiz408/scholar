@@ -54,7 +54,7 @@ def _flatten_skeleton(nodes: list, depth: int = 0) -> str:
     lines = []
     indent = "  " * depth
     for node in nodes:
-        node_id = node.get("id", "?")
+        node_id = node.get("node_id", "?")
         title = node.get("title", "")
         summary = (node.get("summary") or "")[:200]
         lines.append(f"{indent}[{node_id}] {title}: {summary}")
@@ -68,7 +68,7 @@ def _collect_nodes_by_ids(nodes: list, target_ids: set) -> list:
     """Walk the tree depth-first and return nodes whose id is in target_ids."""
     result = []
     for node in nodes:
-        if node.get("id") in target_ids:
+        if node.get("node_id") in target_ids:
             result.append(node)
         children = node.get("nodes") or []
         if children:
@@ -156,7 +156,7 @@ async def fetch_pageindex_chunks(
             text = node.get("text") or node.get("summary") or ""
             if not text:
                 continue
-            rank = id_rank.get(node.get("id", ""), len(matched))
+            rank = id_rank.get(node.get("node_id", ""), len(matched))
             chunks.append(
                 RetrievedChunk(
                     source_id=source_id,

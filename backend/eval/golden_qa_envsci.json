@@ -1,0 +1,182 @@
+[
+  {
+    "id": "q001",
+    "question": "Which topics are covered under Unit III, and what is the central theme of that unit?",
+    "ground_truth": "Unit III is titled Climate Change. The topics covered include global warming and changing environment, ecosystem changes, changing blue-green-grey water cycles, water scarcity and water shortages, and desertification.",
+    "question_type": "deep"
+  },
+  {
+    "id": "q002",
+    "question": "How does the excerpt define genetic diversity and species diversity, and how do they differ?",
+    "ground_truth": "Genetic diversity is defined as the total genetic information contained in the genes of all species, as well as the variation in genetic information between species and among individuals of the same species. Species diversity is the variety of species on Earth, including both the number of species and the number of individuals within each species. The key difference is that genetic diversity focuses on variation in genes, while species diversity focuses on variation in species and their abundance.",
+    "question_type": "deep"
+  },
+  {
+    "id": "q003",
+    "question": "How does the medium industrial zone differ from the light industrial zone in terms of the kinds of activities allowed?",
+    "ground_truth": "The light industrial zone is intended for high quality, light industrial developments with limited accessory outdoor activities, and any nuisance associated with these uses will not extend outside an enclosed building. In contrast, the medium industrial zone allows manufacturing, processing, assembling, distribution, service, and repair uses that carry out part of their operation outdoors or require outdoor storage areas. Any nuisance associated with medium industrial uses should not extend beyond these sites.",
+    "question_type": "deep"
+  },
+  {
+    "id": "q004",
+    "question": "What are some consequences of human modification of landscapes, and why is maintaining ecosystem integrity important?",
+    "ground_truth": "Human modification of landscapes for agricultural and other purposes has caused immense loss of native vegetation, fragmentation and degradation of habitat, and a global decline in biodiversity. Many landscapes are now highly modified, with only scattered fragments of native vegetation remaining, and this alters ecosystem processes, species richness and distribution, and physical attributes of the environment. Maintaining ecosystem integrity is vital because ecosystems must adapt to climate change, biodiversity must flourish, and humans depend on the ecological goods and services they provide, such as clean air and water, carbon sequestration, pollination, pest control, raw resources, soil protection, and recreation.",
+    "question_type": "deep"
+  },
+  {
+    "id": "q005",
+    "question": "What major water quality problems are associated with agriculture, and what global concerns are linked to them?",
+    "ground_truth": "Agriculture contributes to water quality problems through contamination of ground and surface waters from manure and chemical fertilizers, as well as through nutrient and pesticide leaching, water extraction, drainage, and flooding. It is also a major cause of degradation of surface and groundwater through erosion and chemical runoff, and the agro food-processing industry is a significant source of organic pollution. Globally, these problems are linked to water-borne disease, ecosystem dysfunction, loss of biodiversity, contamination of marine and groundwater systems, and persistent organic pollutants.",
+    "question_type": "deep"
+  },
+  {
+    "id": "q006",
+    "question": "Why must water from wells and boreholes be checked for pollution, and what is one source of this type of pollution?",
+    "ground_truth": "Water from wells and boreholes must be checked because underground water can become polluted. One source is when humans apply pesticides and chemicals to soils, and rainwater washes them deep into the ground. This carries the pollutants into underground water, causing groundwater pollution.",
+    "question_type": "deep"
+  },
+  {
+    "id": "q007",
+    "question": "According to the passage, what are the major sources of social change?",
+    "ground_truth": "The major sources of social change include population growth and composition, culture and technology, the natural environment, and social conflict. The passage presents environmental changes as one of the many sources of social change. These factors together help drive changes in societies.",
+    "question_type": "deep"
+  },
+  {
+    "id": "q008",
+    "question": "What are the two major emphases of environmental sociology, and what terms are used to describe the unequal effects it highlights?",
+    "ground_truth": "Environmental sociology studies the environment from a sociological perspective. One major emphasis is that environmental problems are largely the result of human activity and human decision making. A second major emphasis is that these problems disproportionately affect low-income people and people of color; these effects are called environmental inequality and environmental racism, respectively.",
+    "question_type": "deep"
+  },
+  {
+    "id": "q009",
+    "question": "What is meant by Westernization, and in which areas of life is it said to be visible in India?",
+    "ground_truth": "Westernization means blind imitation of the social ways and values prevailing in western countries. The passage says that in India this trend can be seen in social, economic, political, cultural, religious, and educational fields. In the social sphere, examples include dress, lifestyle, and town-planning.",
+    "question_type": "deep"
+  },
+  {
+    "id": "q010",
+    "question": "According to the general economic rules, what is productivity and how does it relate to a country's living standard?",
+    "ground_truth": "Productivity is defined as the amount of produced goods divided by total working hours. The excerpt says that the living standard of a country depends on the skills used to produce services and goods. This means higher productivity is linked to a better living standard.",
+    "question_type": "deep"
+  },
+  {
+    "id": "q011",
+    "question": "How does the passage describe the relationship between globalization and environmental problems?",
+    "ground_truth": "The passage says that environmental challenges such as global warming, cross-boundary water and air pollution, and over-fishing of the ocean are linked with globalization. It also states that globalizing processes affect and are affected by business and work organization, economics, socio-cultural resources, and the natural environment. The text emphasizes that effective policies and their implementation are needed to reduce environmental damage.",
+    "question_type": "deep"
+  },
+  {
+    "id": "q012",
+    "question": "What are tax havens, and how does globalization supposedly affect them?",
+    "ground_truth": "Tax havens are defined as a country or independent area where taxation levies are at low rates. They let foreign businesses and individuals keep profits in local institutions with little or no liability, and they share little, if any, information with other tax authorities. Globalization is said to remove these havens by eliminating the administrative structures that allow the wealthy to hide funds from taxation, which would increase transparency and improve funding for social programs.",
+    "question_type": "deep"
+  },
+  {
+    "id": "q013",
+    "question": "According to the passage, why might globalization negatively affect cultural identity, and what example is given?",
+    "ground_truth": "The passage says that if borders are lost, people may also lose part of their culture, ethnicity, or family heritage. It explains that people identify themselves based on their history, so cultural identity can become less significant in a global world. The example given is that being Irish would have less impact than it does today.",
+    "question_type": "deep"
+  },
+  {
+    "id": "q014",
+    "question": "What is agroecosystem analysis, and what kinds of factors does it consider?",
+    "ground_truth": "Agroecosystem analysis is a thorough analysis of an agricultural environment. It considers ecology, sociology, economics, and politics with equal weight. The text also notes that it is impossible to account for all relevant aspects, which is one of the main challenges of conducting such an analysis.",
+    "question_type": "deep"
+  },
+  {
+    "id": "q015",
+    "question": "How do population regulating mechanisms operate in ecosystems, and why are crop and livestock populations in simplified agroecosystems usually not self-regulating?",
+    "ground_truth": "In ecosystems, population levels are controlled by a complex combination of biotic interactions and limits imposed by the availability of physical resources. In simplified agroecosystems, human-directed genetic selection, domestication, and reduced niche diversity weaken these natural controls. As a result, crop plants and animals are rarely self-reproducing or self-regulating, and their population sizes are instead determined by human inputs such as seed or control agents.",
+    "question_type": "deep"
+  },
+  {
+    "id": "q016",
+    "question": "What is the main objective of the OAI551 Environment and Agriculture course?",
+    "ground_truth": "The objective of the course is to emphasize the importance of environment and agriculture in the changing global scenario. It also focuses on the emerging issues connected to this relationship.",
+    "question_type": "factual"
+  },
+  {
+    "id": "q017",
+    "question": "According to the passage, what environmental factors are fundamental to agricultural production and global food security, and how much of the world's land surface does agriculture use?",
+    "ground_truth": "Agriculture uses about a third of the world’s land surface and depends directly on the wider environment for its existence and sustainability. The passage identifies sunlight, water, nutrients, and a diversity of plants, animals, and microbes as fundamental to agricultural production. These elements are also described as essential to global food security.",
+    "question_type": "factual"
+  },
+  {
+    "id": "q018",
+    "question": "Why are African polyculture systems considered important, and what benefits do they provide?",
+    "ground_truth": "African polyculture systems grow a variety of different crops on the same piece of land and are used in at least 80 percent of the cultivated area of West Africa. They are often highly biodiverse. As a result, they help conserve valuable crop and livestock diversity, suppress pests, and boost nutritional values.",
+    "question_type": "factual"
+  },
+  {
+    "id": "q019",
+    "question": "What is the purpose of the low intensity business zone, and where are these uses typically located?",
+    "ground_truth": "The low intensity business zone provides the opportunity for low intensity commercial, office, and service uses. These uses are located along arterial roadways that border residential areas.",
+    "question_type": "factual"
+  },
+  {
+    "id": "q020",
+    "question": "What does the term \"landscape\" refer to, and how can it be used in relation to art?",
+    "ground_truth": "Landscape refers either to all the visible features of an area of land, usually rural, often considered in terms of aesthetic appeal, or to a pictorial representation of an area of countryside. It is also used specifically within the genre of landscape painting. In addition, when people deliberately improve the aesthetic appearance of land by changing contours and vegetation, the land is said to have been landscaped.",
+    "question_type": "factual"
+  },
+  {
+    "id": "q021",
+    "question": "What are two harmful effects of manure spreading when it is done on frozen ground?",
+    "ground_truth": "Manure spreading is described as a fertilizer activity, but when it is done on frozen ground it leads to high levels of contamination of receiving waters. The excerpt says this contamination can include pathogens, metals, phosphorus, and nitrogen. It can also contribute to eutrophication and potential contamination of groundwater.",
+    "question_type": "factual"
+  },
+  {
+    "id": "q022",
+    "question": "How does eutrophication affect water bodies and aquatic life?",
+    "ground_truth": "Eutrophication is an increased level of nutrients in water bodies. This causes a bloom of algae in the water. It also depletes the oxygen in water, which negatively affects fish and other aquatic animal populations.",
+    "question_type": "factual"
+  },
+  {
+    "id": "q023",
+    "question": "What are two ways the excerpt says human actions can harm the environment, and who is especially likely to be affected by environmental problems?",
+    "ground_truth": "The excerpt says that individuals can harm the environment by leaving lights on, keeping homes too warm or too cool, and driving low-mileage vehicles. It also says that corporations, government agencies, and other organizations can make decisions that greatly harm the environment, whether intentionally or carelessly. Environmental problems are more often found where poor people and people of color reside, so these groups often fare worse.",
+    "question_type": "factual"
+  },
+  {
+    "id": "q024",
+    "question": "How does culture influence social change, according to the passage?",
+    "ground_truth": "Culture gives speed and direction to social change and also determines the limits beyond which social changes cannot occur. Cultural factors change from generation to generation, and these changes bring about change in society. In this way, culture is presented as a major force shaping the course of social change.",
+    "question_type": "factual"
+  },
+  {
+    "id": "q025",
+    "question": "What is a command economic system, and what role does the government typically play in it?",
+    "ground_truth": "A command economic system is one in which a large part of the economy is controlled by a centralized power. In the USSR, for example, most decisions were made by the central government, and this type of economy was central to communist philosophy. The government is heavily involved in planning, redistributing resources, and often owns critical industries such as utilities, aviation, and railroads.",
+    "question_type": "factual"
+  },
+  {
+    "id": "q026",
+    "question": "What are the four basic aspects of globalization identified here?",
+    "ground_truth": "The four basic aspects of globalization are trade and transactions, capital and investment movements, migration and movement of people, and the dissemination of knowledge. These are presented as the main components used to describe globalization in the passage.",
+    "question_type": "factual"
+  },
+  {
+    "id": "q027",
+    "question": "How does globalization improve human rights and democracy according to the passage?",
+    "ground_truth": "Globalization improves human rights because media coverage of rights violations receives attention from all over the world. It also promotes information and openness, which helps leaders address inequalities. In most cases, this leads to enhanced prosperity and democracy.",
+    "question_type": "factual"
+  },
+  {
+    "id": "q028",
+    "question": "How could globalization help reduce maternal and infant mortality rates, according to the passage?",
+    "ground_truth": "By reducing border restrictions, creating common payment formats, and opening product access by reducing export barriers, globalization could help more people improve their way of life. The passage says that higher incomes often lead to lower maternal and infant mortality rates. In that way, the effort could save lives.",
+    "question_type": "factual"
+  },
+  {
+    "id": "q029",
+    "question": "List two barriers to globalization mentioned in the passage.",
+    "ground_truth": "The passage lists several barriers that many countries, especially developing ones, impose on globalization. Two of them are high taxes and duties for capital goods, spares, and materials, and licensing restrictions. Other barriers mentioned include foreign exchange restrictions and investment restrictions.",
+    "question_type": "factual"
+  },
+  {
+    "id": "q030",
+    "question": "What are three emergent qualities of ecosystems mentioned in the text, and how are they affected when ecosystems are converted to agroecosystems?",
+    "ground_truth": "The text identifies energy flow, nutrient cycling, and resilience as emergent qualities of ecosystems, and also discusses how they change in agroecosystems. In agroecosystems, energy flow is altered by human interference and heavy fossil-fuel inputs, while nutrient cycling becomes less efficient because nutrients are lost through harvest, leaching, and erosion. The overall effect is that these systems become less self-sustaining and more dependent on external inputs.",
+    "question_type": "factual"
+  }
+]

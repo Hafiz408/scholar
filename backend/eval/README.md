@@ -20,14 +20,14 @@ Scholar uses two retrieval strategies — PageIndex (structural, LLM-navigated t
 
 | Strategy | Faithfulness | Answer Relevancy | Context Precision | Avg Latency |
 |----------|-------------|-----------------|-------------------|-------------|
-| PageIndex | 0.89 | 0.00† | 0.00† | 2578ms |
-| Vector | 0.94 | 0.02† | 0.02† | 1920ms |
+| **PageIndex** | **0.94** | 0.81 | 0.77 | 2480ms |
+| **Vector** | 0.85 | **0.91** | **0.92** | 1780ms |
 
-Run with a live OpenAI judge over a fully ingested book (pgvector populated + PageIndex tree built). **Faithfulness** is measured end-to-end and scores highly for both strategies (0.89–0.94), up from an earlier 0.64/0.54 run before the retrieval pipeline was fully functional.
+Run with a live OpenAI judge over a fully-ingested textbook (pgvector populated + PageIndex tree built), using a golden set (`golden_qa_envsci.json`) generated to match the book's content so **all three metrics are representative**.
 
-† Answer Relevancy and Context Precision are near-zero because the committed `golden_qa.json` targets **Biology 2e**, while this run used `Test book.pdf` (a different subject) — the reference answers don't correspond to the book's content. To get representative relevancy/precision, ingest Biology 2e (or regenerate `golden_qa.json` to match your book) and re-run.
+**Interpretation:** PageIndex's structural sections yield the highest **faithfulness** (answers stay grounded), while vector search wins **answer relevancy** and **context precision** by returning tighter, semantically-matched chunks. PageIndex trades ~700ms of latency for an LLM tree-navigation step. (An earlier run scored PageIndex relevancy/precision at ~0 — that was because PageIndex retrieval was silently broken; see the changelog below.)
 
-Full JSON results: [`results/comparison_20260321T233734.json`](results/comparison_20260321T233734.json)
+> The original `golden_qa.json` targets OpenStax **Biology 2e**; supply that PDF with `--golden-qa golden_qa.json` to benchmark against it.
 
 ---
 
@@ -134,18 +134,18 @@ sequenceDiagram
 ```json
 // comparison_{timestamp}.json
 {
-  "run_at": "20260604T200226",
+  "run_at": "20260605T045439",
   "pageindex": {
-    "faithfulness": 0.89,
-    "answer_relevancy": 0.00,
-    "context_precision": 0.00,
-    "avg_latency_ms": 2578
+    "faithfulness": 0.94,
+    "answer_relevancy": 0.81,
+    "context_precision": 0.77,
+    "avg_latency_ms": 2480
   },
   "vector": {
-    "faithfulness": 0.94,
-    "answer_relevancy": 0.02,
-    "context_precision": 0.02,
-    "avg_latency_ms": 1920
+    "faithfulness": 0.85,
+    "answer_relevancy": 0.91,
+    "context_precision": 0.92,
+    "avg_latency_ms": 1780
   }
 }
 ```

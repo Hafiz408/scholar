@@ -28,9 +28,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import aiosqlite
 import openai
 from ragas import EvaluationDataset, evaluate
+from ragas.embeddings import LangchainEmbeddingsWrapper
 from ragas.llms import LangchainLLMWrapper
 from ragas.metrics import AnswerRelevancy, ContextPrecision, Faithfulness
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 from app.config import settings
 from app.ingestion.pipeline import run_ingestion
@@ -213,6 +214,7 @@ async def run_strategy(
     strategy: str,
     source_ids: list[str],
     evaluator_llm,
+    evaluator_embeddings=None,
     dry_run: bool = False,
 ) -> dict:
     """Run the full benchmark for a single retrieval strategy.
@@ -319,6 +321,7 @@ async def run_strategy(
         dataset=dataset,
         metrics=[Faithfulness(), AnswerRelevancy(), ContextPrecision()],
         llm=evaluator_llm,
+        embeddings=evaluator_embeddings,
     )
 
     df = result.to_pandas()
@@ -369,7 +372,15 @@ async def main() -> None:
         default=None,
         help="Directory to write result JSON files (default: eval/results/ relative to script)",
     )
+    parser.add_argument(
+        "--golden-qa",
+        default=None,
+        help="Path to the golden Q&A JSON (default: eval/golden_qa.json). Use a set that "
+        "matches the --book-path content for representative answer_relevancy/context_precision.",
+    )
     args = parser.parse_args()
+
+    golden_qa_path = Path(args.golden_qa) if args.golden_qa else GOLDEN_QA_PATH
 
     output_dir = Path(args.output_dir) if args.output_dir else RESULTS_DIR
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -392,16 +403,25 @@ async def main() -> None:
         )
 
     # Step 3: Load golden Q&A dataset
-    with open(GOLDEN_QA_PATH) as f:
+    with open(golden_qa_path) as f:
         golden_qa = json.load(f)
-    logger.info("Loaded %d golden Q&A pairs from %s", len(golden_qa), GOLDEN_QA_PATH)
+    logger.info("Loaded %d golden Q&A pairs from %s", len(golden_qa), golden_qa_path)
 
-    # Step 4: Initialise RAGAS evaluator LLM
+    # Step 4: Initialise RAGAS evaluator LLM + embeddings from the same env-driven
+    # settings the app uses, so the eval is provider-agnostic (judge LLM AND the
+    # embeddings used by AnswerRelevancy/ContextPrecision both follow LLM_*/EMBEDDING_*).
     evaluator_llm = LangchainLLMWrapper(
         ChatOpenAI(
             model=settings.llm_model,
             api_key=settings.llm_api_key or settings.openai_api_key or None,
             base_url=settings.llm_base_url or None,
+        )
+    )
+    evaluator_embeddings = LangchainEmbeddingsWrapper(
+        OpenAIEmbeddings(
+            model=settings.embedding_model,
+            api_key=settings.embedding_api_key or settings.openai_api_key or None,
+            base_url=settings.embedding_base_url or None,
         )
     )
 
@@ -415,6 +435,7 @@ async def main() -> None:
         strategy="pageindex",
         source_ids=source_ids,
         evaluator_llm=evaluator_llm,
+        evaluator_embeddings=evaluator_embeddings,
         dry_run=args.dry_run,
     )
     pi_path = output_dir / f"pageindex_{ts}.json"
@@ -429,6 +450,7 @@ async def main() -> None:
         strategy="vector",
         source_ids=source_ids,
         evaluator_llm=evaluator_llm,
+        evaluator_embeddings=evaluator_embeddings,
         dry_run=args.dry_run,
     )
     vec_path = output_dir / f"vector_{ts}.json"

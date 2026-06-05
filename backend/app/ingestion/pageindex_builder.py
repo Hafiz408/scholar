@@ -44,9 +44,12 @@ def _build_tree_sync(file_path: str) -> dict:
 
     opt = ConfigLoader().load()
     opt.model = _PAGEINDEX_MODEL
-    opt.if_add_node_id = True
-    opt.if_add_node_text = True
-    opt.if_add_node_summary = True
+    # PageIndex checks these against the STRING 'yes' (not truthiness); passing
+    # Python True silently disables them, producing a tree with no node_id/summary/text
+    # — which makes tree navigation impossible. Must be the string 'yes'.
+    opt.if_add_node_id = "yes"
+    opt.if_add_node_text = "yes"
+    opt.if_add_node_summary = "yes"
 
     return page_index_main(file_path, opt)
 
