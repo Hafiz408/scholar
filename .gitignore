@@ -73,5 +73,7 @@ frontend/package-lock.json
 !frontend/README.md
 !backend/tests/README.md
 !backend/eval/README.md
+!docs/
+!docs/**/*.md
 /backend/data/uploads
 .pageindex_lib/
