@@ -46,31 +46,38 @@ The runner deliberately **bypasses the router** and forces each strategy in turn
 
 ## Latest results
 
-30 Q&A, OpenAI judge, over the fully-ingested Environmental Science book with its matching golden set:
+All three strategies, 30 Q&A, OpenAI judge, over the fully-ingested Environmental Science book with its matching golden set:
 
 | Strategy | Faithfulness | Answer Relevancy | Context Precision | Avg Latency |
 |----------|:-----------:|:----------------:|:-----------------:|:-----------:|
 | **PageIndex** | **0.94** | 0.81 | 0.77 | 2480 ms |
 | **Vector** | 0.85 | **0.91** | **0.92** | 1780 ms |
+| **Hybrid** | **0.94** | 0.90 | 0.90 | 2157 ms |
 
 **Reading the result:**
 
-- **PageIndex wins faithfulness** — returning whole, coherent sections gives the LLM more surrounding context to stay grounded in.
-- **Vector wins relevancy + precision** — semantic chunk search returns tighter, more on-point passages for these questions, with less surrounding noise.
-- **Vector is ~700 ms faster** — PageIndex pays for an extra LLM tree-navigation step per query.
+- **PageIndex wins faithfulness** — returning whole, coherent sections gives the LLM more surrounding context to stay grounded in — but loses on precision, because those sections also drag in unrelated material.
+- **Vector wins relevancy + precision** — semantic chunk search returns tighter, more on-point passages, with less noise — and is ~700 ms faster (no LLM tree-navigation step).
+- **Hybrid gets the best of both** — it merges the two (`0.6 × PageIndex + 0.4 × vector`), inheriting PageIndex's grounding **and** near-Vector precision (0.94 / 0.90 / 0.90). This is the empirical case for shipping `hybrid` (or `auto`) as the default strategy.
 
-This is the trade-off the dual engine exists to exploit: the hybrid strategy blends both (`0.6 × PageIndex + 0.4 × vector`) to get structural grounding *and* precision. An earlier run scored PageIndex's relevancy/precision near zero — that was the silently-broken retrieval described in [retrieval.md](retrieval.md), not a property of the approach.
+> An earlier run scored PageIndex's relevancy/precision near zero — that was the silently-broken retrieval described in [retrieval.md](retrieval.md), not a property of the approach.
+
+The full machine-readable record is `backend/eval/results/comparison_3way.json`. Switch strategies at runtime with `RETRIEVAL_STRATEGY` ([configuration.md](configuration.md)).
 
 ---
 
 ## Reproducing
 
 ```bash
-# Against the bundled Environmental Science book + its matching golden set:
+# All three strategies against the bundled book + its matching golden set:
 docker compose exec backend python eval/run_ragas.py \
   --book-path /app/data/uploads/<your-source>.pdf \
   --golden-qa eval/golden_qa_envsci.json \
+  --strategy all \
   --output-dir eval/results/
+
+# Just one strategy (e.g. only hybrid): --strategy hybrid
+# A subset:                            --strategy pageindex,vector
 
 # Against OpenStax Biology 2e (supply the PDF) with the original golden set:
 docker compose exec backend python eval/run_ragas.py \

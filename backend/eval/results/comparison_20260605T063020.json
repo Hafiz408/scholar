@@ -1,0 +1,9 @@
+{
+  "run_at": "20260605T063020",
+  "hybrid": {
+    "faithfulness": 0.9416056166056166,
+    "answer_relevancy": 0.9002846950788672,
+    "context_precision": 0.9026388888504085,
+    "avg_latency_ms": 2157
+  }
+}

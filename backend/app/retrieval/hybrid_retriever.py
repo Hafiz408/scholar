@@ -125,7 +125,12 @@ async def retrieve(
     """
     start_ms = time.monotonic()
 
-    strategy = await classify_query(query, source_ids)
+    # RETRIEVAL_STRATEGY pins the strategy; "auto" (default) defers to the router.
+    configured = (settings.retrieval_strategy or "auto").lower().strip()
+    if configured in ("hybrid", "pageindex", "vector"):
+        strategy = configured
+    else:
+        strategy = await classify_query(query, source_ids)
 
     chunks: list[RetrievedChunk] = []
     strategy_used = strategy

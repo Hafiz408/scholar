@@ -35,7 +35,7 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 from app.config import settings
 from app.ingestion.pipeline import run_ingestion
-from app.retrieval.hybrid_retriever import _get_sources_with_pageindex
+from app.retrieval.hybrid_retriever import _get_sources_with_pageindex, merge_results
 from app.retrieval.pageindex_retriever import fetch_pageindex_chunks
 from app.retrieval.vector_retriever import vector_search
 
@@ -252,22 +252,26 @@ async def run_strategy(
         question = item["question"]
         t0 = perf_counter()
 
+        async def _pageindex_chunks():
+            if not pi_sources:
+                return []
+            results = await asyncio.gather(*[
+                fetch_pageindex_chunks(doc_id, question, sid, stitle, top_k=TOP_K)
+                for doc_id, sid, stitle in pi_sources
+            ])
+            flat = [c for result in results for c in result]
+            return sorted(flat, key=lambda c: c.relevance_score, reverse=True)[:TOP_K]
+
         if strategy == "pageindex":
-            # Fetch from all pageindex sources concurrently
-            if pi_sources:
-                tasks = [
-                    fetch_pageindex_chunks(doc_id, question, sid, stitle, top_k=TOP_K)
-                    for doc_id, sid, stitle in pi_sources
-                ]
-                results = await asyncio.gather(*tasks)
-                chunks = [c for result in results for c in result]
-                # Sort by relevance_score and take top-k
-                chunks = sorted(chunks, key=lambda c: c.relevance_score, reverse=True)[:TOP_K]
-            else:
-                chunks = []
-        else:
-            # vector strategy
+            chunks = await _pageindex_chunks()
+        elif strategy == "vector":
             chunks = await vector_search(question, source_ids, top_k=TOP_K)
+        else:  # hybrid — run both and merge (mirrors app's retrieve())
+            pi_chunks, vec_chunks = await asyncio.gather(
+                _pageindex_chunks(),
+                vector_search(question, source_ids, top_k=TOP_K),
+            )
+            chunks = merge_results(pi_chunks, vec_chunks)[:TOP_K]
 
         answer = await generate_answer(question, chunks)
         latency_ms = int((perf_counter() - t0) * 1000)
@@ -378,7 +382,19 @@ async def main() -> None:
         help="Path to the golden Q&A JSON (default: eval/golden_qa.json). Use a set that "
         "matches the --book-path content for representative answer_relevancy/context_precision.",
     )
+    parser.add_argument(
+        "--strategy",
+        default="all",
+        help="Which strategies to run: 'all' or a comma-separated subset of "
+        "pageindex,vector,hybrid (e.g. --strategy hybrid).",
+    )
     args = parser.parse_args()
+
+    valid = ["pageindex", "vector", "hybrid"]
+    selected = valid if args.strategy == "all" else [s.strip() for s in args.strategy.split(",")]
+    selected = [s for s in selected if s in valid]
+    if not selected:
+        parser.error(f"--strategy must be 'all' or a subset of {valid}")
 
     golden_qa_path = Path(args.golden_qa) if args.golden_qa else GOLDEN_QA_PATH
 
@@ -428,63 +444,40 @@ async def main() -> None:
     # Step 5: Prepare timestamp (output_dir already created above)
     ts = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%S")
 
-    # Step 6: Run pageindex strategy
-    logger.info("=== pageindex strategy ===")
-    pi_scores = await run_strategy(
-        golden_qa=golden_qa,
-        strategy="pageindex",
-        source_ids=source_ids,
-        evaluator_llm=evaluator_llm,
-        evaluator_embeddings=evaluator_embeddings,
-        dry_run=args.dry_run,
-    )
-    pi_path = output_dir / f"pageindex_{ts}.json"
-    with open(pi_path, "w") as f:
-        json.dump(pi_scores, f, indent=2, default=str)
-    logger.info("Wrote pageindex results to %s", pi_path)
+    # Step 6: Run each selected strategy and write its result file
+    comparison = {"run_at": ts}
+    for strat in selected:
+        logger.info("=== %s strategy ===", strat)
+        scores = await run_strategy(
+            golden_qa=golden_qa,
+            strategy=strat,
+            source_ids=source_ids,
+            evaluator_llm=evaluator_llm,
+            evaluator_embeddings=evaluator_embeddings,
+            dry_run=args.dry_run,
+        )
+        with open(output_dir / f"{strat}_{ts}.json", "w") as f:
+            json.dump(scores, f, indent=2, default=str)
+        logger.info("Wrote %s results to %s", strat, output_dir / f"{strat}_{ts}.json")
+        comparison[strat] = {k: v for k, v in scores.items() if k != "per_question"}
 
-    # Step 7: Run vector strategy
-    logger.info("=== vector strategy ===")
-    vec_scores = await run_strategy(
-        golden_qa=golden_qa,
-        strategy="vector",
-        source_ids=source_ids,
-        evaluator_llm=evaluator_llm,
-        evaluator_embeddings=evaluator_embeddings,
-        dry_run=args.dry_run,
-    )
-    vec_path = output_dir / f"vector_{ts}.json"
-    with open(vec_path, "w") as f:
-        json.dump(vec_scores, f, indent=2, default=str)
-    logger.info("Wrote vector results to %s", vec_path)
-
-    # Step 8: Build and write comparison (summary without per_question)
-    comparison = {
-        "run_at": ts,
-        "pageindex": {k: v for k, v in pi_scores.items() if k != "per_question"},
-        "vector": {k: v for k, v in vec_scores.items() if k != "per_question"},
-    }
+    # Step 7: Write comparison (summary without per_question)
     cmp_path = output_dir / f"comparison_{ts}.json"
     with open(cmp_path, "w") as f:
         json.dump(comparison, f, indent=2, default=str)
     logger.info("Wrote comparison to %s", cmp_path)
 
-    # Step 9: Print comparison JSON to stdout
+    # Step 8: Print comparison JSON + a human-readable summary table
     print("\n=== Benchmark Comparison (JSON) ===")
     print(json.dumps(comparison, indent=2, default=str))
-
-    # Step 10: Print human-readable ASCII summary table
-    pi = comparison["pageindex"]
-    vec = comparison["vector"]
     print("\n=== RAGAS Benchmark Summary ===")
     print(f"{'Strategy':<12} {'Faithfulness':>14} {'Answer Rel.':>12} {'Ctx Prec.':>11} {'Avg Latency':>12}")
     print("-" * 55)
-    for name, scores in [("PageIndex", pi), ("Vector", vec)]:
-        f = scores.get("faithfulness") or 0
-        a = scores.get("answer_relevancy") or 0
-        c = scores.get("context_precision") or 0
-        lat = scores.get("avg_latency_ms", 0)
-        print(f"{name:<12} {f:>14.3f} {a:>12.3f} {c:>11.3f} {lat:>10}ms")
+    for strat in selected:
+        s = comparison[strat]
+        print(f"{strat:<12} {(s.get('faithfulness') or 0):>14.3f} "
+              f"{(s.get('answer_relevancy') or 0):>12.3f} {(s.get('context_precision') or 0):>11.3f} "
+              f"{s.get('avg_latency_ms', 0):>10}ms")
     print()
 
 

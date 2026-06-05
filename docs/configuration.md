@@ -60,6 +60,23 @@ LLM_API_KEY=ollama
 
 ---
 
+## Retrieval strategy
+
+Scholar's dual engine is selected by a single variable — the same checkout runs as hybrid, PageIndex-only, or vector-only.
+
+| Variable | Default | Values |
+|----------|---------|--------|
+| `RETRIEVAL_STRATEGY` | `auto` | `auto` · `hybrid` · `pageindex` · `vector` |
+
+- **`auto`** — a per-query router (1 LLM call) picks the best strategy for each question. The smart default.
+- **`hybrid`** — always run PageIndex **and** vector, then merge (`0.6 × PageIndex + 0.4 × vector`).
+- **`pageindex`** — always use PageIndex structural retrieval.
+- **`vector`** — always use vector semantic retrieval.
+
+Forcing a strategy skips the router LLM call. See [retrieval.md](retrieval.md) for how each works and [evaluation.md](evaluation.md) for how they compare.
+
+---
+
 ## Embeddings
 
 Any OpenAI-compatible embeddings API. Used for ingestion, query-time vector search, **and** the RAGAS evaluation embeddings.

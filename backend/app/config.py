@@ -20,6 +20,13 @@ class Settings(BaseSettings):
     llm_base_url: str = ""         # e.g. http://localhost:11434/v1 for Ollama
     llm_timeout_seconds: int = 60  # per-request timeout so a hung provider can't stall a stream forever
 
+    # Retrieval strategy — one of: auto, hybrid, pageindex, vector
+    #   auto      → router classifies each query (default, smart per-query selection)
+    #   hybrid    → always run PageIndex + vector and merge
+    #   pageindex → always use PageIndex structural retrieval
+    #   vector    → always use vector semantic retrieval
+    retrieval_strategy: str = "auto"
+
     # Embeddings — set EMBEDDING_BASE_URL to use any OpenAI-compatible embedding provider
     embedding_model: str = "text-embedding-3-small"
     embedding_api_key: str = ""    # falls back to openai_api_key if empty

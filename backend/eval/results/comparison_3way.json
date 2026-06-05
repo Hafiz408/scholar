@@ -1,0 +1,23 @@
+{
+  "book": "Environment and Agriculture (58pp Environmental Science textbook)",
+  "golden_qa": "golden_qa_envsci.json (30 Q&A)",
+  "judge": "OpenAI",
+  "pageindex": {
+    "faithfulness": 0.939,
+    "answer_relevancy": 0.808,
+    "context_precision": 0.766,
+    "avg_latency_ms": 2480
+  },
+  "vector": {
+    "faithfulness": 0.852,
+    "answer_relevancy": 0.909,
+    "context_precision": 0.923,
+    "avg_latency_ms": 1780
+  },
+  "hybrid": {
+    "faithfulness": 0.942,
+    "answer_relevancy": 0.9,
+    "context_precision": 0.903,
+    "avg_latency_ms": 2157
+  }
+}
