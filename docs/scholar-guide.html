@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scholar — Complete Visual Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0b14;
+    --bg2: #10121e;
+    --bg3: #161927;
+    --bg4: #1e2235;
+    --border: #232842;
+    --border2: #313856;
+    --indigo: #6366f1;
+    --indigo2: #818cf8;
+    --indigo3: #a5b4fc;
+    --emerald: #10b981;
+    --emerald2: #34d399;
+    --amber: #f59e0b;
+    --amber2: #fbbf24;
+    --blue: #3b82f6;
+    --blue2: #60a5fa;
+    --purple: #8b5cf6;
+    --purple2: #a78bfa;
+    --green: #22c55e;
+    --green2: #4ade80;
+    --red: #ef4444;
+    --red2: #fca5a5;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Syne', sans-serif;
+    --serif: 'DM Serif Display', serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+  .shell { min-height: 100vh; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0;
+    width: 268px; height: 100vh;
+    overflow-y: auto;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 24px 0 40px;
+    z-index: 100;
+  }
+
+  .nav-logo { padding: 0 20px 22px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+  .nav-logo .wordmark {
+    font-family: var(--sans); font-weight: 800; font-size: 21px;
+    color: var(--indigo2); letter-spacing: -0.5px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-logo .wordmark .ico { font-size: 18px; }
+  .nav-logo .tagline { font-size: 11px; color: var(--text3); margin-top: 4px; font-family: var(--mono); }
+
+  .nav-section { padding: 0 12px 8px; margin-bottom: 4px; }
+  .nav-section-label {
+    font-size: 9px; font-weight: 600; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--text3);
+    padding: 10px 8px 6px; font-family: var(--sans);
+  }
+
+  nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 8px; border-radius: 6px;
+    text-decoration: none; font-size: 12px;
+    color: var(--text2); font-family: var(--mono);
+    transition: all 0.15s ease; border-left: 2px solid transparent;
+  }
+  nav a:hover { color: var(--text); background: var(--bg3); }
+  nav a.active { color: var(--indigo2); background: rgba(99,102,241,0.1); border-left-color: var(--indigo2); }
+  nav a .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border2); flex-shrink: 0; transition: background 0.15s; }
+  nav a.active .dot { background: var(--indigo2); }
+  nav a:hover .dot { background: var(--text3); }
+
+  main { margin-left: 268px; min-height: 100vh; }
+
+  /* ── HERO ── */
+  .hero { padding: 80px 60px 56px; border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
+  .hero::before {
+    content: ''; position: absolute; top: -120px; right: -80px;
+    width: 620px; height: 620px;
+    background: radial-gradient(ellipse, rgba(99,102,241,0.10) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: ''; position: absolute; bottom: -160px; left: 200px;
+    width: 480px; height: 480px;
+    background: radial-gradient(ellipse, rgba(16,185,129,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.28);
+    border-radius: 20px; padding: 4px 12px; font-size: 11px;
+    color: var(--indigo2); font-family: var(--mono); margin-bottom: 24px;
+  }
+  .hero-badge::before { content: '◆'; font-size: 8px; }
+  .hero h1 { font-family: var(--serif); font-size: 56px; line-height: 1.08; letter-spacing: -1px; color: var(--text); margin-bottom: 10px; }
+  .hero h1 em { font-style: italic; color: var(--indigo2); }
+  .hero-sub { font-size: 17px; color: var(--text2); max-width: 660px; line-height: 1.6; margin-bottom: 30px; font-family: var(--mono); }
+  .hero-loop { display: inline-flex; align-items: center; gap: 10px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; padding: 12px 20px; font-size: 13px; font-family: var(--mono); flex-wrap: wrap; }
+  .hero-loop .step { color: var(--indigo2); font-weight: 600; }
+  .hero-loop .step.win { color: var(--emerald2); }
+  .hero-loop .arrow { color: var(--text3); }
+
+  /* ── SECTIONS ── */
+  section { padding: 64px 60px; border-bottom: 1px solid var(--border); }
+  section:last-child { border-bottom: none; }
+  .section-label { display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--indigo2); font-family: var(--sans); margin-bottom: 12px; }
+  .section-label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--indigo2); opacity: 0.5; }
+  h2 { font-family: var(--serif); font-size: 36px; font-weight: 400; line-height: 1.15; color: var(--text); margin-bottom: 16px; }
+  h3 { font-family: var(--sans); font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 10px; margin-top: 30px; }
+  h3:first-of-type { margin-top: 4px; }
+  p { color: var(--text2); margin-bottom: 16px; max-width: 760px; line-height: 1.75; }
+  p a, .faq-a a { color: var(--indigo2); text-decoration: none; border-bottom: 1px dotted var(--border2); }
+  p a:hover { border-bottom-color: var(--indigo2); }
+  ul.bullets { margin: 0 0 16px 0; padding-left: 0; list-style: none; max-width: 760px; }
+  ul.bullets li { color: var(--text2); line-height: 1.7; margin-bottom: 8px; padding-left: 20px; position: relative; }
+  ul.bullets li::before { content: '▸'; position: absolute; left: 0; color: var(--indigo2); }
+
+  /* ── CARDS ── */
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin-top: 24px; }
+  .card-grid .card { transition: border-color 0.2s, background 0.2s; }
+  .card-grid .card:hover { border-color: var(--border2); background: var(--bg3); }
+  .card .card-icon { font-size: 22px; margin-bottom: 10px; line-height: 1; }
+  .card .card-title { font-family: var(--sans); font-weight: 700; font-size: 13px; color: var(--text); margin-bottom: 6px; }
+  .card .card-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
+  .card .card-desc code { font-size: 11px; }
+
+  /* ── MODES (retrieval strategies) ── */
+  .modes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; }
+  .mode-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 22px 18px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+  .mode-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--mode-color); opacity: 0; transition: opacity 0.2s; }
+  .mode-card:hover::after, .mode-card.active::after { opacity: 1; }
+  .mode-card.active { border-color: var(--mode-color); background: var(--bg3); }
+  .mode-card:hover { background: var(--bg3); border-color: var(--border2); }
+  .mode-icon { font-size: 26px; margin-bottom: 10px; }
+  .mode-name { font-family: var(--sans); font-weight: 700; font-size: 15px; color: var(--text); margin-bottom: 4px; }
+  .mode-hint { font-size: 11px; color: var(--text3); }
+  .mode-detail { display: none; margin-top: 20px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 10px; padding: 24px 28px; animation: fadeIn 0.2s ease; }
+  .mode-detail.visible { display: block; }
+  .mode-detail h4 { font-family: var(--sans); font-size: 14px; color: var(--text); margin-bottom: 10px; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── CODE BLOCKS ── */
+  .code-block { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 16px 0; font-family: var(--mono); font-size: 12px; max-width: 860px; }
+  .code-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; background: var(--bg4); border-bottom: 1px solid var(--border); font-size: 11px; color: var(--text3); }
+  .code-header .lang { color: var(--indigo2); font-weight: 600; }
+  .code-body { padding: 16px; overflow-x: auto; line-height: 1.65; color: var(--text2); white-space: pre; }
+  .code-body .kw { color: #c084fc; }
+  .code-body .fn { color: var(--blue2); }
+  .code-body .str { color: #86efac; }
+  .code-body .cm { color: #475569; font-style: italic; }
+  .code-body .nb { color: #fca5a5; }
+  .code-body .hl { background: rgba(99,102,241,0.14); }
+
+  /* ── ARCHITECTURE DIAGRAM ── */
+  .arch-diagram { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 32px; margin-top: 24px; overflow-x: auto; }
+  .arch-layers { display: flex; flex-direction: column; gap: 8px; min-width: 720px; }
+  .arch-layer { border-radius: 8px; padding: 14px 18px; border: 1px solid; }
+  .arch-layer-label { font-family: var(--sans); font-weight: 700; font-size: 12px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+  .arch-layer-items { display: flex; gap: 8px; flex-wrap: wrap; }
+  .arch-item { background: var(--bg); border-radius: 5px; padding: 5px 10px; font-size: 11px; font-family: var(--mono); border: 1px solid; white-space: nowrap; }
+  .layer-fe { border-color: rgba(96,165,250,0.3); background: rgba(59,130,246,0.05); }
+  .layer-fe .arch-layer-label { color: var(--blue2); }
+  .layer-fe .arch-item { border-color: rgba(59,130,246,0.2); color: var(--blue2); }
+  .layer-api { border-color: rgba(129,140,248,0.3); background: rgba(99,102,241,0.05); }
+  .layer-api .arch-layer-label { color: var(--indigo2); }
+  .layer-api .arch-item { border-color: rgba(99,102,241,0.2); color: var(--indigo2); }
+  .layer-age { border-color: rgba(167,139,250,0.3); background: rgba(139,92,246,0.05); }
+  .layer-age .arch-layer-label { color: var(--purple2); }
+  .layer-age .arch-item { border-color: rgba(139,92,246,0.2); color: var(--purple2); }
+  .layer-ret { border-color: rgba(52,211,153,0.3); background: rgba(16,185,129,0.05); }
+  .layer-ret .arch-layer-label { color: var(--emerald2); }
+  .layer-ret .arch-item { border-color: rgba(16,185,129,0.2); color: var(--emerald2); }
+  .layer-db { border-color: rgba(251,191,36,0.3); background: rgba(245,158,11,0.05); }
+  .layer-db .arch-layer-label { color: var(--amber2); }
+  .layer-db .arch-item { border-color: rgba(245,158,11,0.2); color: var(--amber2); }
+  .arch-arrow { text-align: center; color: var(--text3); font-size: 16px; padding: 2px 0; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow-diagram { display: flex; flex-direction: column; gap: 0; margin: 24px 0; }
+  .flow-step { display: flex; align-items: flex-start; gap: 16px; }
+  .flow-step-line { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+  .flow-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; font-family: var(--sans); flex-shrink: 0; border: 2px solid; }
+  .flow-connector { width: 2px; height: 28px; background: var(--border2); margin: 2px 0; }
+  .flow-content { padding-bottom: 24px; flex: 1; padding-top: 4px; }
+  .flow-content .flow-title { font-family: var(--sans); font-weight: 700; font-size: 14px; color: var(--text); margin-bottom: 4px; }
+  .flow-content .flow-desc { font-size: 12px; color: var(--text2); line-height: 1.6; max-width: 640px; }
+  .flow-content .flow-desc code { font-size: 11px; }
+
+  /* ── PIPELINE ── */
+  .pipeline { display: flex; align-items: center; gap: 0; margin: 24px 0; overflow-x: auto; padding-bottom: 8px; }
+  .pipe-stage { display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; }
+  .pipe-box { background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; padding: 12px 18px; text-align: center; min-width: 120px; transition: border-color 0.2s, background 0.2s; }
+  .pipe-box:hover { border-color: var(--indigo2); background: rgba(99,102,241,0.05); }
+  .pipe-box .pipe-icon { font-size: 20px; margin-bottom: 4px; }
+  .pipe-box .pipe-name { font-family: var(--sans); font-weight: 700; font-size: 12px; color: var(--text); }
+  .pipe-box .pipe-file { font-size: 10px; color: var(--text3); margin-top: 2px; }
+  .pipe-arrow { color: var(--indigo2); font-size: 18px; flex-shrink: 0; opacity: 0.6; margin: 0 2px; padding-bottom: 20px; }
+
+  /* ── TABLE ── */
+  .data-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px; font-family: var(--mono); }
+  .data-table th { background: var(--bg3); border: 1px solid var(--border); padding: 9px 14px; text-align: left; font-family: var(--sans); font-weight: 700; font-size: 11px; color: var(--indigo2); text-transform: uppercase; letter-spacing: 1px; }
+  .data-table td { border: 1px solid var(--border); padding: 9px 14px; color: var(--text2); vertical-align: top; line-height: 1.6; }
+  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .data-table td code, .data-table th code { background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; font-size: 11px; color: var(--indigo3); }
+  .data-table td.num { text-align: center; }
+  .data-table td.best { color: var(--emerald2); font-weight: 600; }
+
+  /* ── TAGS ── */
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; font-family: var(--sans); text-transform: uppercase; letter-spacing: 0.5px; }
+  .tag-indigo { background: rgba(99,102,241,0.16); color: var(--indigo3); }
+  .tag-emerald { background: rgba(16,185,129,0.16); color: var(--emerald2); }
+  .tag-amber { background: rgba(245,158,11,0.15); color: var(--amber2); }
+  .tag-blue { background: rgba(59,130,246,0.15); color: var(--blue2); }
+  .tag-purple { background: rgba(139,92,246,0.15); color: var(--purple2); }
+  .tag-red { background: rgba(239,68,68,0.15); color: var(--red2); }
+
+  /* ── CALLOUT ── */
+  .callout { display: flex; gap: 14px; border-radius: 8px; padding: 16px 18px; margin: 16px 0; border: 1px solid; max-width: 860px; }
+  .callout-icon { font-size: 18px; flex-shrink: 0; line-height: 1.4; }
+  .callout-body { font-size: 13px; line-height: 1.7; }
+  .callout-body strong { font-weight: 600; }
+  .callout-body code { font-size: 11px; }
+  .callout-indigo { border-color: rgba(99,102,241,0.25); background: rgba(99,102,241,0.05); }
+  .callout-indigo .callout-body { color: var(--indigo3); }
+  .callout-emerald { border-color: rgba(16,185,129,0.22); background: rgba(16,185,129,0.05); }
+  .callout-emerald .callout-body { color: var(--emerald2); }
+  .callout-amber { border-color: rgba(245,158,11,0.22); background: rgba(245,158,11,0.05); }
+  .callout-amber .callout-body { color: var(--amber2); }
+  .callout-red { border-color: rgba(239,68,68,0.22); background: rgba(239,68,68,0.05); }
+  .callout-red .callout-body { color: var(--red2); }
+
+  /* ── FAQ ── */
+  .faq-tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .faq-tab { padding: 10px 16px; border-radius: 6px 6px 0 0; font-family: var(--sans); font-weight: 700; font-size: 12px; cursor: pointer; color: var(--text3); border: 1px solid transparent; border-bottom: none; background: transparent; transition: all 0.15s; position: relative; bottom: -1px; }
+  .faq-tab:hover { color: var(--text2); }
+  .faq-tab.active { color: var(--indigo2); border-color: var(--border); border-bottom-color: var(--bg); background: var(--bg); }
+  .faq-panel { display: none; }
+  .faq-panel.active { display: block; animation: fadeIn 0.2s ease; }
+  .faq-item { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; overflow: hidden; max-width: 860px; }
+  .faq-q { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; cursor: pointer; font-size: 13px; color: var(--text); font-family: var(--mono); user-select: none; background: var(--bg2); transition: background 0.15s; }
+  .faq-q:hover { background: var(--bg3); }
+  .faq-q::after { content: '▸'; color: var(--indigo2); transition: transform 0.2s; flex-shrink: 0; margin-left: 12px; }
+  .faq-item.open .faq-q::after { transform: rotate(90deg); }
+  .faq-a { display: none; padding: 16px 18px; border-top: 1px solid var(--border); background: var(--bg); font-size: 13px; color: var(--text2); line-height: 1.8; }
+  .faq-item.open .faq-a { display: block; animation: fadeIn 0.2s ease; }
+  .faq-a code { background: var(--bg3); border: 1px solid var(--border2); border-radius: 3px; padding: 1px 6px; font-size: 11px; color: var(--indigo3); font-family: var(--mono); }
+  .faq-a strong { color: var(--text); font-weight: 600; }
+
+  /* ── STAT ROW ── */
+  .stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin: 24px 0; }
+  .stat-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 20px 14px; text-align: center; }
+  .stat-val { font-family: var(--serif); font-size: 32px; color: var(--indigo2); line-height: 1; margin-bottom: 6px; }
+  .stat-val.em { color: var(--emerald2); }
+  .stat-label { font-size: 10.5px; color: var(--text3); font-family: var(--mono); line-height: 1.4; }
+
+  /* ── COMPARISON ── */
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; max-width: 860px; }
+  .compare-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .compare-box .compare-label { font-family: var(--sans); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .compare-box ul { list-style: none; }
+  .compare-box li { display: flex; gap: 8px; font-size: 12px; color: var(--text2); margin-bottom: 8px; line-height: 1.5; }
+  .compare-box li::before { flex-shrink: 0; }
+  .compare-pi .compare-label { color: var(--emerald2); }
+  .compare-pi li::before { content: '◆'; color: var(--emerald); font-size: 9px; }
+  .compare-ve .compare-label { color: var(--blue2); }
+  .compare-ve li::before { content: '◆'; color: var(--blue); font-size: 9px; }
+
+  /* ── SCORE BAR ── */
+  .score-bar-wrap { margin: 20px 0; max-width: 760px; }
+  .score-group-label { font-family: var(--sans); font-weight: 700; font-size: 12px; color: var(--text); margin: 18px 0 10px; text-transform: uppercase; letter-spacing: 1px; }
+  .score-row { display: flex; align-items: center; gap: 12px; margin-bottom: 9px; }
+  .score-label { font-size: 12px; color: var(--text2); width: 120px; flex-shrink: 0; }
+  .score-track { flex: 1; height: 7px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
+  .score-fill { height: 100%; border-radius: 4px; animation: growBar 1.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .score-fill.pi { background: linear-gradient(90deg, var(--emerald), var(--emerald2)); }
+  .score-fill.ve { background: linear-gradient(90deg, var(--blue), var(--blue2)); }
+  .score-fill.hy { background: linear-gradient(90deg, var(--indigo), var(--indigo2)); }
+  @keyframes growBar { from { width: 0 !important; } }
+  .score-val { font-size: 12px; color: var(--text); font-weight: 600; width: 44px; text-align: right; }
+
+  /* ── AGENT FLOW ── */
+  .agent-flow { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 28px; margin: 24px 0; overflow-x: auto; }
+  .agent-nodes { display: flex; align-items: center; justify-content: flex-start; gap: 0; min-width: 720px; }
+  .agent-node { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; }
+  .agent-box { border-radius: 8px; padding: 12px 16px; font-size: 12px; font-family: var(--sans); font-weight: 700; text-align: center; border: 1px solid; min-width: 92px; transition: opacity 0.2s, transform 0.2s; }
+  .agent-box:hover { opacity: 0.85; transform: translateY(-2px); }
+  .agent-label { font-size: 10px; color: var(--text3); text-align: center; font-family: var(--mono); }
+  .agent-arrow-h { color: var(--text3); font-size: 16px; padding: 0 6px; flex-shrink: 0; margin-bottom: 18px; }
+  .agent-split { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+
+  /* ── TRADEOFFS ── */
+  .tradeoff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; max-width: 920px; }
+  .tradeoff-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .tradeoff-card .t-decision { font-family: var(--sans); font-weight: 700; font-size: 13px; color: var(--text); margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .tradeoff-card .t-chose { font-size: 11px; color: var(--emerald2); margin-bottom: 4px; }
+  .tradeoff-card .t-rejected { font-size: 11px; color: var(--text3); margin-bottom: 8px; }
+  .tradeoff-card .t-why { font-size: 11.5px; color: var(--text2); line-height: 1.65; }
+  .tradeoff-card .t-why code { font-size: 10.5px; }
+
+  /* ── INLINE CODE ── */
+  code { background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; font-size: 11.5px; color: var(--indigo3); font-family: var(--mono); }
+
+  /* ── SSE DEMO ── */
+  .sse-demo { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 16px; font-family: var(--mono); font-size: 12px; line-height: 2; overflow-x: auto; max-width: 760px; }
+  .sse-event { color: var(--purple2); }
+  .sse-token { color: var(--text); margin-left: 12px; }
+  .sse-citation { color: var(--amber2); margin-left: 12px; }
+  .sse-done { color: var(--emerald2); margin-left: 12px; }
+
+  /* ── CHEAT SHEET ── */
+  .cheat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; max-width: 920px; }
+  .cheat-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 20px 22px; }
+  .cheat-box.full { grid-column: 1 / -1; }
+  .cheat-box h4 { font-family: var(--sans); font-size: 13px; color: var(--indigo2); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .cheat-box p { font-size: 13px; margin-bottom: 10px; }
+  .cheat-box ul.bullets li { font-size: 12.5px; }
+  .pitch { font-size: 15px; color: var(--text); line-height: 1.7; font-family: var(--mono); }
+  .pitch em { color: var(--indigo2); font-style: normal; }
+
+  /* ── DEMO SCRIPT ── */
+  .demo-step { display: flex; gap: 16px; margin-bottom: 14px; max-width: 860px; }
+  .demo-num { width: 28px; height: 28px; border-radius: 6px; background: rgba(99,102,241,0.14); border: 1px solid rgba(99,102,241,0.3); color: var(--indigo2); font-family: var(--sans); font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .demo-body { flex: 1; }
+  .demo-body .demo-do { font-size: 13px; color: var(--text); font-weight: 500; margin-bottom: 3px; }
+  .demo-body .demo-say { font-size: 12px; color: var(--text2); line-height: 1.6; }
+  .demo-body .demo-say::before { content: '🗣  '; }
+
+  /* ── SCROLL TOP ── */
+  #scrollTop { position: fixed; bottom: 28px; right: 28px; width: 42px; height: 42px; border-radius: 50%; background: var(--indigo); color: #fff; border: none; font-size: 18px; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 200; box-shadow: 0 4px 20px rgba(99,102,241,0.4); }
+  #scrollTop.visible { opacity: 1; pointer-events: auto; }
+  #scrollTop:hover { transform: translateY(-3px); }
+
+  .lead { font-size: 16px; color: var(--text2); max-width: 760px; line-height: 1.7; margin-bottom: 8px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1100px) {
+    .modes-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: repeat(3, 1fr); }
+    .cheat-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 860px) {
+    nav { display: none; }
+    main { margin-left: 0; }
+    .hero { padding: 40px 24px; }
+    section { padding: 40px 24px; }
+    .hero h1 { font-size: 36px; }
+    .compare-grid, .tradeoff-grid, .stats-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ══════════ NAV ══════════ -->
+<nav>
+  <div class="nav-logo">
+    <div class="wordmark"><span class="ico">📚</span> Scholar</div>
+    <div class="tagline">Complete Visual Guide</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Getting Started</div>
+    <a href="#top"><span class="dot"></span> What Scholar Is</a>
+    <a href="#what-it-does"><span class="dot"></span> What It Does</a>
+    <a href="#concepts"><span class="dot"></span> Core Concepts</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Under the Hood</div>
+    <a href="#architecture"><span class="dot"></span> Architecture</a>
+    <a href="#dataflow"><span class="dot"></span> Data Flow</a>
+    <a href="#ingestion"><span class="dot"></span> Ingestion Pipeline</a>
+    <a href="#retrieval"><span class="dot"></span> Dual Retrieval Engine</a>
+    <a href="#agents"><span class="dot"></span> Agent Layer</a>
+    <a href="#model-factory"><span class="dot"></span> Model Factory</a>
+    <a href="#storage"><span class="dot"></span> Storage Model</a>
+    <a href="#frontend"><span class="dot"></span> Frontend &amp; SSE</a>
+    <a href="#api"><span class="dot"></span> API Surface</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Deep Dive</div>
+    <a href="#evaluation"><span class="dot"></span> Evaluation &amp; RAGAS</a>
+    <a href="#adaptive"><span class="dot"></span> Adaptive Learning</a>
+    <a href="#decisions"><span class="dot"></span> Design Decisions</a>
+    <a href="#config"><span class="dot"></span> Configuration</a>
+    <a href="#weaknesses"><span class="dot"></span> Known Weaknesses</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">KT · Demo · Interview</div>
+    <a href="#demo"><span class="dot"></span> Demo Script</a>
+    <a href="#faq"><span class="dot"></span> FAQ</a>
+    <a href="#cheatsheet"><span class="dot"></span> Interview Cheat-Sheet</a>
+    <a href="#stack"><span class="dot"></span> Tech Stack</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- ══════════ HERO ══════════ -->
+<div class="hero" id="top">
+  <div class="hero-badge">Goal-Driven AI Study System · v2.0</div>
+  <h1>Turn a pile of PDFs into a<br><em>deadline-aware course.</em></h1>
+  <p class="hero-sub">Upload your own textbooks, set a real deadline, and Scholar builds a personalized study plan — AI notes, grounded chat, quizzes, and adaptive learning — answered <strong>only</strong> from your books. No hallucinated facts from the open internet.</p>
+  <div class="hero-loop">
+    <span class="step">Upload</span><span class="arrow">→</span>
+    <span class="step">Set goal</span><span class="arrow">→</span>
+    <span class="step">Sessions</span><span class="arrow">→</span>
+    <span class="step">Quiz</span><span class="arrow">→</span>
+    <span class="step">Adapt</span><span class="arrow">→</span>
+    <span class="step win">Final test ✓</span>
+  </div>
+</div>
+
+<!-- ══════════ WHAT SCHOLAR IS (stats) ══════════ -->
+<section id="overview-stats" style="padding-top:48px;padding-bottom:40px;">
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-val">2</div><div class="stat-label">retrieval strategies<br>(PageIndex + Vector)</div></div>
+    <div class="stat-box"><div class="stat-val">7</div><div class="stat-label">LangGraph-backed<br>agents</div></div>
+    <div class="stat-box"><div class="stat-val em">0.94</div><div class="stat-label">Hybrid faithfulness<br>(RAGAS)</div></div>
+    <div class="stat-box"><div class="stat-val">4</div><div class="stat-label">LLM providers via<br>one .env</div></div>
+    <div class="stat-box"><div class="stat-val">3</div><div class="stat-label">storage tiers,<br>each by access pattern</div></div>
+  </div>
+  <p class="lead">Scholar is a full-stack RAG application: a <strong>FastAPI + LangGraph</strong> backend over a <strong>dual retrieval engine</strong>, a <strong>Next.js 14</strong> frontend with native SSE streaming, and a <strong>RAGAS</strong> evaluation harness that benchmarks the retrieval strategies head-to-head. Everything is model-agnostic — the same checkout runs on OpenAI, Anthropic, Google, or any OpenAI-compatible endpoint by editing <code>.env</code> alone.</p>
+</section>
+
+<!-- ══════════ WHAT IT DOES ══════════ -->
+<section id="what-it-does">
+  <div class="section-label">Getting Started</div>
+  <h2>What Scholar Does</h2>
+  <p>A student uploads course material, says <em>"I want to master this by the 30th,"</em> and Scholar runs the full study loop — every note, chat answer, and quiz question grounded in and limited to the uploaded sources.</p>
+
+  <div class="card-grid">
+    <div class="card"><div class="card-icon">📤</div><div class="card-title">Bring your own books</div><div class="card-desc">Upload PDFs or paste a URL. Text extraction, structural tree-building, and vector indexing are automatic and run in the background.</div></div>
+    <div class="card"><div class="card-icon">🎯</div><div class="card-title">Goal-driven plans</div><div class="card-desc">Set topic, level, and deadline; a <strong>Planner</strong> agent generates a session-by-session plan sized to the time you have.</div></div>
+    <div class="card"><div class="card-icon">📝</div><div class="card-title">AI study notes</div><div class="card-desc">Each session opens with concise, streamed Markdown notes — every claim cited to a source and page.</div></div>
+    <div class="card"><div class="card-icon">💬</div><div class="card-title">Grounded chat</div><div class="card-desc">Ask anything; answers come only from your books, with source citations. History persists across refreshes via a LangGraph checkpointer.</div></div>
+    <div class="card"><div class="card-icon">❓</div><div class="card-title">Quizzes + adaptive learning</div><div class="card-desc">Auto-generated MCQs. A score below <code>65%</code> automatically inserts a targeted remedial session and renumbers the plan.</div></div>
+    <div class="card"><div class="card-icon">🏁</div><div class="card-title">Final cumulative test</div><div class="card-desc">A cross-session exam drawing 1–2 questions per session. Passing (<code>≥70%</code>) marks the whole goal complete — with confetti.</div></div>
+    <div class="card"><div class="card-icon">🤖</div><div class="card-title">Super Agent</div><div class="card-desc">One chat grounded across <strong>all</strong> your indexed books at once, with a persistent client-owned thread.</div></div>
+    <div class="card"><div class="card-icon">🖼️</div><div class="card-title">Multimodal (optional)</div><div class="card-desc">Opt-in vision model describes diagrams and figures during ingestion so they become searchable text.</div></div>
+    <div class="card"><div class="card-icon">📓</div><div class="card-title">Notion export</div><div class="card-desc">Push a goal's plan and notes to a Notion page in one click (background task with exponential backoff).</div></div>
+  </div>
+</section>
+
+<!-- ══════════ CORE CONCEPTS ══════════ -->
+<section id="concepts">
+  <div class="section-label">Getting Started</div>
+  <h2>Core Concepts</h2>
+  <p>The vocabulary that runs through the whole codebase. If you understand these eight terms, the rest of the guide reads easily.</p>
+  <div class="card-grid">
+    <div class="card"><div class="card-title"><span class="tag tag-emerald">retrieval</span> PageIndex</div><div class="card-desc">Structural, <em>vectorless</em> retrieval. An LLM builds a hierarchical tree of the document at ingestion; at query time another LLM navigates that tree and returns <strong>whole coherent sections</strong>.</div></div>
+    <div class="card"><div class="card-title"><span class="tag tag-blue">retrieval</span> Vector</div><div class="card-desc">Semantic retrieval. Text is chunked (600/100 tokens), embedded, and stored in pgvector; queries are matched by cosine similarity. Zero LLM calls at query time.</div></div>
+    <div class="card"><div class="card-title"><span class="tag tag-indigo">retrieval</span> Hybrid</div><div class="card-desc">Runs both concurrently and merges: <code>0.6·PageIndex + 0.4·vector</code>, de-duplicated by content hash. The empirically best default.</div></div>
+    <div class="card"><div class="card-title"><span class="tag tag-indigo">retrieval</span> Router</div><div class="card-desc">A lightweight classifier that picks a strategy per query (or short-circuits to vector when no tree exists). Active when <code>RETRIEVAL_STRATEGY=auto</code>.</div></div>
+    <div class="card"><div class="card-title"><span class="tag tag-purple">domain</span> Goal &amp; Session</div><div class="card-desc">A <strong>goal</strong> (topic + level + deadline) expands into N ordered <strong>sessions</strong>. Sessions unlock sequentially; each has notes, chat, and a quiz.</div></div>
+    <div class="card"><div class="card-title"><span class="tag tag-amber">domain</span> Adaptive learning</div><div class="card-desc">Failing a quiz inserts a remedial session right after the current one and atomically renumbers the rest, so a second failure can't corrupt the order.</div></div>
+    <div class="card"><div class="card-title"><span class="tag tag-purple">domain</span> Super Agent</div><div class="card-desc">A goal-independent chat that retrieves across every <code>ready</code> source. Keyed by a <code>thread_id</code> the browser owns in localStorage.</div></div>
+    <div class="card"><div class="card-title"><span class="tag tag-indigo">infra</span> Checkpointer</div><div class="card-desc">LangGraph's <code>AsyncSqliteSaver</code>. Persists conversation state per <code>thread_id</code> so chat survives a browser refresh without a bespoke history table.</div></div>
+  </div>
+</section>
+
+<!-- ══════════ ARCHITECTURE ══════════ -->
+<section id="architecture">
+  <div class="section-label">Under the Hood</div>
+  <h2>Architecture Overview</h2>
+  <p>Five layers. The frontend talks HTTP/SSE to FastAPI; routes dispatch to agents; agents share one retrieval engine and one model factory; state is split across three stores by access pattern.</p>
+
+  <div class="arch-diagram">
+    <div class="arch-layers">
+      <div class="arch-layer layer-fe">
+        <div class="arch-layer-label">Frontend — Next.js 14 (App Router)</div>
+        <div class="arch-layer-items">
+          <span class="arch-item">/knowledge</span><span class="arch-item">/goals/new</span><span class="arch-item">/goals/[id]</span><span class="arch-item">/study/[sessionId]</span><span class="arch-item">/super</span><span class="arch-item">lib/sse.ts (native parser)</span>
+        </div>
+      </div>
+      <div class="arch-arrow">▲ &nbsp; HTTP · Server-Sent Events &nbsp; ▼</div>
+      <div class="arch-layer layer-api">
+        <div class="arch-layer-label">FastAPI — Routers</div>
+        <div class="arch-layer-items">
+          <span class="arch-item">/knowledge</span><span class="arch-item">/goals</span><span class="arch-item">/sessions</span><span class="arch-item">/sessions/…/chat</span><span class="arch-item">/sessions/…/quiz</span><span class="arch-item">/goals/…/test</span><span class="arch-item">/super</span><span class="arch-item">/health</span>
+        </div>
+      </div>
+      <div class="arch-arrow">▼</div>
+      <div class="arch-layer layer-age">
+        <div class="arch-layer-label">Agent Layer — LangGraph-orchestrated</div>
+        <div class="arch-layer-items">
+          <span class="arch-item">Planner</span><span class="arch-item">Note Generator</span><span class="arch-item">Session Chat</span><span class="arch-item">Quiz</span><span class="arch-item">Adaptive Planner</span><span class="arch-item">Final-Test</span><span class="arch-item">Super Agent</span>
+        </div>
+      </div>
+      <div class="arch-arrow">▼ &nbsp; every grounded answer flows through ▼</div>
+      <div class="arch-layer layer-ret">
+        <div class="arch-layer-label">Retrieval Engine + Model Factory</div>
+        <div class="arch-layer-items">
+          <span class="arch-item">Router</span><span class="arch-item">PageIndex Retriever</span><span class="arch-item">Vector Retriever</span><span class="arch-item">Hybrid Merger</span><span class="arch-item">Ingestion Pipeline</span><span class="arch-item">llm_factory (provider-agnostic)</span>
+        </div>
+      </div>
+      <div class="arch-arrow">▼</div>
+      <div class="arch-layer layer-db">
+        <div class="arch-layer-label">Storage + External Providers</div>
+        <div class="arch-layer-items">
+          <span class="arch-item">PostgreSQL + pgvector (embeddings)</span><span class="arch-item">SQLite (goals · sessions · checkpoints)</span><span class="arch-item">Disk (PDFs · tree.json)</span><span class="arch-item">LLM / Embedding provider</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-indigo">
+    <span class="callout-icon">🧩</span>
+    <div class="callout-body">All learning logic lives in <strong>agents</strong> that share the retrieval engine and the model factory. Conversational agents (session chat, super) persist history through the LangGraph <code>AsyncSqliteSaver</code> checkpointer, built once in the app <code>lifespan</code> and stored on <code>app.state</code> for handlers to reuse.</div>
+  </div>
+</section>
+
+<!-- ══════════ DATA FLOW ══════════ -->
+<section id="dataflow">
+  <div class="section-label">Under the Hood</div>
+  <h2>Data Flow — Upload to First Cited Note</h2>
+  <p>The end-to-end path a new user travels, and where each piece of state is created.</p>
+
+  <div class="flow-diagram">
+    <div class="flow-step">
+      <div class="flow-step-line"><div class="flow-dot" style="border-color:var(--blue);color:var(--blue2);">1</div><div class="flow-connector"></div></div>
+      <div class="flow-content"><div class="flow-title">Upload a PDF/URL</div><div class="flow-desc"><code>POST /knowledge/upload</code> saves the file to <code>data/uploads/{id}.pdf</code>, inserts a <code>knowledge_sources</code> row (<code>status=pending</code>), and returns the <code>source_id</code> immediately. Ingestion runs as a FastAPI <code>BackgroundTask</code>.</div></div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-line"><div class="flow-dot" style="border-color:var(--emerald);color:var(--emerald2);">2</div><div class="flow-connector"></div></div>
+      <div class="flow-content"><div class="flow-title">Background ingestion (4 stages)</div><div class="flow-desc">Extract text → build PageIndex tree (PDFs) → chunk + embed into pgvector → mark <code>ready</code>. The frontend polls <code>GET /knowledge/{id}/status</code> every 3s and shows the status badge advancing.</div></div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-line"><div class="flow-dot" style="border-color:var(--purple);color:var(--purple2);">3</div><div class="flow-connector"></div></div>
+      <div class="flow-content"><div class="flow-title">Create a goal</div><div class="flow-desc"><code>POST /goals</code> with topic/level/deadline/source_ids. The <strong>Planner</strong> computes a session count (<code>ceil(deadline_days / 7 × sessions_per_week)</code>) and the LLM returns an ordered plan via structured output. Goal + sessions are inserted into SQLite.</div></div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-line"><div class="flow-dot" style="border-color:var(--indigo);color:var(--indigo2);">4</div><div class="flow-connector"></div></div>
+      <div class="flow-content"><div class="flow-title">Start a session → retrieve</div><div class="flow-desc"><code>POST /sessions/{id}/start</code> calls <code>retrieve(topic, source_ids, top_k=8)</code>. The router picks a strategy; chunks come back ranked, each tagged with source title + page.</div></div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-line"><div class="flow-dot" style="border-color:var(--indigo);color:var(--indigo2);">5</div><div class="flow-connector"></div></div>
+      <div class="flow-content"><div class="flow-title">Stream cited notes (SSE)</div><div class="flow-desc">The <strong>Note Generator</strong> formats chunks as a numbered context block, streams Markdown tokens over <code>text/event-stream</code> (<code>notes_chunk</code> events), then persists the full notes and flips the session to <code>in_progress</code> (<code>notes_done</code>).</div></div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-line"><div class="flow-dot" style="border-color:var(--emerald);color:var(--emerald2);">✓</div></div>
+      <div class="flow-content"><div class="flow-title">Learn → chat → quiz → adapt → finish</div><div class="flow-desc">The student reads, asks grounded questions (history checkpointed by <code>goal_id</code>), takes a quiz, and — on a pass across all sessions — sits the final test that completes the goal.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ INGESTION ══════════ -->
+<section id="ingestion">
+  <div class="section-label">Under the Hood</div>
+  <h2>Ingestion Pipeline</h2>
+  <p>Runs in the background after upload. The PageIndex tree-build is the expensive step and <strong>degrades gracefully</strong> — if it fails, ingestion still completes vector-only and the source stays usable.</p>
+
+  <div class="pipeline">
+    <div class="pipe-stage"><div class="pipe-box"><div class="pipe-icon">📄</div><div class="pipe-name">Extract</div><div class="pipe-file">pdf_extractor · url_extractor</div></div></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-stage"><div class="pipe-box"><div class="pipe-icon">🌳</div><div class="pipe-name">PageIndex tree</div><div class="pipe-file">pageindex_builder</div></div></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-stage"><div class="pipe-box"><div class="pipe-icon">🔢</div><div class="pipe-name">Chunk + embed</div><div class="pipe-file">embedder → pgvector</div></div></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-stage"><div class="pipe-box"><div class="pipe-icon">✅</div><div class="pipe-name">Ready</div><div class="pipe-file">status update</div></div></div>
+  </div>
+
+  <h3>Stage 1 — Text extraction</h3>
+  <ul class="bullets">
+    <li><strong>PDF</strong>: <code>pdfplumber</code> primary, falling back to <code>pypdf</code> per-page on failure. Pages with fewer than <strong>20 words</strong> are skipped as blank/diagram-only.</li>
+    <li><strong>URL</strong>: <code>trafilatura</code> fetches and extracts main text (tables included); page count is estimated at ~300 words/page.</li>
+    <li><strong>Optional vision</strong>: if <code>VISION_MODEL</code> is set, PDF pages are rendered at <strong>150 DPI</strong> with PyMuPDF and described by a vision LLM; the description is appended as <code>[Visual content: …]</code>. Capped by <code>VISION_MAX_PAGES</code> (default 20; <code>0</code>=unlimited), with per-page exception isolation.</li>
+  </ul>
+
+  <h3>Stage 2 — PageIndex tree (PDF only)</h3>
+  <p>The open-source PageIndex library builds a hierarchical tree — roughly <strong>140–220 LLM calls for a 58-page book, paid once</strong> — and writes it to <code>data/uploads/{id}_tree.json</code>. Each node carries <code>node_id</code>, <code>title</code>, <code>summary</code>, section <code>text</code>, and a page range. On any failure it logs a warning and returns <code>None</code> (vector-only fallback). URLs skip this stage.</p>
+
+  <h3>Stage 3 — Chunk + embed</h3>
+  <p>A <code>RecursiveCharacterTextSplitter(chunk_size=600, chunk_overlap=100)</code> chunks the pages; chunks are embedded in batches of <strong>50</strong> via the configured embeddings API and upserted into the pgvector <code>knowledge_chunks</code> table with <code>ON CONFLICT (id) DO UPDATE</code> (idempotent re-ingestion).</p>
+
+  <div class="callout callout-amber">
+    <span class="callout-icon">📈</span>
+    <div class="callout-body"><strong>Status machine:</strong> <code>pending → indexing_pageindex → indexing_vectors → ready</code> (or <code>failed</code>). The final row stores <code>pageindex_doc_id = source_id</code> on success, or <code>NULL</code> when the tree build failed — which is exactly what the router reads to decide whether PageIndex is even possible for that source.</div>
+  </div>
+</section>
+
+<!-- ══════════ RETRIEVAL ══════════ -->
+<section id="retrieval">
+  <div class="section-label">Under the Hood</div>
+  <h2>Dual Retrieval Engine</h2>
+  <p>Scholar's defining design choice: run <strong>two complementary retrievers</strong> and route each query to the right one. A single strategy leaves gaps — vector chops structure into 600-token fragments; PageIndex can miss a precise fact buried mid-section. Keep both, let a router choose. Click a strategy:</p>
+
+  <div class="modes-grid">
+    <div class="mode-card" style="--mode-color:var(--emerald);" onclick="selectMode('pi', this)"><div class="mode-icon">🌳</div><div class="mode-name">PageIndex</div><div class="mode-hint">structural · vectorless</div></div>
+    <div class="mode-card" style="--mode-color:var(--blue);" onclick="selectMode('ve', this)"><div class="mode-icon">🧲</div><div class="mode-name">Vector</div><div class="mode-hint">semantic · cosine</div></div>
+    <div class="mode-card" style="--mode-color:var(--indigo);" onclick="selectMode('hy', this)"><div class="mode-icon">⚗️</div><div class="mode-name">Hybrid</div><div class="mode-hint">merged · default</div></div>
+  </div>
+
+  <div class="mode-detail" id="mode-detail-pi">
+    <h4>PageIndex — structural retrieval</h4>
+    <p>At query time (one LLM call): the tree is flattened to a compact skeleton of <code>node_id + title + summary</code>, the LLM is asked which node IDs answer the query, and the full text of those nodes is returned. Relevance score is rank-based: <code>1.0 / (1 + rank)</code>. Returns <code>[]</code> on any error rather than raising.</p>
+    <p><strong>Best for:</strong> "what does the unit on climate change cover?" — structural, long-form, navigational questions. <strong>Measured strength:</strong> highest faithfulness (whole sections give the LLM more grounding context).</p>
+  </div>
+  <div class="mode-detail" id="mode-detail-ve">
+    <h4>Vector — semantic retrieval</h4>
+    <p>The query is embedded and ranked by cosine similarity in pgvector, scoped to the relevant <code>source_id</code>s: <code>1 - (embedding &lt;=&gt; query)</code> over an <code>ivfflat</code> index. <strong>Zero LLM calls</strong> at query time, and it works for any source — making it the universal fallback when a document has no tree.</p>
+    <p><strong>Best for:</strong> "define genetic diversity" — factual lookups, cross-book search. <strong>Measured strength:</strong> highest answer relevancy + context precision, ~700ms faster than PageIndex.</p>
+  </div>
+  <div class="mode-detail" id="mode-detail-hy">
+    <h4>Hybrid — weighted merge</h4>
+    <p>Both retrievers run <strong>concurrently</strong> (<code>asyncio.gather</code>); results are merged by weighted score and de-duplicated by SHA-256 of chunk content:</p>
+    <div class="code-block"><div class="code-header"><span class="lang">hybrid_retriever.py</span><span>merge</span></div><div class="code-body">combined_score = <span class="nb">0.6</span> × pageindex_score + <span class="nb">0.4</span> × vector_score
+<span class="cm"># dedup by sha256(content); non-mutating via model_copy()</span>
+<span class="cm"># sorted desc, sliced to top_k</span></div></div>
+    <p>The 0.6/0.4 weighting favors PageIndex's structural coherence while letting vector hits surface precise facts the section-level retrieval might dilute. <strong>This is the empirical case for the default.</strong></p>
+  </div>
+
+  <h3>The Router</h3>
+  <p>When <code>RETRIEVAL_STRATEGY=auto</code>, a classifier picks per query. If no source in scope has a <code>pageindex_doc_id</code>, it short-circuits to <code>vector</code> with <strong>no LLM call</strong> (the RETR-02 guard); otherwise one structured-output call returns <code>pageindex | vector | hybrid</code>. Forcing a strategy via env skips the router entirely. A test gate requires <strong>≥8/10</strong> correct classifications on a labelled query set.</p>
+
+  <table class="data-table">
+    <thead><tr><th>Query type</th><th>Strategy</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td>Structural / navigational</td><td><code>pageindex</code></td><td>"What does the unit on climate change cover?"</td></tr>
+      <tr><td>Factual / semantic</td><td><code>vector</code></td><td>"Define genetic diversity."</td></tr>
+      <tr><td>Mixed</td><td><code>hybrid</code></td><td>"How does Unit III define water scarcity, and how does it relate to agriculture?"</td></tr>
+      <tr><td>No tree available</td><td><code>vector</code> <span class="tag tag-emerald">no LLM</span></td><td>any query on a vector-only source</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-red">
+    <span class="callout-icon">🐛</span>
+    <div class="callout-body"><strong>A bug worth documenting (the war-story).</strong> PageIndex retrieval was historically <em>silently broken</em>, returning zero chunks for nearly every query — so the head-to-head comparison was meaningless. Two causes: (1) the builder set the library's options to Python <code>True</code>, but the library checks them against the <strong>string</strong> <code>'yes'</code>, so <code>node_id</code>/<code>summary</code>/<code>text</code> were never written to the tree; (2) the retriever read <code>node.id</code> while the library writes <code>node_id</code>. Both fixed; trees built before the fix must be rebuilt by re-ingesting. <em>The lesson: a RAG component can "work" — no errors, valid JSON — while returning nothing useful. You only catch it with evaluation.</em></div>
+  </div>
+</section>
+
+<!-- ══════════ AGENTS ══════════ -->
+<section id="agents">
+  <div class="section-label">Under the Hood</div>
+  <h2>Agent Layer (LangGraph)</h2>
+  <p>Seven agents, each a focused unit that shares the retrieval engine and the model factory. They are deliberately <strong>not</strong> one big graph — most are plain async functions; LangGraph is used precisely where it earns its keep: <strong>conversation persistence</strong>.</p>
+
+  <div class="agent-flow">
+    <div class="agent-nodes">
+      <div class="agent-node"><div class="agent-box" style="border-color:var(--purple);color:var(--purple2);background:rgba(139,92,246,0.08);">Planner</div><div class="agent-label">POST /goals</div></div>
+      <div class="agent-arrow-h">→</div>
+      <div class="agent-node"><div class="agent-box" style="border-color:var(--indigo);color:var(--indigo2);background:rgba(99,102,241,0.08);">Note Gen</div><div class="agent-label">/start (SSE)</div></div>
+      <div class="agent-arrow-h">→</div>
+      <div class="agent-split">
+        <div class="agent-node"><div class="agent-box" style="border-color:var(--indigo);color:var(--indigo2);background:rgba(99,102,241,0.08);">Session Chat</div><div class="agent-label">/chat (SSE)</div></div>
+        <div class="agent-node"><div class="agent-box" style="border-color:var(--emerald);color:var(--emerald2);background:rgba(16,185,129,0.08);">Quiz</div><div class="agent-label">/quiz</div></div>
+      </div>
+      <div class="agent-arrow-h">→</div>
+      <div class="agent-node"><div class="agent-box" style="border-color:var(--amber);color:var(--amber2);background:rgba(245,158,11,0.08);">Adaptive</div><div class="agent-label">score &lt; 65%</div></div>
+      <div class="agent-arrow-h">→</div>
+      <div class="agent-node"><div class="agent-box" style="border-color:var(--emerald);color:var(--emerald2);background:rgba(16,185,129,0.08);">Final Test</div><div class="agent-label">≥ 70% → done</div></div>
+    </div>
+  </div>
+
+  <table class="data-table">
+    <thead><tr><th>Agent</th><th>Trigger</th><th>Job &amp; key details</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Planner</strong></td><td><code>POST /goals</code></td><td>Turn a goal into N ordered sessions via structured output (<code>StudyPlanOutput</code>), <code>temperature=0</code>, run in a thread to avoid blocking.</td></tr>
+      <tr><td><strong>Note Generator</strong></td><td><code>/sessions/{id}/start</code></td><td><code>retrieve(top_k=8)</code> → stream cited Markdown → persist notes, set <code>in_progress</code>. Emits <code>notes_chunk</code> / <code>notes_done</code> / <code>error</code>.</td></tr>
+      <tr><td><strong>Session Chat</strong></td><td><code>/sessions/{id}/chat</code></td><td>Grounded Q&amp;A, <code>retrieve(top_k=5)</code>. History loaded/saved through the checkpointer keyed by <code>thread_id = goal_id</code>. Emits <code>token</code> / <code>citations</code> / <code>done</code>.</td></tr>
+      <tr><td><strong>Quiz</strong></td><td><code>/quiz/generate · /submit</code></td><td>Generate 5 MCQs from notes (each option set + <code>correct_index</code> + explanation). <code>correct_index</code> is <strong>never</strong> sent on generate. Scoring is <strong>pure Python</strong> — no LLM.</td></tr>
+      <tr><td><strong>Adaptive Planner</strong></td><td>quiz submit &lt; 65%</td><td>Generate one remedial session, shift later <code>session_number</code>s by +1, insert — atomically in one transaction.</td></tr>
+      <tr><td><strong>Final-Test</strong></td><td><code>/goals/{id}/test/*</code></td><td>1–2 questions per session (<code>MAX_TEST_QUESTIONS=15</code>), each tagged with its <code>session_number</code>. ≥70% marks the goal complete; &lt;50% sessions flagged weak.</td></tr>
+      <tr><td><strong>Super Agent</strong></td><td><code>/super/chat/stream</code></td><td>Retrieve across <strong>all</strong> <code>ready</code> sources (<code>top_k=8</code>), keyed by a client-owned <code>thread_id</code>. Same SSE events as session chat.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Why LangGraph here?</h3>
+  <p>The orchestrator builds a minimal <code>StateGraph</code> with a single pass-through <code>chat</code> node whose only purpose is to give the <code>AsyncSqliteSaver</code> checkpointer a graph to attach to. The conversational agents then read and write history with one config object — no bespoke history table, no manual message-window management:</p>
+  <div class="code-block"><div class="code-header"><span class="lang">session_chat.py</span><span>checkpointer config</span></div><div class="code-body">config = {<span class="str">"configurable"</span>: {<span class="str">"thread_id"</span>: goal_id, <span class="str">"checkpoint_ns"</span>: <span class="str">""</span>}}
+<span class="cm"># checkpoint_ns="" is required — the default namespace.</span>
+<span class="cm"># session chat → thread_id = goal_id  (one conversation per goal)</span>
+<span class="cm"># super agent  → thread_id = client UUID from localStorage</span></div></div>
+</section>
+
+<!-- ══════════ MODEL FACTORY ══════════ -->
+<section id="model-factory">
+  <div class="section-label">Under the Hood</div>
+  <h2>Model Factory — Provider-Agnostic by Design</h2>
+  <p>No model name is hardcoded anywhere in the application. A single factory (<code>app/llm_factory.py</code>) builds the right LangChain client from <code>.env</code>. Chat, planner, quiz, notes, router, the PageIndex navigation LLM, vision, <strong>and</strong> the RAGAS evaluation judge all read from this one place.</p>
+
+  <div class="code-block"><div class="code-header"><span class="lang">llm_factory.py</span><span>get_llm()</span></div><div class="code-body"><span class="kw">def</span> <span class="fn">get_llm</span>(*, temperature=<span class="nb">0</span>, streaming=<span class="kw">False</span>) -> BaseChatModel:
+    <span class="cm"># provider switch on LLM_PROVIDER:</span>
+    <span class="cm">#   openai | openai-compat → ChatOpenAI (+ base_url override)</span>
+    <span class="cm">#   anthropic              → ChatAnthropic</span>
+    <span class="cm">#   google                 → ChatGoogleGenerativeAI</span>
+    <span class="cm"># key fallback: LLM_API_KEY → OPENAI_API_KEY</span>
+    <span class="cm"># timeout = LLM_TIMEOUT_SECONDS (60), max_retries = 2</span></div></div>
+
+  <table class="data-table">
+    <thead><tr><th>Provider</th><th><code>LLM_PROVIDER</code></th><th>Example model</th></tr></thead>
+    <tbody>
+      <tr><td>OpenAI</td><td><code>openai</code></td><td><code>gpt-4o-mini</code></td></tr>
+      <tr><td>Anthropic</td><td><code>anthropic</code></td><td><code>claude-3-5-sonnet-20241022</code></td></tr>
+      <tr><td>Google</td><td><code>google</code></td><td><code>gemini-2.0-flash</code></td></tr>
+      <tr><td>OpenAI-compatible</td><td><code>openai-compat</code></td><td>Ollama · Groq · Together · vLLM · LM Studio (set <code>LLM_BASE_URL</code>)</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-emerald">
+    <span class="callout-icon">🔌</span>
+    <div class="callout-body">Embeddings go through a parallel OpenAI-compatible client (<code>EMBEDDING_*</code>). <strong>Change the provider in one place and it applies everywhere</strong> — including the benchmark, which is why the evaluation is as provider-agnostic as the app itself.</div>
+  </div>
+</section>
+
+<!-- ══════════ STORAGE ══════════ -->
+<section id="storage">
+  <div class="section-label">Under the Hood</div>
+  <h2>Storage Model — Three Stores, by Access Pattern</h2>
+  <p>Scholar deliberately splits state across three stores, each chosen for what it's good at rather than forcing everything into one database.</p>
+
+  <table class="data-table">
+    <thead><tr><th>What</th><th>Where</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Vector embeddings (<code>knowledge_chunks</code>)</td><td><strong>PostgreSQL + pgvector</strong></td><td>Fast cosine similarity at scale via an <code>ivfflat</code> index — the only piece that needs a real DB.</td></tr>
+      <tr><td>Goals, sessions, notes, quiz data, chat history, cumulative tests</td><td><strong>SQLite</strong></td><td>Simple, embedded, and directly compatible with the LangGraph checkpointer (same file).</td></tr>
+      <tr><td>PageIndex document trees</td><td><strong>Local disk</strong> <code>{id}_tree.json</code></td><td>Read-only JSON blobs loaded at query time — no DB row needed.</td></tr>
+      <tr><td>Uploaded PDFs</td><td><strong>Local disk</strong> <code>data/uploads/</code></td><td>Raw files for text/vision extraction.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Key tables</h3>
+  <ul class="bullets">
+    <li><code>knowledge_sources</code> — <code>id, title, source_type, file_path, url, page_count, pageindex_doc_id, status</code>. The <code>pageindex_doc_id</code> being <code>NULL</code> is the signal for vector-only fallback.</li>
+    <li><code>study_goals</code> — <code>knowledge_source_ids</code> (JSON array), <code>deadline_days, level, sessions_per_week, status, notion_page_url</code>.</li>
+    <li><code>study_sessions</code> — <code>session_number, title, topic, status, quiz_score, notes_markdown, quiz_questions</code> (full questions <em>with</em> <code>correct_index</code> stored server-side).</li>
+    <li><code>cumulative_tests</code> — final-test questions + <code>weak_session_numbers</code>.</li>
+    <li><code>knowledge_chunks</code> (pgvector) — <code>embedding vector(dims)</code> with <code>ivfflat (embedding vector_cosine_ops)</code> + a source index.</li>
+  </ul>
+  <div class="callout callout-amber">
+    <span class="callout-icon">⚠️</span>
+    <div class="callout-body"><code>EMBEDDING_DIMENSIONS</code> <strong>must</strong> match the embedding model — the pgvector column is created at that width. Changing it (e.g. 1536 for OpenAI vs 768 for <code>nomic-embed-text</code>) requires a fresh vector store.</div>
+  </div>
+</section>
+
+<!-- ══════════ FRONTEND ══════════ -->
+<section id="frontend">
+  <div class="section-label">Under the Hood</div>
+  <h2>Frontend &amp; SSE Streaming</h2>
+  <p><strong>Next.js 14 App Router</strong>, TypeScript (strict), Tailwind, <code>react-markdown</code> + <code>remark-gfm</code>, <code>react-dropzone</code>. State is plain React hooks — no Redux/Zustand. A <code>next.config.mjs</code> rewrite proxies <code>/api/*</code> to the backend (<code>skipTrailingSlashRedirect</code> preserves FastAPI's trailing slashes).</p>
+
+  <h3>The native SSE client</h3>
+  <p>No <code>EventSource</code> library. A small async-generator parser in <code>lib/sse.ts</code> reads the <code>fetch</code> response's <code>ReadableStream</code>, decodes with <code>TextDecoder</code>, buffers partial lines, and yields <code>{event, data}</code> per the SSE spec. Each stream function returns a cleanup that aborts via <code>AbortController</code> (wired into React <code>useEffect</code> cleanup):</p>
+  <div class="code-block"><div class="code-header"><span class="lang">lib/sse.ts</span><span>parseSSE</span></div><div class="code-body"><span class="kw">async function</span>* <span class="fn">parseSSE</span>(reader) {
+  <span class="kw">const</span> decoder = <span class="kw">new</span> <span class="fn">TextDecoder</span>()
+  <span class="kw">let</span> buf = <span class="str">''</span>, event = <span class="str">'message'</span>
+  <span class="kw">while</span> (<span class="kw">true</span>) {
+    <span class="kw">const</span> { done, value } = <span class="kw">await</span> reader.<span class="fn">read</span>()
+    <span class="kw">if</span> (done) <span class="kw">break</span>
+    buf += decoder.<span class="fn">decode</span>(value, { stream: <span class="kw">true</span> })
+    <span class="kw">const</span> lines = buf.<span class="fn">split</span>(<span class="str">'\n'</span>); buf = lines.<span class="fn">pop</span>() ?? <span class="str">''</span>
+    <span class="kw">for</span> (<span class="kw">const</span> line <span class="kw">of</span> lines) {
+      <span class="kw">if</span> (line.<span class="fn">startsWith</span>(<span class="str">'event:'</span>)) event = line.<span class="fn">slice</span>(<span class="nb">6</span>).<span class="fn">trim</span>()
+      <span class="kw">else if</span> (line.<span class="fn">startsWith</span>(<span class="str">'data:'</span>)) { <span class="kw">yield</span> { event, data: line.<span class="fn">slice</span>(<span class="nb">5</span>).<span class="fn">trim</span>() }; event = <span class="str">'message'</span> }
+    }
+  }
+}</span></div></div>
+
+  <p>Three thin wrappers consume it — <code>streamNotes</code>, <code>streamChat</code>, <code>streamSuperChat</code> — each dispatching typed callbacks per event:</p>
+  <div class="sse-demo">
+    <div><span class="sse-event">event: token</span> <span class="sse-token">{"content": "The sodium-potassium pump…"}</span></div>
+    <div><span class="sse-event">event: token</span> <span class="sse-token">{"content": " maintains the resting potential."}</span></div>
+    <div><span class="sse-event">event: citations</span> <span class="sse-citation">{"chunks": [{"source_title": "Biology 2e", "page_number": 1009}]}</span></div>
+    <div><span class="sse-event">event: done</span> <span class="sse-done">{"strategy_used": "hybrid", "latency_ms": 2157}</span></div>
+  </div>
+
+  <h3>Pages &amp; the study UI</h3>
+  <ul class="bullets">
+    <li><code>/knowledge</code> — dropzone + URL input, source list with status badges, 3s polling.</li>
+    <li><code>/goals/new</code> → <code>/goals/[id]</code> — goal form, then session cards with sequential <strong>locking</strong> (session N unlocks when N-1 completes), progress bar, and the final-test panel once all sessions are done.</li>
+    <li><code>/study/[sessionId]</code> — a <strong>3-panel layout</strong>: streaming notes · grounded chat with citation chips · MCQ quiz (idle→active→results with per-question feedback).</li>
+    <li><code>/super</code> — cross-book chat; the <code>thread_id</code> is created once and stored in <code>localStorage</code>, never regenerated server-side.</li>
+  </ul>
+</section>
+
+<!-- ══════════ API ══════════ -->
+<section id="api">
+  <div class="section-label">Under the Hood</div>
+  <h2>API Surface</h2>
+  <p>The full request map — user action → route → internal handler. Streaming endpoints are marked <span class="tag tag-indigo">SSE</span>.</p>
+  <table class="data-table">
+    <thead><tr><th>User action</th><th>Route</th><th>Internal</th></tr></thead>
+    <tbody>
+      <tr><td>Upload PDF / URL</td><td><code>POST /knowledge/upload</code></td><td><code>run_ingestion()</code> (background) → returns <code>source_id</code></td></tr>
+      <tr><td>Poll status / list / delete</td><td><code>GET /knowledge/{id}/status</code> · <code>GET /knowledge/</code> · <code>DELETE /{id}</code></td><td>SQLite + pgvector + disk (cascading delete)</td></tr>
+      <tr><td>Create goal</td><td><code>POST /goals</code></td><td>Planner agent → goal + sessions</td></tr>
+      <tr><td>Get goal + plan</td><td><code>GET /goals/{id}</code></td><td>goal + ordered sessions</td></tr>
+      <tr><td>Manual adapt</td><td><code>POST /goals/{id}/adapt</code></td><td>Adaptive Planner over failed sessions</td></tr>
+      <tr><td>Export to Notion</td><td><code>POST /goals/{id}/export/notion</code></td><td>Notion export (background, backoff)</td></tr>
+      <tr><td>Final test</td><td><code>POST /goals/{id}/test/generate · /submit</code></td><td>Final-Test agent → score → goal complete</td></tr>
+      <tr><td>Start session</td><td><code>POST /sessions/{id}/start</code> <span class="tag tag-indigo">SSE</span></td><td><code>retrieve()</code> + Note Generator</td></tr>
+      <tr><td>Send chat</td><td><code>POST /sessions/{id}/chat</code> <span class="tag tag-indigo">SSE</span></td><td>Router → <code>retrieve()</code> → Session Chat</td></tr>
+      <tr><td>Generate / submit quiz</td><td><code>POST /sessions/{id}/quiz/generate · /submit</code></td><td>Quiz agent · pure-Python scoring (may trigger Adaptive)</td></tr>
+      <tr><td>Super chat</td><td><code>POST /super/chat/stream</code> <span class="tag tag-indigo">SSE</span></td><td>Super Agent across all <code>ready</code> sources</td></tr>
+      <tr><td>Health</td><td><code>GET /health</code></td><td>pgvector ping</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════ EVALUATION ══════════ -->
+<section id="evaluation">
+  <div class="section-label">Deep Dive</div>
+  <h2>Evaluation &amp; RAGAS</h2>
+  <p>"Does it actually work?" is answered with a real benchmark. The two retrieval strategies (plus hybrid) are scored head-to-head with <strong>RAGAS</strong> on a 30-question golden set over a bundled Environmental Science textbook. The runner (<code>backend/eval/run_ragas.py</code>) deliberately <strong>bypasses the router</strong> and forces each strategy in turn — apples-to-apples.</p>
+
+  <h3>The setup</h3>
+  <ul class="bullets">
+    <li><strong>Book:</strong> "OAI551 — Environment and Agriculture", a 58-page textbook with clear unit/section structure (exactly what exercises PageIndex). The original Biology 2e set targets a ~1,500-page book that isn't bundled.</li>
+    <li><strong>Golden set:</strong> <code>golden_qa_envsci.json</code> — 30 Q&amp;A matched to the bundled book (15 structural "deep" + 15 factual), each with a model-written <code>ground_truth</code>. Matching the set to the book is what makes all three metrics meaningful.</li>
+    <li><strong>Metrics:</strong> Faithfulness (no hallucination), Answer Relevancy (on-topic), Context Precision (right chunks). Judge LLM + embeddings come from the <em>same</em> <code>.env</code> as the app.</li>
+    <li><strong>Harness:</strong> for each question — force strategy → retrieve (<code>top_k=5</code>) → generate answer → 1.5s pacing. Ingestion is idempotent (reuses an already-<code>ready</code> book).</li>
+  </ul>
+
+  <h3>Latest results — 30 Q&amp;A, OpenAI judge</h3>
+  <div class="score-bar-wrap">
+    <div class="score-group-label">Faithfulness — grounding (higher = less hallucination)</div>
+    <div class="score-row"><div class="score-label">PageIndex</div><div class="score-track"><div class="score-fill pi" style="width:94%"></div></div><div class="score-val">0.94</div></div>
+    <div class="score-row"><div class="score-label">Vector</div><div class="score-track"><div class="score-fill ve" style="width:85%"></div></div><div class="score-val">0.85</div></div>
+    <div class="score-row"><div class="score-label">Hybrid</div><div class="score-track"><div class="score-fill hy" style="width:94%"></div></div><div class="score-val">0.94</div></div>
+
+    <div class="score-group-label">Answer Relevancy — is the answer on-topic?</div>
+    <div class="score-row"><div class="score-label">PageIndex</div><div class="score-track"><div class="score-fill pi" style="width:81%"></div></div><div class="score-val">0.81</div></div>
+    <div class="score-row"><div class="score-label">Vector</div><div class="score-track"><div class="score-fill ve" style="width:91%"></div></div><div class="score-val">0.91</div></div>
+    <div class="score-row"><div class="score-label">Hybrid</div><div class="score-track"><div class="score-fill hy" style="width:90%"></div></div><div class="score-val">0.90</div></div>
+
+    <div class="score-group-label">Context Precision — were the right chunks retrieved?</div>
+    <div class="score-row"><div class="score-label">PageIndex</div><div class="score-track"><div class="score-fill pi" style="width:77%"></div></div><div class="score-val">0.77</div></div>
+    <div class="score-row"><div class="score-label">Vector</div><div class="score-track"><div class="score-fill ve" style="width:92%"></div></div><div class="score-val">0.92</div></div>
+    <div class="score-row"><div class="score-label">Hybrid</div><div class="score-track"><div class="score-fill hy" style="width:90%"></div></div><div class="score-val">0.90</div></div>
+  </div>
+
+  <table class="data-table">
+    <thead><tr><th>Strategy</th><th>Faithfulness</th><th>Answer Relevancy</th><th>Context Precision</th><th>Avg Latency</th></tr></thead>
+    <tbody>
+      <tr><td><strong>PageIndex</strong></td><td class="num best">0.94</td><td class="num">0.81</td><td class="num">0.77</td><td class="num">2480 ms</td></tr>
+      <tr><td><strong>Vector</strong></td><td class="num">0.85</td><td class="num best">0.91</td><td class="num best">0.92</td><td class="num">1780 ms</td></tr>
+      <tr><td><strong>Hybrid</strong></td><td class="num best">0.94</td><td class="num">0.90</td><td class="num">0.90</td><td class="num">2157 ms</td></tr>
+    </tbody>
+  </table>
+
+  <div class="compare-grid">
+    <div class="compare-box compare-pi"><div class="compare-label">PageIndex wins faithfulness</div><ul>
+      <li>Whole, coherent sections give the LLM more surrounding context to stay grounded in.</li>
+      <li>But those sections drag in unrelated material → lower precision/relevancy.</li>
+      <li>Slowest (one LLM tree-navigation call per query).</li>
+    </ul></div>
+    <div class="compare-box compare-ve"><div class="compare-label">Vector wins relevancy + precision</div><ul>
+      <li>Semantic chunk search returns tighter, more on-point passages with less noise.</li>
+      <li>~700ms faster — no LLM at query time.</li>
+      <li>But less grounding context → higher hallucination risk.</li>
+    </ul></div>
+  </div>
+
+  <div class="callout callout-indigo">
+    <span class="callout-icon">⚗️</span>
+    <div class="callout-body"><strong>Hybrid gets the best of both</strong> (0.94 / 0.90 / 0.90) — it keeps PageIndex's grounding <em>and</em> nearly matches Vector's precision. That's the empirical case for shipping <code>hybrid</code> (or <code>auto</code>) as the default. The canonical record is <code>backend/eval/results/comparison_3way.json</code>.</div>
+  </div>
+</section>
+
+<!-- ══════════ ADAPTIVE ══════════ -->
+<section id="adaptive">
+  <div class="section-label">Deep Dive</div>
+  <h2>Adaptive Learning</h2>
+  <p>The feature that makes Scholar a <em>tutor</em> rather than a content generator. Three thresholds drive the whole progression:</p>
+  <div class="stats-row" style="grid-template-columns:repeat(3,1fr);">
+    <div class="stat-box"><div class="stat-val">65%</div><div class="stat-label">quiz pass — below inserts a remedial session</div></div>
+    <div class="stat-box"><div class="stat-val em">70%</div><div class="stat-label">final-test pass — marks goal complete</div></div>
+    <div class="stat-box"><div class="stat-val">50%</div><div class="stat-label">weak-session flag on the final test</div></div>
+  </div>
+
+  <h3>The remedial-insert flow (score &lt; 65%)</h3>
+  <div class="flow-diagram">
+    <div class="flow-step"><div class="flow-step-line"><div class="flow-dot" style="border-color:var(--emerald);color:var(--emerald2);">1</div><div class="flow-connector"></div></div><div class="flow-content"><div class="flow-title">Score (pure Python)</div><div class="flow-desc"><code>evaluate_quiz()</code> compares answers to the stored <code>correct_index</code> — deterministic, no LLM, no way to game it. The session is marked <code>complete</code> with its score regardless.</div></div></div>
+    <div class="flow-step"><div class="flow-step-line"><div class="flow-dot" style="border-color:var(--amber);color:var(--amber2);">2</div><div class="flow-connector"></div></div><div class="flow-content"><div class="flow-title">Fetch session context fresh</div><div class="flow-desc"><code>handle_quiz_failure()</code> re-reads <code>session_number</code>, topic, and goal context by UUID — never trusts stale numbers, which matters when multiple failures stack.</div></div></div>
+    <div class="flow-step"><div class="flow-step-line"><div class="flow-dot" style="border-color:var(--indigo);color:var(--indigo2);">3</div><div class="flow-connector"></div></div><div class="flow-content"><div class="flow-title">Generate one remedial session</div><div class="flow-desc">The Adaptive Planner LLM produces a single targeted session focused on the weakest concepts of the failed topic, at the student's level.</div></div></div>
+    <div class="flow-step"><div class="flow-step-line"><div class="flow-dot" style="border-color:var(--emerald);color:var(--emerald2);">✓</div></div><div class="flow-content"><div class="flow-title">Atomic insert + renumber</div><div class="flow-desc">In one transaction: shift every later <code>session_number</code> by +1, then insert the new session at <code>failed_number + 1</code>. The frontend shows an amber "Adaptive session added" banner.</div></div></div>
+  </div>
+  <div class="callout callout-emerald">
+    <span class="callout-icon">🔒</span>
+    <div class="callout-body"><strong>Why atomic?</strong> A second failure on a later session could otherwise interleave inserts and corrupt the ordering. Doing the shift-and-insert in a single transaction makes repeated adaptation safe.</div>
+  </div>
+</section>
+
+<!-- ══════════ DESIGN DECISIONS ══════════ -->
+<section id="decisions">
+  <div class="section-label">Deep Dive</div>
+  <h2>Key Design Decisions</h2>
+  <p>The trade-offs worth defending in an interview — what was chosen, what was rejected, and why.</p>
+  <div class="tradeoff-grid">
+    <div class="tradeoff-card"><div class="t-decision">Two retrievers, not one</div><div class="t-chose">✓ Chose: PageIndex + Vector + router</div><div class="t-rejected">✗ Rejected: vector-only RAG</div><div class="t-why">Each strategy has a measured blind spot. The benchmark proves hybrid keeps PageIndex's <code>0.94</code> faithfulness while nearly matching vector's <code>0.92</code> precision. A single strategy can't do both.</div></div>
+    <div class="tradeoff-card"><div class="t-decision">Three storage tiers</div><div class="t-chose">✓ Chose: Postgres+pgvector / SQLite / disk</div><div class="t-rejected">✗ Rejected: one database for everything</div><div class="t-why">Only embeddings need a real vector DB. Relational state fits SQLite (and shares a file with the checkpointer); trees are read-only JSON. Right tool per access pattern.</div></div>
+    <div class="tradeoff-card"><div class="t-decision">Native SSE, no library</div><div class="t-chose">✓ Chose: fetch + ReadableStream parser</div><div class="t-rejected">✗ Rejected: EventSource / SSE lib</div><div class="t-why"><code>EventSource</code> can't POST a JSON body or set headers, and pulling in a library for ~25 lines of well-specified parsing isn't worth the dependency. Returns a clean <code>AbortController</code> cleanup.</div></div>
+    <div class="tradeoff-card"><div class="t-decision">LangGraph only for chat</div><div class="t-chose">✓ Chose: checkpointer for conversations</div><div class="t-rejected">✗ Rejected: model the whole app as a graph</div><div class="t-why">Planning/quiz/notes are stateless one-shots — a graph would be ceremony. LangGraph earns its place exactly where state persistence matters: multi-turn chat surviving refreshes.</div></div>
+    <div class="tradeoff-card"><div class="t-decision">Pure-Python quiz scoring</div><div class="t-chose">✓ Chose: compare to stored correct_index</div><div class="t-rejected">✗ Rejected: LLM-graded answers</div><div class="t-why">Deterministic, free, instant, and ungameable. The <code>correct_index</code> is stored server-side and never sent to the client on generate.</div></div>
+    <div class="tradeoff-card"><div class="t-decision">Model-agnostic via .env</div><div class="t-chose">✓ Chose: one factory, every call</div><div class="t-rejected">✗ Rejected: hardcoded provider SDK</div><div class="t-why">Swap OpenAI→Anthropic→Ollama by editing <code>.env</code>. The same indirection makes the RAGAS judge provider-agnostic too — no separate eval config.</div></div>
+  </div>
+</section>
+
+<!-- ══════════ CONFIG ══════════ -->
+<section id="config">
+  <div class="section-label">Deep Dive</div>
+  <h2>Configuration (.env)</h2>
+  <p>Everything is configured through environment variables. The same build runs anywhere by changing <code>.env</code> alone.</p>
+
+  <h3>LLM &amp; retrieval</h3>
+  <table class="data-table">
+    <thead><tr><th>Variable</th><th>Default</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>LLM_PROVIDER</code></td><td><code>openai</code></td><td><code>openai · openai-compat · anthropic · google</code></td></tr>
+      <tr><td><code>LLM_MODEL</code></td><td><code>gpt-4o-mini</code></td><td>Model name for the chosen provider</td></tr>
+      <tr><td><code>LLM_API_KEY</code></td><td>—</td><td>Falls back to <code>OPENAI_API_KEY</code></td></tr>
+      <tr><td><code>LLM_BASE_URL</code></td><td>—</td><td>For <code>openai-compat</code> hosts (Ollama, Groq…)</td></tr>
+      <tr><td><code>LLM_TIMEOUT_SECONDS</code></td><td><code>60</code></td><td>Per-request timeout so a hung provider can't stall a stream</td></tr>
+      <tr><td><code>RETRIEVAL_STRATEGY</code></td><td><code>auto</code></td><td><code>auto · hybrid · pageindex · vector</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Embeddings, vision, integrations, infra</h3>
+  <table class="data-table">
+    <thead><tr><th>Variable</th><th>Default</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>EMBEDDING_MODEL</code></td><td><code>text-embedding-3-small</code></td><td>Any OpenAI-compatible embeddings model</td></tr>
+      <tr><td><code>EMBEDDING_DIMENSIONS</code></td><td><code>1536</code></td><td><strong>Must</strong> match the model (pgvector column width)</td></tr>
+      <tr><td><code>VISION_MODEL</code></td><td>— (off)</td><td>Set to enable diagram/figure extraction during ingestion</td></tr>
+      <tr><td><code>VISION_MAX_PAGES</code></td><td><code>20</code></td><td>Cost guard; <code>0</code> = unlimited</td></tr>
+      <tr><td><code>NOTION_API_KEY</code> · <code>NOTION_PARENT_PAGE_ID</code></td><td>—</td><td>Both required to enable Notion export</td></tr>
+      <tr><td><code>LANGCHAIN_API_KEY</code></td><td>—</td><td>Enables LangSmith tracing; absent = silent no-op</td></tr>
+      <tr><td><code>DATABASE_URL</code> · <code>SQLITE_PATH</code> · <code>UPLOAD_DIR</code></td><td>—</td><td>pgvector DSN · SQLite file · disk path for PDFs + trees</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-indigo">
+    <span class="callout-icon">📦</span>
+    <div class="callout-body">PageIndex is the open-source library run locally — <strong>no separate key</strong>. It reuses <code>LLM_*</code> via <code>OPENAI_API_KEY</code> + <code>litellm.api_base</code>. In Docker it's cloned into the image; for local non-Docker runs, clone <code>VectifyAI/PageIndex</code> and add it to <code>PYTHONPATH</code>.</div>
+  </div>
+</section>
+
+<!-- ══════════ WEAKNESSES ══════════ -->
+<section id="weaknesses">
+  <div class="section-label">Deep Dive</div>
+  <h2>Known Weaknesses &amp; Gaps</h2>
+  <p>The honest list — knowing these (and how you'd fix them) signals engineering maturity in an interview.</p>
+  <div class="card-grid">
+    <div class="card"><div class="card-title"><span class="tag tag-amber">eval</span> Small benchmark</div><div class="card-desc">30 Q&amp;A on a single 58-page book. Directional, not statistically tight (~±0.05–0.10/metric). Fix: 50–100 pairs across multiple books/domains.</div></div>
+    <div class="card"><div class="card-title"><span class="tag tag-red">security</span> No auth</div><div class="card-desc">No users, sessions, or access control — single-tenant local app. Multi-user would need auth + per-user data scoping.</div></div>
+    <div class="card"><div class="card-title"><span class="tag tag-amber">ux</span> Polling, not push</div><div class="card-desc">Ingestion status and Notion export poll every 3s rather than using WebSockets/server-push.</div></div>
+    <div class="card"><div class="card-title"><span class="tag tag-amber">ux</span> Chat history on reload</div><div class="card-desc">History is checkpointed server-side by <code>thread_id</code>, but the frontend doesn't re-hydrate it on page load — a reload shows an empty panel.</div></div>
+    <div class="card"><div class="card-title"><span class="tag tag-amber">retrieval</span> Fixed top_k</div><div class="card-desc"><code>top_k</code> is hard-coded (8 notes / 5 chat / 8 super). Optimal k varies by book/domain; no sweep yet.</div></div>
+    <div class="card"><div class="card-title"><span class="tag tag-amber">integration</span> Notion not idempotent</div><div class="card-desc">Each export creates new pages; re-exporting duplicates rather than updating in place.</div></div>
+    <div class="card"><div class="card-title"><span class="tag tag-amber">cost</span> PageIndex index cost</div><div class="card-desc">~140–220 LLM calls to tree-index one book. One-time, but real money on large libraries; and large books inflate query-time navigation.</div></div>
+    <div class="card"><div class="card-title"><span class="tag tag-amber">scale</span> Single-process background tasks</div><div class="card-desc">Ingestion runs as in-process <code>BackgroundTask</code>s — fine locally, but a real deployment wants a job queue (Celery/RQ) for retries and concurrency.</div></div>
+  </div>
+</section>
+
+<!-- ══════════ DEMO SCRIPT ══════════ -->
+<section id="demo">
+  <div class="section-label">KT · Demo · Interview</div>
+  <h2>Demo Script — Drive It Live</h2>
+  <p>A ~5-minute narrative that shows every headline feature in order. The 🗣 line is what to say while it runs.</p>
+
+  <div class="demo-step"><div class="demo-num">1</div><div class="demo-body"><div class="demo-do">Upload a PDF on <code>/knowledge</code>; watch the status badge advance.</div><div class="demo-say">"Upload returns instantly — indexing is a background task. The badge walks <code>pending → indexing_pageindex → indexing_vectors → ready</code> as it builds a structural tree and the vector embeddings in parallel."</div></div></div>
+  <div class="demo-step"><div class="demo-num">2</div><div class="demo-body"><div class="demo-do">Create a goal: topic, level, deadline, pick the source.</div><div class="demo-say">"The Planner sizes the plan to the deadline and returns an ordered set of sessions with a rationale — all grounded in the book I just uploaded."</div></div></div>
+  <div class="demo-step"><div class="demo-num">3</div><div class="demo-body"><div class="demo-do">Open a session; notes stream in token-by-token.</div><div class="demo-say">"These notes are streaming over SSE, and every claim is cited to a source and page — retrieved from my book, not the open internet."</div></div></div>
+  <div class="demo-step"><div class="demo-num">4</div><div class="demo-body"><div class="demo-do">Ask a question in the chat panel; point at the citation chips.</div><div class="demo-say">"Grounded Q&amp;A. The <code>done</code> event even tells me which retrieval strategy answered and how long it took."</div></div></div>
+  <div class="demo-step"><div class="demo-num">5</div><div class="demo-body"><div class="demo-do">Take the quiz and <strong>deliberately fail it</strong> (&lt;65%).</div><div class="demo-say">"Scoring is pure Python against a server-side answer key. Because I scored under 65%, watch — an adaptive remedial session just got inserted into the plan automatically."</div></div></div>
+  <div class="demo-step"><div class="demo-num">6</div><div class="demo-body"><div class="demo-do">Complete the sessions, then sit the final test.</div><div class="demo-say">"A cumulative test pulls 1–2 questions per session. Pass at 70% and the goal is marked complete — confetti. Weak sessions are surfaced for review."</div></div></div>
+  <div class="demo-step"><div class="demo-num">7</div><div class="demo-body"><div class="demo-do">Switch to <code>/super</code> and ask across all books.</div><div class="demo-say">"The Super Agent retrieves across every indexed source at once, with a conversation that persists across visits via a thread ID my browser owns."</div></div></div>
+  <div class="demo-step"><div class="demo-num">8</div><div class="demo-body"><div class="demo-do">(Optional) Show the RAGAS table / <code>comparison_3way.json</code>.</div><div class="demo-say">"And it's measured — here's the head-to-head RAGAS benchmark that justifies shipping hybrid as the default."</div></div></div>
+</section>
+
+<!-- ══════════ FAQ ══════════ -->
+<section id="faq">
+  <div class="section-label">KT · Demo · Interview</div>
+  <h2>FAQ — KT · Demo · Interview</h2>
+
+  <div class="faq-tabs">
+    <div class="faq-tab active" onclick="switchFaq('arch', this)">Architecture</div>
+    <div class="faq-tab" onclick="switchFaq('rag', this)">Retrieval &amp; RAG</div>
+    <div class="faq-tab" onclick="switchFaq('prod', this)">Product &amp; Ops</div>
+  </div>
+
+  <div class="faq-panel active" id="faq-arch">
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Why SQLite <em>and</em> PostgreSQL?</div><div class="faq-a">They serve different access patterns. <strong>pgvector</strong> is the only piece that genuinely needs a server DB — fast cosine similarity over an <code>ivfflat</code> index. Everything relational (goals, sessions, quiz data, chat checkpoints) fits comfortably in embedded <strong>SQLite</strong>, which also happens to be exactly what the LangGraph <code>AsyncSqliteSaver</code> wants. Forcing chat history into Postgres would add an ORM and a migration story for no benefit.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Why not model the whole app as a LangGraph graph?</div><div class="faq-a">Most agents are stateless one-shots — planning, quiz generation, note generation. Wrapping those in a graph is ceremony. LangGraph is used precisely where it pays off: <strong>multi-turn conversation persistence</strong>. The orchestrator builds a minimal graph with a single pass-through node just so the checkpointer has something to attach to.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How does chat survive a refresh?</div><div class="faq-a">The <code>AsyncSqliteSaver</code> checkpointer stores conversation state per <code>thread_id</code>. Session chat uses <code>thread_id = goal_id</code>; the Super Agent uses a client UUID kept in <code>localStorage</code>. On each turn the agent loads prior messages from the checkpoint, appends, and writes back — no bespoke history table. (Caveat: the frontend doesn't yet re-hydrate that history on page load.)</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Why a custom SSE parser instead of a library?</div><div class="faq-a">The browser's native <code>EventSource</code> can't issue a POST with a JSON body or custom headers, which the streaming endpoints need. The SSE wire format is ~25 lines to parse off a <code>fetch</code> <code>ReadableStream</code>, and doing it by hand returns a clean <code>AbortController</code>-based cleanup that wires straight into React effects.</div></div>
+  </div>
+
+  <div class="faq-panel" id="faq-rag">
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">What is PageIndex and how is it different from vector RAG?</div><div class="faq-a">PageIndex is <strong>structural, vectorless</strong> retrieval. At ingestion an LLM builds a hierarchical tree of the document (sections, summaries, page ranges); at query time another LLM reads that skeleton and picks which sections answer the question, returning <strong>whole coherent sections</strong>. Vector RAG instead chops the doc into fixed 600-token chunks and matches by embedding similarity. PageIndex preserves structure; vector preserves precision.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Why is hybrid the default, and what are the weights?</div><div class="faq-a"><code>combined = 0.6·pageindex + 0.4·vector</code>, de-duplicated by content hash. The benchmark shows PageIndex wins faithfulness (0.94) while vector wins precision (0.92) — a real trade-off. Hybrid inherits PageIndex's grounding <em>and</em> nearly matches vector's precision (0.94 / 0.90 / 0.90), so it's the best single default. <code>auto</code> goes further and routes per query.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How do you keep answers grounded (no hallucination)?</div><div class="faq-a">Three layers: (1) every answer is built only from retrieved chunks, and the system prompt enforces "answer only from the provided context"; (2) responses carry citations to source + page; (3) the <strong>Faithfulness</strong> RAGAS metric measures it — hybrid scores 0.94, meaning ~94% of claims are supported by the retrieved context.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Tell me about the PageIndex bug.</div><div class="faq-a">Classic silent-failure war-story. PageIndex retrieval returned zero chunks for almost every query — no errors, valid JSON, just useless. Two root causes: the builder passed Python <code>True</code> for options the library checks against the string <code>'yes'</code> (so node text/summaries were never written), and the retriever read <code>node.id</code> while the library writes <code>node_id</code>. The takeaway: <strong>a RAG component can look healthy and still retrieve nothing — only evaluation catches it.</strong></div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Is the 30-question benchmark enough?</div><div class="faq-a">It's directional, not definitive — ~±0.05–0.10 per metric at n=30 on one book. It's honest about that. The value is the <em>relative</em> comparison (the strategies were run apples-to-apples with the router bypassed) and the methodology, which generalizes: any book can get a matched golden set the same way.</div></div>
+  </div>
+
+  <div class="faq-panel" id="faq-prod">
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How does adaptive learning actually trigger?</div><div class="faq-a">On quiz submit, pure-Python scoring computes a fraction. Below <code>0.65</code>, <code>handle_quiz_failure()</code> generates one targeted remedial session and inserts it after the current one, atomically renumbering later sessions so stacked failures can't corrupt the order. The final test flags any session scoring under <code>0.50</code> as weak.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How would you make this multi-user / production-ready?</div><div class="faq-a">Add auth + per-user data scoping; move ingestion to a real job queue (Celery/RQ) for retries and concurrency; promote relational state from SQLite to Postgres; re-hydrate chat history on load; replace status polling with WebSockets; and expand the eval set to 50–100 Q&amp;A across domains with CI regression gates.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How do I switch the model or run fully local?</div><div class="faq-a">Edit <code>.env</code>. Set <code>LLM_PROVIDER=anthropic</code> + a Claude model, or <code>openai-compat</code> with <code>LLM_BASE_URL=http://localhost:11434/v1</code> for Ollama. The same change flows to chat, planner, notes, quiz, router, PageIndex navigation, vision, <em>and</em> the RAGAS judge — nothing is hardcoded.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">What happens if PageIndex tree-building fails?</div><div class="faq-a">Graceful degradation. The builder logs a warning and returns <code>None</code>; ingestion still completes vector-only and the source becomes <code>ready</code> with <code>pageindex_doc_id = NULL</code>. The router reads that and routes the source to vector with no LLM call. Nothing breaks — you just lose structural retrieval for that one book.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How is observability handled?</div><div class="faq-a">When <code>LANGCHAIN_API_KEY</code> is set, every agent/LLM call is traced in LangSmith (strategy, latency, token cost) under project <code>scholar-v2</code>. Absent the key it's a silent no-op — no code paths change.</div></div>
+  </div>
+</section>
+
+<!-- ══════════ CHEAT SHEET ══════════ -->
+<section id="cheatsheet">
+  <div class="section-label">KT · Demo · Interview</div>
+  <h2>Interview Cheat-Sheet</h2>
+
+  <div class="cheat-grid">
+    <div class="cheat-box full">
+      <h4>Elevator pitch (30s)</h4>
+      <p class="pitch">"Scholar is a <em>goal-driven AI study system</em>. You upload your own textbooks, set a deadline, and it builds a personalized course — streamed cited notes, grounded chat, quizzes, and <em>adaptive learning</em> — where every answer is grounded in and limited to your books. The interesting engineering is a <em>dual retrieval engine</em>: it runs PageIndex (structural) and vector (semantic) side by side, routes per query, and I <em>benchmarked all three with RAGAS</em> to justify hybrid as the default. It's fully model-agnostic — OpenAI, Anthropic, Google, or local Ollama by editing one file."</p>
+    </div>
+    <div class="cheat-box">
+      <h4>Numbers to quote</h4>
+      <ul class="bullets">
+        <li>Hybrid: <strong>0.94</strong> faithfulness / <strong>0.90</strong> relevancy / <strong>0.90</strong> precision</li>
+        <li>PageIndex wins faithfulness (0.94); Vector wins precision (0.92)</li>
+        <li>Merge weights <strong>0.6 / 0.4</strong>; chunks <strong>600/100</strong></li>
+        <li>Thresholds <strong>65% / 70% / 50%</strong> (quiz / final / weak)</li>
+        <li><strong>~140–220</strong> LLM calls to tree-index a 58-page book (once)</li>
+        <li>Router gate: <strong>≥8/10</strong> classification accuracy</li>
+      </ul>
+    </div>
+    <div class="cheat-box">
+      <h4>Stories that land</h4>
+      <ul class="bullets">
+        <li><strong>The silent PageIndex bug</strong> — "worked" but retrieved nothing; only evaluation caught it. Shows you value measurement.</li>
+        <li><strong>Hybrid trade-off</strong> — naming a real precision/grounding tension and resolving it with data.</li>
+        <li><strong>LangGraph only where it pays</strong> — judgment about when <em>not</em> to use a tool.</li>
+        <li><strong>Atomic adaptive insert</strong> — thinking about concurrent-failure correctness.</li>
+      </ul>
+    </div>
+    <div class="cheat-box full">
+      <h4>One-liners per layer</h4>
+      <ul class="bullets">
+        <li><strong>Backend:</strong> FastAPI; agents share one retrieval engine + one model factory; conversations persist via a LangGraph SQLite checkpointer.</li>
+        <li><strong>Retrieval:</strong> PageIndex tree-nav + pgvector cosine, merged 0.6/0.4, routed per query, vector fallback when no tree.</li>
+        <li><strong>Frontend:</strong> Next.js 14 App Router; native SSE parser off <code>fetch</code>; 3-panel study UI; sequential session locking.</li>
+        <li><strong>Evals:</strong> RAGAS 3-way, router bypassed for fairness, matched golden set, provider-agnostic judge, committed results.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ TECH STACK ══════════ -->
+<section id="stack">
+  <div class="section-label">KT · Demo · Interview</div>
+  <h2>Tech Stack</h2>
+  <div class="card-grid">
+    <div class="card"><div class="card-title">Backend</div><div class="card-desc">FastAPI · LangChain + LangGraph · pydantic-settings · asyncio. SSE via <code>text/event-stream</code>.</div></div>
+    <div class="card"><div class="card-title">Retrieval &amp; ingestion</div><div class="card-desc">PageIndex (VectifyAI, via litellm) · pgvector · pdfplumber/pypdf · trafilatura · PyMuPDF (vision) · RecursiveCharacterTextSplitter.</div></div>
+    <div class="card"><div class="card-title">Frontend</div><div class="card-desc">Next.js 14 (App Router) · React 18 · TypeScript · Tailwind · react-markdown + remark-gfm · react-dropzone.</div></div>
+    <div class="card"><div class="card-title">Storage</div><div class="card-desc">PostgreSQL + pgvector (embeddings) · SQLite (relational + checkpoints) · local disk (PDFs + trees).</div></div>
+    <div class="card"><div class="card-title">Models (any provider)</div><div class="card-desc">OpenAI · Anthropic · Google · OpenAI-compatible (Ollama/Groq/vLLM/Together/LM Studio).</div></div>
+    <div class="card"><div class="card-title">Eval &amp; ops</div><div class="card-desc">RAGAS 0.2 (Faithfulness · Relevancy · Precision) · pytest + pytest-asyncio · LangSmith tracing · Docker Compose · Notion API.</div></div>
+  </div>
+  <div class="callout callout-indigo">
+    <span class="callout-icon">📖</span>
+    <div class="callout-body">Deeper written docs live alongside this guide: <code>docs/architecture.md</code>, <code>docs/retrieval.md</code>, <code>docs/evaluation.md</code>, <code>docs/flows.md</code>, <code>docs/configuration.md</code>. This page is the single-screen visual companion to all of them.</div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<button id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+// ── Retrieval-strategy selector ──
+function selectMode(mode, card) {
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.mode-detail').forEach(d => d.classList.remove('visible'));
+  card.classList.add('active');
+  document.getElementById('mode-detail-' + mode)?.classList.add('visible');
+}
+
+// ── FAQ tabs ──
+function switchFaq(tab, el) {
+  document.querySelectorAll('.faq-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.faq-panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('faq-' + tab)?.classList.add('active');
+}
+
+// ── FAQ accordion ──
+function toggleFaq(el) {
+  const item = el.parentElement;
+  item.classList.toggle('open', !item.classList.contains('open'));
+}
+
+// ── Nav scroll spy ──
+const sections = document.querySelectorAll('section[id], .hero[id]');
+const navLinks = document.querySelectorAll('nav a');
+function updateNav() {
+  let current = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 120) current = s.id; });
+  navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+}
+
+// ── Scroll-top button ──
+const scrollBtn = document.getElementById('scrollTop');
+window.addEventListener('scroll', () => {
+  updateNav();
+  scrollBtn.classList.toggle('visible', window.scrollY > 400);
+}, { passive: true });
+updateNav();
+
+// ── Animate score bars on scroll-in ──
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.score-fill').forEach(bar => { bar.style.animationPlayState = 'running'; });
+    }
+  });
+}, { threshold: 0.25 });
+document.querySelectorAll('.score-bar-wrap').forEach(el => {
+  el.querySelectorAll('.score-fill').forEach(bar => { bar.style.animationPlayState = 'paused'; });
+  observer.observe(el);
+});
+</script>
+</body>
+</html>
