@@ -6,6 +6,7 @@ Technical documentation for the Scholar goal-driven AI study system. For a produ
 
 | Document | What's inside |
 |----------|---------------|
+| **[scholar-guide.html](scholar-guide.html)** | 📚 **Complete visual guide** — a single self-contained HTML page covering the whole system for KT, demos, and interview prep: architecture, data flow, retrieval, agents, evals, design decisions, a demo script, FAQ, and an interview cheat-sheet. Open it in a browser. |
 | **[architecture.md](architecture.md)** | System components, the agent layer, storage model, and a full request map. Start here for the big picture. |
 | **[flows.md](flows.md)** | Every important flow as a diagram — ingestion, retrieval routing, the session lifecycle, adaptive follow-ups, the final test, and the Super Agent. |
 | **[retrieval.md](retrieval.md)** | Deep dive on the dual retrieval engine: how PageIndex (structural) and vector (semantic) work, when each is used, and how they're merged. |
