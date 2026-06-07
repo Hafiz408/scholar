@@ -5,6 +5,8 @@ from pydantic import BaseModel
 from app.agents.orchestrator import create_goal_with_plan, get_goal_plan
 from app.agents.notion_mcp import run_notion_export
 from app.config import settings
+from app.models.schemas import GoalSummary
+from app.repositories.goals_repo import list_goals_with_progress
 
 logger = get_logger(__name__)
 
@@ -18,6 +20,12 @@ class CreateGoalRequest(BaseModel):
     deadline_days: int
     sessions_per_week: int
     source_ids: list[str]
+
+
+@router.get("", response_model=list[GoalSummary])
+async def list_goals() -> list[dict]:
+    """List all study goals with per-goal session progress."""
+    return await list_goals_with_progress()
 
 
 @router.post("", status_code=201)

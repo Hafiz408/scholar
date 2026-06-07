@@ -28,6 +28,14 @@ CREATE TABLE IF NOT EXISTS chat_history (
     content TEXT, citations TEXT, created_at TEXT
 );
 
+CREATE TABLE IF NOT EXISTS super_threads (
+    thread_id TEXT PRIMARY KEY,
+    title TEXT,
+    message_count INTEGER DEFAULT 0,
+    created_at TEXT,
+    updated_at TEXT
+);
+
 CREATE TABLE IF NOT EXISTS quiz_questions (
     id TEXT PRIMARY KEY,
     session_id TEXT NOT NULL,
