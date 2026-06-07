@@ -3,9 +3,11 @@
 .env.local
 .env.*.local
 
-# Local runtime artifacts (sqlite db, uploads, notion export logs)
+# Local runtime artifacts (sqlite db, uploads, ingestion/notion export logs)
 /data/
 /logs/
+backend/data/
+backend/logs/
 
 # Python
 __pycache__/

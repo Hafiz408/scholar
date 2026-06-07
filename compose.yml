@@ -6,7 +6,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: scholar
     ports:
-      - "5432:5432"
+      # Host 5432 is taken by a local Postgres, so expose the container on 5433.
+      # Internal traffic (backend -> db:5432) is unaffected by this host mapping.
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/init_db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -32,7 +34,7 @@ services:
     env_file:
       - .env
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-    restart: unless-stopped
+    # restart: unless-stopped
 
   frontend:
     build:
@@ -52,7 +54,7 @@ services:
       # reach the backend by its compose service name, not localhost.
       NEXT_PUBLIC_API_URL: http://backend:8000
     command: npm run dev
-    restart: unless-stopped
+    # restart: unless-stopped
 
 volumes:
   postgres_data:
