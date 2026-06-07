@@ -112,7 +112,7 @@ class GoalSummary(BaseModel):
     topic: str
     level: str
     status: str
-    created_at: datetime
+    created_at: Optional[datetime]
     deadline_days: int
     total_sessions: int
     completed_sessions: int
