@@ -17,8 +17,8 @@ from app.core.logging import (
     new_request_id,
     set_request_id,
 )
-from app.database import get_engine
-from app.db.database import init_db, init_pgvector_schema
+from app.core.database import get_engine
+from app.core.db_schema import init_db, init_pgvector_schema
 from app.routers.knowledge import router as knowledge_router
 
 # Configure the root logger once, at import time, so every per-module logger inherits
@@ -37,7 +37,7 @@ async def lifespan(app: FastAPI):
         os.environ["LANGCHAIN_PROJECT"] = settings.langchain_project
     init_db()
     init_pgvector_schema()
-    from app.db import pg
+    from app.core import pg
     await pg.open_pool()
     from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
     from app.agents.orchestrator import build_graph

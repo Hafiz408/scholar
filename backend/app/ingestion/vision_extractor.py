@@ -13,7 +13,7 @@ import fitz  # PyMuPDF — already in requirements.txt (pymupdf>=1.26.0)
 from langchain_core.messages import HumanMessage
 
 from app.config import settings
-from app.llm_factory import get_vision_llm
+from app.core.llm_factory import get_vision_llm
 
 logger = get_logger(__name__)
 

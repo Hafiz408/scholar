@@ -8,7 +8,7 @@ import aiosqlite
 from app.agents.planner import SessionPlan
 from app.agents.prompts import ADAPTIVE_PLANNER_SYSTEM_PROMPT
 from app.config import settings
-from app.llm_factory import get_llm
+from app.core.llm_factory import get_llm
 
 logger = get_logger(__name__)
 

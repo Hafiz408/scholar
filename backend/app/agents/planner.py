@@ -1,7 +1,7 @@
 import asyncio
 from math import ceil
 from pydantic import BaseModel
-from app.llm_factory import get_llm
+from app.core.llm_factory import get_llm
 from app.agents.prompts import PLANNER_SYSTEM_PROMPT
 
 

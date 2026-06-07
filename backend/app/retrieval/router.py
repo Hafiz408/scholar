@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from typing import Literal
 
 from app.config import settings
-from app.llm_factory import get_llm
+from app.core.llm_factory import get_llm
 
 
 class RouterDecision(BaseModel):

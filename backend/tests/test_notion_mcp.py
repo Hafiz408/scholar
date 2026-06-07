@@ -375,8 +375,8 @@ async def test_backoff_exhausted_raises(monkeypatch):
 @pytest.mark.asyncio
 async def test_notion_page_url_column_exists(tmp_path, monkeypatch):
     """NTN-04: init_db() on a fresh SQLite DB includes 'notion_page_url' in study_goals."""
-    from app.db.database import init_db
-    import app.db.database as db_mod
+    from app.core.db_schema import init_db
+    import app.core.db_schema as db_mod
 
     db_path = str(tmp_path / "schema_test.sqlite")
 

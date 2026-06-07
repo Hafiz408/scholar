@@ -5,7 +5,7 @@ import time
 import aiosqlite
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from app.config import settings
-from app.llm_factory import get_llm
+from app.core.llm_factory import get_llm
 from app.agents.prompts import CHAT_SYSTEM_PROMPT
 from app.retrieval.hybrid_retriever import retrieve
 

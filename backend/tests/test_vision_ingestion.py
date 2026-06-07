@@ -13,7 +13,7 @@ import pytest_asyncio
 def test_get_vision_llm_raises_when_model_empty(monkeypatch):
     """VIS-01: ValueError raised with descriptive message when vision_model is ''."""
     from app.config import Settings
-    import app.llm_factory as factory
+    import app.core.llm_factory as factory
 
     monkeypatch.setattr(factory, "settings", Settings(vision_model="", _env_file=None))
     with pytest.raises(ValueError, match="vision_model"):
@@ -24,7 +24,7 @@ def test_get_vision_llm_returns_chat_model_when_configured(monkeypatch):
     """VIS-01: Returns a BaseChatModel when vision_model is set (openai provider)."""
     from app.config import Settings
     from langchain_core.language_models.chat_models import BaseChatModel
-    import app.llm_factory as factory
+    import app.core.llm_factory as factory
 
     monkeypatch.setattr(
         factory,

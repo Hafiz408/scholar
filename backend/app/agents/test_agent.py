@@ -4,7 +4,7 @@ from app.core.logging import get_logger
 
 from pydantic import BaseModel
 
-from app.llm_factory import get_llm
+from app.core.llm_factory import get_llm
 from app.retrieval.hybrid_retriever import retrieve
 
 logger = get_logger(__name__)
