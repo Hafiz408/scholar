@@ -108,3 +108,36 @@ export interface TestResult {
     explanation: string;
   }>;
 }
+
+// ─── Dashboard / summary shapes (GET /goals, GET /super/threads) ───────────────
+
+export interface GoalSummary {
+  id: string;
+  title: string;
+  topic: string;
+  level: string;
+  status: string;
+  created_at: string | null;
+  deadline_days: number;
+  total_sessions: number;
+  completed_sessions: number;
+}
+
+export interface SuperThreadSummary {
+  thread_id: string;
+  title: string | null;
+  message_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SuperThreadMessage {
+  role: string;
+  content: string;
+}
+
+export interface SuperThreadDetail {
+  thread_id: string;
+  title: string | null;
+  messages: SuperThreadMessage[];
+}

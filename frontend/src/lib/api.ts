@@ -7,6 +7,9 @@ import type {
   QuizResult,
   TestQuestion,
   TestResult,
+  GoalSummary,
+  SuperThreadSummary,
+  SuperThreadDetail,
 } from '@/types'
 import { logger } from './logger'
 
@@ -228,6 +231,21 @@ export async function getGoalPlan(goalId: string): Promise<StudyPlan> {
   return request<StudyPlan>(`/goals/${goalId}`)
 }
 
+/** Lightweight goal summaries for dashboards (no per-session detail). */
+export async function listGoals(): Promise<GoalSummary[]> {
+  return request<GoalSummary[]>('/goals')
+}
+
+// ─── Super Agent endpoints ────────────────────────────────────────────────────
+
+export async function listSuperThreads(): Promise<SuperThreadSummary[]> {
+  return request<SuperThreadSummary[]>('/super/threads')
+}
+
+export async function getSuperThread(threadId: string): Promise<SuperThreadDetail> {
+  return request<SuperThreadDetail>(`/super/threads/${threadId}`)
+}
+
 // ─── Sessions endpoints ───────────────────────────────────────────────────────
 
 /**
@@ -326,4 +344,16 @@ export async function exportToNotion(goalId: string): Promise<{ status: string }
 }
 
 // Re-export types used by other modules
-export type { KnowledgeSource, StudyPlan, StudySession, RetrievedChunk, QuizQuestion, QuizResult, TestQuestion, TestResult }
+export type {
+  KnowledgeSource,
+  StudyPlan,
+  StudySession,
+  RetrievedChunk,
+  QuizQuestion,
+  QuizResult,
+  TestQuestion,
+  TestResult,
+  GoalSummary,
+  SuperThreadSummary,
+  SuperThreadDetail,
+}
