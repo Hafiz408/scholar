@@ -54,3 +54,14 @@ def test_list_goals_no_redirect_no_trailing_slash():
     with TestClient(app) as client:
         res = client.get("/goals", follow_redirects=False)
     assert res.status_code == 200
+
+
+def test_get_goal_plan_still_returns_goal_and_sessions():
+    goal_id = str(uuid.uuid4())
+    _seed_goal_with_sessions(goal_id, total=3, complete=1)
+    with TestClient(app) as client:
+        res = client.get(f"/goals/{goal_id}")
+    assert res.status_code == 200
+    body = res.json()
+    assert body["goal"]["id"] == goal_id
+    assert len(body["sessions"]) == 3

@@ -128,22 +128,6 @@ async def update_goal_progress(goal_id: str) -> dict:
 
 
 async def get_goal_plan(goal_id: str) -> dict | None:
-    """Retrieve a goal and all its sessions from SQLite."""
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
-        async with db.execute(
-            "SELECT * FROM study_goals WHERE id = ?", (goal_id,)
-        ) as cur:
-            goal_row = await cur.fetchone()
-        if goal_row is None:
-            return None
-        async with db.execute(
-            "SELECT * FROM study_sessions WHERE goal_id = ? ORDER BY session_number",
-            (goal_id,),
-        ) as cur:
-            session_rows = await cur.fetchall()
-
-    return {
-        "goal": dict(goal_row),
-        "sessions": [dict(r) for r in session_rows],
-    }
+    """Retrieve a goal and all its sessions. Data access lives in goals_repo."""
+    from app.repositories.goals_repo import get_goal_with_sessions
+    return await get_goal_with_sessions(goal_id)
