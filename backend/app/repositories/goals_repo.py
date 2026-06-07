@@ -1,13 +1,10 @@
-"""Data access for study goals. Centralizes raw aiosqlite queries."""
-import aiosqlite
-
-from app.config import settings
+"""Data access for study goals. Centralizes raw pg queries."""
+from app.core import pg
 
 
 async def list_goals_with_progress() -> list[dict]:
     """All goals, newest first, each annotated with total/completed session counts."""
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
+    async with pg.connect() as db:
         async with db.execute(
             """
             SELECT g.id, g.title, g.topic, g.level, g.status,
@@ -27,16 +24,15 @@ async def list_goals_with_progress() -> list[dict]:
 
 async def get_goal_with_sessions(goal_id: str) -> dict | None:
     """A single goal plus its ordered sessions, or None if the goal is missing."""
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
+    async with pg.connect() as db:
         async with db.execute(
-            "SELECT * FROM study_goals WHERE id = ?", (goal_id,)
+            "SELECT * FROM study_goals WHERE id = %s", (goal_id,)
         ) as cur:
             goal_row = await cur.fetchone()
         if goal_row is None:
             return None
         async with db.execute(
-            "SELECT * FROM study_sessions WHERE goal_id = ? ORDER BY session_number",
+            "SELECT * FROM study_sessions WHERE goal_id = %s ORDER BY session_number",
             (goal_id,),
         ) as cur:
             session_rows = await cur.fetchall()

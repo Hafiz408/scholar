@@ -1,10 +1,9 @@
 import asyncio
 from app.core.logging import get_logger
 
-import aiosqlite
 import httpx
 
-from app.config import settings
+from app.core import pg
 
 logger = get_logger(__name__)
 
@@ -47,17 +46,15 @@ async def run_notion_export(goal_id: str, api_key: str, parent_page_id: str) -> 
 
     Creates a parent page for the goal under parent_page_id, then creates one
     child page per session (sequential). Writes the goal page URL back to the
-    study_goals row in SQLite after export completes.
+    study_goals row in Postgres after export completes.
     """
     try:
         headers = _make_headers(api_key)
 
         # Fetch goal and sessions from the database
-        async with aiosqlite.connect(settings.sqlite_path) as db:
-            db.row_factory = aiosqlite.Row
-
+        async with pg.connect() as db:
             async with db.execute(
-                "SELECT title FROM study_goals WHERE id = ?", (goal_id,)
+                "SELECT title FROM study_goals WHERE id = %s", (goal_id,)
             ) as cur:
                 goal_row = await cur.fetchone()
 
@@ -70,7 +67,7 @@ async def run_notion_export(goal_id: str, api_key: str, parent_page_id: str) -> 
             async with db.execute(
                 """SELECT session_number, title, notes_markdown
                    FROM study_sessions
-                   WHERE goal_id = ?
+                   WHERE goal_id = %s
                    ORDER BY session_number""",
                 (goal_id,),
             ) as cur:
@@ -133,9 +130,9 @@ async def run_notion_export(goal_id: str, api_key: str, parent_page_id: str) -> 
                 )
 
         # Write URL back to DB
-        async with aiosqlite.connect(settings.sqlite_path) as db:
+        async with pg.connect() as db:
             await db.execute(
-                "UPDATE study_goals SET notion_page_url = ? WHERE id = ?",
+                "UPDATE study_goals SET notion_page_url = %s WHERE id = %s",
                 (goal_page_url, goal_id),
             )
             await db.commit()

@@ -3,11 +3,9 @@ import json
 from app.core.logging import get_logger
 import uuid
 
-import aiosqlite
-
 from app.agents.planner import SessionPlan
 from app.agents.prompts import ADAPTIVE_PLANNER_SYSTEM_PROMPT
-from app.config import settings
+from app.core import pg
 from app.core.llm_factory import get_llm
 
 logger = get_logger(__name__)
@@ -40,14 +38,14 @@ async def generate_followup_session(
 
 
 async def insert_followup_session(
-    db: aiosqlite.Connection,
+    db,
     goal_id: str,
     after_session_number: int,
     session_plan: SessionPlan,
 ) -> dict:
     """Atomically renumber downstream sessions and insert the follow-up session.
 
-    Accepts an OPEN aiosqlite connection. Caller is responsible for commit.
+    Accepts an OPEN pg connection wrapper. Caller is responsible for commit.
     Step 1: Increment session_number for all sessions strictly after the insertion point.
     Step 2: Insert the new follow-up session at after_session_number + 1.
     """
@@ -57,7 +55,7 @@ async def insert_followup_session(
     await db.execute(
         """UPDATE study_sessions
            SET session_number = session_number + 1
-           WHERE goal_id = ? AND session_number > ?""",
+           WHERE goal_id = %s AND session_number > %s""",
         (goal_id, after_session_number),
     )
 
@@ -66,7 +64,7 @@ async def insert_followup_session(
     await db.execute(
         """INSERT INTO study_sessions
            (id, goal_id, session_number, title, topic, estimated_minutes, status, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, 'pending', datetime('now'))""",
+           VALUES (%s, %s, %s, %s, %s, %s, 'pending', now()::text)""",
         (
             new_id,
             goal_id,
@@ -88,20 +86,20 @@ async def insert_followup_session(
 
 
 async def _fetch_source_titles(source_ids: list[str]) -> list[str]:
-    """Fetch knowledge source titles by ID from SQLite.
+    """Fetch knowledge source titles by ID from Postgres.
 
     Opens its own connection. Returns list of titles (skips any not found).
     """
     titles = []
-    async with aiosqlite.connect(settings.sqlite_path) as db:
+    async with pg.connect() as db:
         for source_id in source_ids:
             async with db.execute(
-                "SELECT title FROM knowledge_sources WHERE id = ?",
+                "SELECT title FROM knowledge_sources WHERE id = %s",
                 (source_id,),
             ) as cur:
                 row = await cur.fetchone()
                 if row is not None:
-                    titles.append(row[0])
+                    titles.append(row["title"])
     return titles
 
 
@@ -117,14 +115,13 @@ async def handle_quiz_failure(session_id: str) -> dict:
         }
     """
     # Fetch session + goal context using UUID
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
+    async with pg.connect() as db:
         async with db.execute(
             """SELECT ss.quiz_score, ss.session_number, ss.topic, ss.goal_id,
                       sg.level, sg.knowledge_source_ids
                FROM study_sessions ss
                JOIN study_goals sg ON ss.goal_id = sg.id
-               WHERE ss.id = ?""",
+               WHERE ss.id = %s""",
             (session_id,),
         ) as cur:
             row = await cur.fetchone()
@@ -150,7 +147,7 @@ async def handle_quiz_failure(session_id: str) -> dict:
     )
 
     # Insert follow-up session atomically (UPDATE + INSERT in one commit)
-    async with aiosqlite.connect(settings.sqlite_path) as db:
+    async with pg.connect() as db:
         followup = await insert_followup_session(
             db, row["goal_id"], row["session_number"], session_plan
         )

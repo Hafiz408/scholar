@@ -2,9 +2,8 @@ import json
 import asyncio
 from app.core.logging import get_logger
 import time
-import aiosqlite
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
-from app.config import settings
+from app.core import pg
 from app.core.llm_factory import get_llm
 from app.agents.prompts import CHAT_SYSTEM_PROMPT
 from app.retrieval.hybrid_retriever import retrieve
@@ -35,12 +34,12 @@ async def stream_super_chat(
     """
     try:
         # Query ALL ready knowledge sources (SUP-01)
-        async with aiosqlite.connect(settings.sqlite_path) as db:
+        async with pg.connect() as db:
             async with db.execute(
                 "SELECT id FROM knowledge_sources WHERE status = 'ready'"
             ) as cur:
                 rows = await cur.fetchall()
-        source_ids = [row[0] for row in rows]
+        source_ids = [row["id"] for row in rows]
 
         # Empty-sources guard (SUP-02)
         if not source_ids:

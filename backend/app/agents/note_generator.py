@@ -1,8 +1,7 @@
 import json
 import asyncio
 from app.core.logging import get_logger
-import aiosqlite
-from app.config import settings
+from app.core import pg
 from app.core.llm_factory import get_llm
 from app.agents.prompts import NOTE_SYSTEM_PROMPT
 from app.retrieval.hybrid_retriever import retrieve
@@ -47,10 +46,10 @@ async def stream_notes(
 
         notes_markdown = "".join(full_notes)
 
-        # Persist to SQLite — update session status to in_progress and save notes
-        async with aiosqlite.connect(settings.sqlite_path) as db:
+        # Persist to Postgres — update session status to in_progress and save notes
+        async with pg.connect() as db:
             await db.execute(
-                "UPDATE study_sessions SET notes_markdown=?, status=? WHERE id=?",
+                "UPDATE study_sessions SET notes_markdown=%s, status=%s WHERE id=%s",
                 (notes_markdown, "in_progress", session_id),
             )
             await db.commit()

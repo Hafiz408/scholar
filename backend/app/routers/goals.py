@@ -1,10 +1,10 @@
 from app.core.logging import get_logger
-import aiosqlite
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 from app.agents.orchestrator import create_goal_with_plan, get_goal_plan
 from app.agents.notion_mcp import run_notion_export
 from app.config import settings
+from app.core import pg
 from app.models.schemas import GoalSummary
 from app.repositories.goals_repo import list_goals_with_progress
 
@@ -62,11 +62,10 @@ async def get_goal(goal_id: str) -> dict:
 async def manual_adapt(goal_id: str) -> dict:
     """Manually trigger adaptive replanning for all failed sessions of a goal."""
     # Fetch all completed sessions with quiz_score < 65% for this goal
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
+    async with pg.connect() as db:
         async with db.execute(
             """SELECT id FROM study_sessions
-               WHERE goal_id = ? AND status = 'complete' AND quiz_score < 0.65
+               WHERE goal_id = %s AND status = 'complete' AND quiz_score < 0.65
                ORDER BY session_number""",
             (goal_id,),
         ) as cur:

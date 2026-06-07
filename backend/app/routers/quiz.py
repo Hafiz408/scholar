@@ -1,9 +1,9 @@
-import aiosqlite
 import json
 from app.core.logging import get_logger
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.config import settings
+from app.core import pg
 from app.agents.quiz_agent import generate_quiz, evaluate_quiz, QuizQuestion, QuizResult
 
 logger = get_logger(__name__)
@@ -26,14 +26,13 @@ class QuizSubmitRequest(BaseModel):
 async def generate_session_quiz(session_id: str) -> list[QuizQuestionPublic]:
     """Generate 5 MCQ questions for a session. Does NOT expose correct_index."""
     # Fetch session context
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
+    async with pg.connect() as db:
         async with db.execute(
             """SELECT ss.id, ss.topic, ss.notes_markdown, ss.status,
                       sg.level
                FROM study_sessions ss
                JOIN study_goals sg ON ss.goal_id = sg.id
-               WHERE ss.id = ?""",
+               WHERE ss.id = %s""",
             (session_id,),
         ) as cur:
             row = await cur.fetchone()
@@ -55,11 +54,11 @@ async def generate_session_quiz(session_id: str) -> list[QuizQuestionPublic]:
         level=row["level"],
     )
 
-    # Persist full questions (with correct_index) to SQLite for scoring later
-    async with aiosqlite.connect(settings.sqlite_path) as db:
+    # Persist full questions (with correct_index) to Postgres for scoring later
+    async with pg.connect() as db:
         questions_json = json.dumps([q.model_dump() for q in questions])
         await db.execute(
-            "UPDATE study_sessions SET quiz_questions=? WHERE id=?",
+            "UPDATE study_sessions SET quiz_questions=%s WHERE id=%s",
             (questions_json, session_id),
         )
         await db.commit()
@@ -74,10 +73,9 @@ async def generate_session_quiz(session_id: str) -> list[QuizQuestionPublic]:
 @router.post("/{session_id}/quiz/submit")
 async def submit_session_quiz(session_id: str, body: QuizSubmitRequest) -> dict:
     """Submit quiz answers — returns score and per-question results. Marks session complete."""
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
+    async with pg.connect() as db:
         async with db.execute(
-            "SELECT quiz_questions, status FROM study_sessions WHERE id = ?",
+            "SELECT quiz_questions, status FROM study_sessions WHERE id = %s",
             (session_id,),
         ) as cur:
             row = await cur.fetchone()
@@ -96,9 +94,9 @@ async def submit_session_quiz(session_id: str, body: QuizSubmitRequest) -> dict:
     result = evaluate_quiz(questions, body.answers)
 
     # Persist score and mark session complete
-    async with aiosqlite.connect(settings.sqlite_path) as db:
+    async with pg.connect() as db:
         await db.execute(
-            "UPDATE study_sessions SET quiz_score=?, status='complete' WHERE id=?",
+            "UPDATE study_sessions SET quiz_score=%s, status='complete' WHERE id=%s",
             (result.score, session_id),
         )
         await db.commit()

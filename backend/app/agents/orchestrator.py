@@ -1,10 +1,9 @@
 import uuid
 import json
-import aiosqlite
 from typing import TypedDict
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
-from app.config import settings
+from app.core import pg
 from app.agents.planner import generate_plan, StudyPlanOutput
 
 
@@ -48,9 +47,8 @@ async def create_goal_with_plan(
     # Fetch source titles for prompt context
     source_titles: list[str] = []
     if source_ids:
-        async with aiosqlite.connect(settings.sqlite_path) as db:
-            db.row_factory = aiosqlite.Row
-            placeholders = ",".join("?" * len(source_ids))
+        async with pg.connect() as db:
+            placeholders = ",".join(["%s"] * len(source_ids))
             async with db.execute(
                 f"SELECT id, title FROM knowledge_sources WHERE id IN ({placeholders})",
                 source_ids,
@@ -70,12 +68,12 @@ async def create_goal_with_plan(
 
     goal_id = str(uuid.uuid4())
 
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        # Insert goal — use knowledge_source_ids column (matches SQLite schema)
+    async with pg.connect() as db:
+        # Insert goal — use knowledge_source_ids column (matches schema)
         await db.execute(
             """INSERT INTO study_goals
                (id, title, topic, level, deadline_days, sessions_per_week, knowledge_source_ids, status, created_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))""",
+               VALUES (%s, %s, %s, %s, %s, %s, %s, 'active', now()::text)""",
             (goal_id, title, topic, level, deadline_days, sessions_per_week,
              json.dumps(source_ids)),
         )
@@ -85,7 +83,7 @@ async def create_goal_with_plan(
             await db.execute(
                 """INSERT INTO study_sessions
                    (id, goal_id, session_number, title, topic, estimated_minutes, status, created_at)
-                   VALUES (?, ?, ?, ?, ?, ?, 'pending', datetime('now'))""",
+                   VALUES (%s, %s, %s, %s, %s, %s, 'pending', now()::text)""",
                 (session_id, goal_id, sess.session_number, sess.title,
                  sess.topic, sess.estimated_minutes),
             )
@@ -100,14 +98,13 @@ async def create_goal_with_plan(
 
 async def update_goal_progress(goal_id: str) -> dict:
     """Return computed progress state for a goal (ORC-02)."""
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
+    async with pg.connect() as db:
         async with db.execute(
-            "SELECT status FROM study_goals WHERE id=?", (goal_id,)
+            "SELECT status FROM study_goals WHERE id=%s", (goal_id,)
         ) as cur:
             goal = await cur.fetchone()
         async with db.execute(
-            "SELECT id, status, quiz_score FROM study_sessions WHERE goal_id=? ORDER BY session_number",
+            "SELECT id, status, quiz_score FROM study_sessions WHERE goal_id=%s ORDER BY session_number",
             (goal_id,),
         ) as cur:
             sessions = await cur.fetchall()

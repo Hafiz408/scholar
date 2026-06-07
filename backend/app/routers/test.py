@@ -1,4 +1,3 @@
-import aiosqlite
 import json
 from app.core.logging import get_logger
 import uuid
@@ -6,6 +5,7 @@ from collections import defaultdict
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.config import settings
+from app.core import pg
 from app.agents.test_agent import TestQuestion, generate_test
 from app.agents.quiz_agent import evaluate_quiz, QuizQuestion
 
@@ -53,12 +53,10 @@ def _compute_weak_sessions(
 @router.post("/{goal_id}/test/generate")
 async def generate_final_test(goal_id: str) -> list[TestQuestionPublic]:
     """Generate cumulative MCQ test. Returns 400 if not all sessions are complete."""
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
-
+    async with pg.connect() as db:
         # Guard 1: goal must exist
         async with db.execute(
-            "SELECT id, knowledge_source_ids FROM study_goals WHERE id=?", (goal_id,)
+            "SELECT id, knowledge_source_ids FROM study_goals WHERE id=%s", (goal_id,)
         ) as cur:
             goal_row = await cur.fetchone()
         if goal_row is None:
@@ -66,19 +64,19 @@ async def generate_final_test(goal_id: str) -> list[TestQuestionPublic]:
 
         # Guard 2: goal must have at least one session
         async with db.execute(
-            "SELECT COUNT(*) FROM study_sessions WHERE goal_id=?", (goal_id,)
+            "SELECT COUNT(*) FROM study_sessions WHERE goal_id=%s", (goal_id,)
         ) as cur:
             total_row = await cur.fetchone()
-        if total_row[0] == 0:
+        if total_row["count"] == 0:
             raise HTTPException(status_code=400, detail="Goal has no sessions")
 
         # Guard 3: ALL sessions must be complete (TST-04)
         async with db.execute(
-            "SELECT COUNT(*) FROM study_sessions WHERE goal_id=? AND status != 'complete'",
+            "SELECT COUNT(*) FROM study_sessions WHERE goal_id=%s AND status != 'complete'",
             (goal_id,),
         ) as cur:
             incomplete_row = await cur.fetchone()
-        if incomplete_row[0] > 0:
+        if incomplete_row["count"] > 0:
             raise HTTPException(
                 status_code=400,
                 detail="Not all sessions are complete — complete all sessions before taking the final test",
@@ -86,7 +84,7 @@ async def generate_final_test(goal_id: str) -> list[TestQuestionPublic]:
 
         # Fetch sessions for question generation
         async with db.execute(
-            "SELECT session_number, topic FROM study_sessions WHERE goal_id=? ORDER BY session_number",
+            "SELECT session_number, topic FROM study_sessions WHERE goal_id=%s ORDER BY session_number",
             (goal_id,),
         ) as cur:
             session_rows = await cur.fetchall()
@@ -102,9 +100,9 @@ async def generate_final_test(goal_id: str) -> list[TestQuestionPublic]:
     # Persist full questions (with correct_index and session_number) to cumulative_tests
     test_id = str(uuid.uuid4())
     questions_json = json.dumps([q.model_dump() for q in questions])
-    async with aiosqlite.connect(settings.sqlite_path) as db:
+    async with pg.connect() as db:
         await db.execute(
-            "INSERT INTO cumulative_tests (id, goal_id, questions, created_at) VALUES (?, ?, ?, datetime('now'))",
+            "INSERT INTO cumulative_tests (id, goal_id, questions, created_at) VALUES (%s, %s, %s, now()::text)",
             (test_id, goal_id, questions_json),
         )
         await db.commit()
@@ -124,12 +122,10 @@ async def generate_final_test(goal_id: str) -> list[TestQuestionPublic]:
 @router.post("/{goal_id}/test/submit")
 async def submit_final_test(goal_id: str, body: TestSubmitRequest) -> dict:
     """Score answers against the most recent test. Marks goal complete if score >= 70%."""
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
-
+    async with pg.connect() as db:
         # Load most recent test for this goal
         async with db.execute(
-            "SELECT id, questions FROM cumulative_tests WHERE goal_id=? ORDER BY created_at DESC LIMIT 1",
+            "SELECT id, questions FROM cumulative_tests WHERE goal_id=%s ORDER BY created_at DESC LIMIT 1",
             (goal_id,),
         ) as cur:
             test_row = await cur.fetchone()
@@ -159,15 +155,15 @@ async def submit_final_test(goal_id: str, body: TestSubmitRequest) -> dict:
     weak_session_numbers = _compute_weak_sessions(questions, result.per_question)
 
     # Persist score and weak_session_numbers to cumulative_tests
-    async with aiosqlite.connect(settings.sqlite_path) as db:
+    async with pg.connect() as db:
         await db.execute(
-            "UPDATE cumulative_tests SET score=?, weak_session_numbers=? WHERE id=?",
+            "UPDATE cumulative_tests SET score=%s, weak_session_numbers=%s WHERE id=%s",
             (result.score, json.dumps(weak_session_numbers), test_id),
         )
         # Mark goal complete if score >= threshold (TST-05)
         if result.score >= FINAL_TEST_PASS_THRESHOLD:
             await db.execute(
-                "UPDATE study_goals SET status='complete' WHERE id=?", (goal_id,)
+                "UPDATE study_goals SET status='complete' WHERE id=%s", (goal_id,)
             )
         await db.commit()
 

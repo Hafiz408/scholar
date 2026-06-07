@@ -1,8 +1,8 @@
-import aiosqlite
 import json
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from app.config import settings
+from app.core import pg
 from app.agents.note_generator import stream_notes
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
@@ -11,12 +11,11 @@ router = APIRouter(prefix="/sessions", tags=["sessions"])
 @router.get("/{session_id}")
 async def get_session(session_id: str):
     """Return a single study session (used by the study page to render notes/chat/quiz)."""
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
+    async with pg.connect() as db:
         async with db.execute(
             """SELECT id, goal_id, session_number, title, topic, estimated_minutes,
                       status, quiz_score, notes_markdown, created_at
-               FROM study_sessions WHERE id = ?""",
+               FROM study_sessions WHERE id = %s""",
             (session_id,),
         ) as cur:
             row = await cur.fetchone()
@@ -31,14 +30,13 @@ async def get_session(session_id: str):
 async def start_session(session_id: str, request: Request):
     """Start a study session — streams notes as SSE notes_chunk events."""
     # Fetch session + goal context
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
+    async with pg.connect() as db:
         async with db.execute(
             """SELECT ss.id, ss.goal_id, ss.topic, ss.status,
                       sg.level, sg.knowledge_source_ids
                FROM study_sessions ss
                JOIN study_goals sg ON ss.goal_id = sg.id
-               WHERE ss.id = ?""",
+               WHERE ss.id = %s""",
             (session_id,),
         ) as cur:
             row = await cur.fetchone()

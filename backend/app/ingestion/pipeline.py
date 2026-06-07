@@ -2,9 +2,7 @@ import asyncio
 from app.core.logging import get_logger
 from typing import Optional
 
-import aiosqlite
-
-from app.config import settings
+from app.core import pg
 from app.ingestion.pdf_extractor import extract_pdf
 from app.ingestion.url_extractor import extract_url
 from app.ingestion.pageindex_builder import build_pageindex_tree
@@ -13,10 +11,10 @@ from app.ingestion.embedder import embed_and_store
 logger = get_logger(__name__)
 
 
-async def _update_status(db: aiosqlite.Connection, source_id: str, status: str) -> None:
+async def _update_status(db, source_id: str, status: str) -> None:
     """Write a new status value to the knowledge_sources row for source_id."""
     await db.execute(
-        "UPDATE knowledge_sources SET status = ? WHERE id = ?", (status, source_id)
+        "UPDATE knowledge_sources SET status = %s WHERE id = %s", (status, source_id)
     )
     await db.commit()
 
@@ -34,7 +32,7 @@ async def run_ingestion(
       1. Text extraction (PDF via pdfplumber/pypdf, URL via trafilatura)
       2. PageIndex tree submission and polling (PDF only; URL returns None immediately)
       3. pgvector embedding and chunk upsert
-      4. Mark source as ready in SQLite
+      4. Mark source as ready in Postgres
 
     Never propagates exceptions — any unhandled failure sets status to 'failed'.
 
@@ -45,8 +43,7 @@ async def run_ingestion(
         source_type: Either "pdf" or "url".
         title: Human-readable title (updated from trafilatura metadata for URLs).
     """
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
+    async with pg.connect() as db:
         try:
             # Stage 1: Extract text
             if source_type == "pdf":
@@ -70,9 +67,9 @@ async def run_ingestion(
                 page_count = extracted["page_count"]
                 title = extracted["title"]  # update title from trafilatura metadata
 
-            # Update page_count in SQLite
+            # Update page_count in Postgres
             await db.execute(
-                "UPDATE knowledge_sources SET page_count = ? WHERE id = ?",
+                "UPDATE knowledge_sources SET page_count = %s WHERE id = %s",
                 (page_count, source_id),
             )
             await db.commit()
@@ -89,7 +86,7 @@ async def run_ingestion(
 
             # Stage 4: Ready
             await db.execute(
-                "UPDATE knowledge_sources SET status = 'ready', pageindex_doc_id = ? WHERE id = ?",
+                "UPDATE knowledge_sources SET status = 'ready', pageindex_doc_id = %s WHERE id = %s",
                 (pageindex_doc_id, source_id),
             )
             await db.commit()

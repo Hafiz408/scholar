@@ -1,9 +1,9 @@
-import aiosqlite
 import json
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
 from app.config import settings
+from app.core import pg
 from app.agents.session_chat import stream_chat
 
 router = APIRouter(prefix="/sessions", tags=["chat"])
@@ -20,14 +20,13 @@ async def chat_in_session(
     request: Request,
 ):
     """Send a chat message — streams token/citations/done SSE events."""
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
+    async with pg.connect() as db:
         async with db.execute(
             """SELECT ss.id, ss.goal_id, ss.status,
                       sg.knowledge_source_ids
                FROM study_sessions ss
                JOIN study_goals sg ON ss.goal_id = sg.id
-               WHERE ss.id = ?""",
+               WHERE ss.id = %s""",
             (session_id,),
         ) as cur:
             row = await cur.fetchone()

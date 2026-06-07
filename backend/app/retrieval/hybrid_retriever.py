@@ -10,9 +10,7 @@ import hashlib
 import time
 from app.core.logging import get_logger
 
-import aiosqlite
-
-from app.config import settings
+from app.core import pg
 from app.models.schemas import RetrievedChunk, RetrievalResult
 from app.retrieval.router import classify_query, _get_pageindex_doc_ids
 from app.retrieval.pageindex_retriever import fetch_pageindex_chunks
@@ -75,7 +73,7 @@ def merge_results(
 async def _get_sources_with_pageindex(
     source_ids: list[str],
 ) -> list[tuple[str, str, str]]:
-    """Query SQLite for (pageindex_doc_id, source_id, source_title) triples.
+    """Query Postgres for (pageindex_doc_id, source_id, source_title) triples.
 
     Returns only sources that have a non-null pageindex_doc_id.
 
@@ -88,17 +86,17 @@ async def _get_sources_with_pageindex(
     if not source_ids:
         return []
 
-    placeholders = ",".join("?" * len(source_ids))
+    placeholders = ",".join(["%s"] * len(source_ids))
     query = (
         f"SELECT pageindex_doc_id, id, title FROM knowledge_sources "
         f"WHERE id IN ({placeholders}) AND pageindex_doc_id IS NOT NULL"
     )
 
-    async with aiosqlite.connect(settings.sqlite_path) as db:
+    async with pg.connect() as db:
         async with db.execute(query, source_ids) as cursor:
             rows = await cursor.fetchall()
 
-    return [(row[0], row[1], row[2]) for row in rows]
+    return [(row["pageindex_doc_id"], row["id"], row["title"]) for row in rows]
 
 
 async def retrieve(

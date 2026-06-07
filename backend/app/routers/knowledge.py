@@ -4,13 +4,12 @@ from app.core.logging import get_logger
 from datetime import datetime, timezone
 from typing import Optional
 
-import aiosqlite
-import psycopg2
 from fastapi import APIRouter, BackgroundTasks, UploadFile, File, Form, HTTPException, Response
 
 from pydantic import ValidationError
 
 from app.config import settings
+from app.core import pg
 from app.models.schemas import KnowledgeSource, IngestionStatus
 from app.ingestion.pipeline import run_ingestion
 from app.ingestion.embedder import delete_chunks_for_source
@@ -60,12 +59,12 @@ async def upload_knowledge(
 
     created_at = datetime.utcnow().isoformat()
 
-    async with aiosqlite.connect(settings.sqlite_path) as db:
+    async with pg.connect() as db:
         await db.execute(
             """
             INSERT INTO knowledge_sources
                 (id, title, source_type, file_path, url, page_count, status, created_at)
-            VALUES (?, ?, ?, ?, ?, 0, 'pending', ?)
+            VALUES (%s, %s, %s, %s, %s, 0, 'pending', %s)
             """,
             (source_id, title, source_type, save_path, url, created_at),
         )
@@ -79,10 +78,9 @@ async def upload_knowledge(
 @router.get("/{source_id}/status", response_model=IngestionStatus)
 async def get_status(source_id: str):
     """Return the current ingestion status for a knowledge source."""
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
+    async with pg.connect() as db:
         async with db.execute(
-            "SELECT id, status, page_count FROM knowledge_sources WHERE id = ?",
+            "SELECT id, status, page_count FROM knowledge_sources WHERE id = %s",
             (source_id,),
         ) as cursor:
             row = await cursor.fetchone()
@@ -103,8 +101,7 @@ async def get_status(source_id: str):
 @router.get("", response_model=list[KnowledgeSource])
 async def list_knowledge_sources():
     """Return all knowledge sources ordered by creation date descending."""
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
+    async with pg.connect() as db:
         async with db.execute(
             "SELECT * FROM knowledge_sources ORDER BY created_at DESC"
         ) as cursor:
@@ -145,11 +142,10 @@ async def delete_knowledge_source(source_id: str):
     Returns 204 on success, 404 if source not found.
     PageIndex deletion is best-effort — failure there will not prevent the overall delete.
     """
-    # Step 1: Fetch pageindex_doc_id from SQLite (also validates source exists)
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
+    # Step 1: Fetch pageindex_doc_id from Postgres (also validates source exists)
+    async with pg.connect() as db:
         async with db.execute(
-            "SELECT pageindex_doc_id FROM knowledge_sources WHERE id = ?",
+            "SELECT pageindex_doc_id FROM knowledge_sources WHERE id = %s",
             (source_id,),
         ) as cursor:
             row = await cursor.fetchone()
@@ -169,9 +165,9 @@ async def delete_knowledge_source(source_id: str):
         if pageindex_doc_id is not None:
             delete_pageindex_doc(pageindex_doc_id)
 
-        # Step 4: Delete from SQLite
+        # Step 4: Delete from Postgres
         await db.execute(
-            "DELETE FROM knowledge_sources WHERE id = ?", (source_id,)
+            "DELETE FROM knowledge_sources WHERE id = %s", (source_id,)
         )
         await db.commit()
 
