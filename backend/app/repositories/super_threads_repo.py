@@ -17,9 +17,25 @@ def _make_title(message: str) -> str:
     return title
 
 
+async def get_thread(thread_id: str) -> dict | None:
+    """Fetch a single thread's metadata, or None if it doesn't exist."""
+    async with aiosqlite.connect(settings.sqlite_path) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute(
+            """SELECT thread_id, title, message_count, created_at, updated_at
+               FROM super_threads WHERE thread_id = ?""",
+            (thread_id,),
+        ) as cur:
+            row = await cur.fetchone()
+    return dict(row) if row else None
+
+
 async def upsert_thread_on_message(thread_id: str, first_user_message: str) -> None:
     """Create the thread on first message (title from that message), else bump
-    message_count and updated_at. Title is set once and never overwritten."""
+    message_count and updated_at. Title is set once and never overwritten.
+
+    message_count counts user turns (incremented once per user message), not
+    total stored messages."""
     title = _make_title(first_user_message)
     async with aiosqlite.connect(settings.sqlite_path) as db:
         await db.execute(

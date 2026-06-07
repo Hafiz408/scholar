@@ -1,6 +1,9 @@
 import asyncio
 import uuid
 
+from fastapi.testclient import TestClient
+
+from app.main import app
 from app.repositories import super_threads_repo as repo
 
 
@@ -42,15 +45,8 @@ def test_title_truncated_for_long_first_message():
     assert t["title"].endswith("...")
 
 
-import uuid as _uuid
-
-from fastapi.testclient import TestClient
-
-from app.main import app
-
-
 def test_list_threads_endpoint_returns_recorded_thread():
-    thread_id = str(_uuid.uuid4())
+    thread_id = str(uuid.uuid4())
 
     async def _seed():
         await repo.upsert_thread_on_message(thread_id, "endpoint list test")
@@ -70,12 +66,12 @@ def test_list_threads_endpoint_returns_recorded_thread():
 
 def test_get_thread_detail_unknown_returns_404():
     with TestClient(app) as client:
-        res = client.get(f"/super/threads/unknown-{_uuid.uuid4().hex}")
+        res = client.get(f"/super/threads/unknown-{uuid.uuid4().hex}")
     assert res.status_code == 404
 
 
 def test_get_thread_detail_known_returns_messages_list():
-    thread_id = str(_uuid.uuid4())
+    thread_id = str(uuid.uuid4())
 
     async def _seed():
         await repo.upsert_thread_on_message(thread_id, "detail test")
@@ -90,3 +86,46 @@ def test_get_thread_detail_known_returns_messages_list():
     assert body["thread_id"] == thread_id
     assert body["title"] == "detail test"
     assert isinstance(body["messages"], list)
+
+
+def test_get_thread_detail_extracts_checkpoint_messages():
+    thread_id = str(uuid.uuid4())
+
+    async def _seed_meta():
+        await repo.upsert_thread_on_message(thread_id, "checkpoint extraction test")
+
+    asyncio.run(_seed_meta())
+
+    with TestClient(app) as client:
+        # Write a checkpoint with real messages, mirroring super_agent.py's aput shape.
+        async def _write_checkpoint():
+            checkpointer = app.state.checkpointer
+            config = {"configurable": {"thread_id": thread_id, "checkpoint_ns": ""}}
+            messages = [
+                {"role": "user", "content": "hello agent"},
+                {"role": "assistant", "content": "hello human"},
+            ]
+            # Build new_checkpoint exactly like super_agent.py does.
+            new_checkpoint = {
+                "v": 1,
+                "id": "test-ckpt-1",
+                "ts": "",
+                "channel_values": {"messages": messages},
+                "channel_versions": {},
+                "versions_seen": {},
+                "pending_sends": [],
+            }
+            metadata = {"source": "update", "step": len(messages), "writes": {}}
+            await checkpointer.aput(config, new_checkpoint, metadata, {})
+
+        asyncio.run(_write_checkpoint())
+
+        res = client.get(f"/super/threads/{thread_id}")
+
+    assert res.status_code == 200
+    body = res.json()
+    roles = [m["role"] for m in body["messages"]]
+    contents = [m["content"] for m in body["messages"]]
+    assert "user" in roles and "assistant" in roles
+    assert "hello agent" in contents
+    assert "hello human" in contents

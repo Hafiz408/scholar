@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from fastapi.responses import StreamingResponse
 from app.agents.super_agent import stream_super_chat
 from app.models.schemas import SuperThreadDetail, SuperThreadSummary
-from app.repositories.super_threads_repo import list_threads, upsert_thread_on_message
+from app.repositories.super_threads_repo import list_threads, get_thread, upsert_thread_on_message
 
 router = APIRouter(prefix="/super", tags=["super"])
 
@@ -51,8 +51,7 @@ async def get_super_threads() -> list[dict]:
 @router.get("/threads/{thread_id}", response_model=SuperThreadDetail)
 async def get_super_thread(thread_id: str, request: Request) -> dict:
     """Load a thread's title and message history (messages from the checkpointer)."""
-    threads = await list_threads()
-    meta = next((t for t in threads if t["thread_id"] == thread_id), None)
+    meta = await get_thread(thread_id)
 
     checkpointer = request.app.state.checkpointer
     config = {"configurable": {"thread_id": thread_id, "checkpoint_ns": ""}}
