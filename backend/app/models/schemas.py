@@ -105,6 +105,38 @@ class QuizResult(BaseModel):
     per_question: list[dict]  # {question_id, correct, explanation}
 
 
+# Goals & Super-Thread response models
+class GoalSummary(BaseModel):
+    id: str
+    title: str
+    topic: str
+    level: str
+    status: str
+    created_at: datetime
+    deadline_days: int
+    total_sessions: int
+    completed_sessions: int
+
+
+class SuperThreadSummary(BaseModel):
+    thread_id: str
+    title: Optional[str] = None
+    message_count: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class SuperThreadMessage(BaseModel):
+    role: str
+    content: str
+
+
+class SuperThreadDetail(BaseModel):
+    thread_id: str
+    title: Optional[str] = None
+    messages: list[SuperThreadMessage]
+
+
 # LangGraph State
 class ScholarState(dict):
     """TypedDict-like state for LangGraph."""
