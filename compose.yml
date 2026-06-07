@@ -1,36 +1,15 @@
 services:
-  db:
-    image: pgvector/pgvector:0.8.0-pg16
-    environment:
-      POSTGRES_USER: scholar
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: scholar
-    ports:
-      # Host 5432 is taken by a local Postgres, so expose the container on 5433.
-      # Internal traffic (backend -> db:5432) is unaffected by this host mapping.
-      - "5433:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./backend/init_db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U scholar -d scholar"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
   backend:
     build:
       context: ./backend
-    depends_on:
-      db:
-        condition: service_healthy
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
     environment:
-      DATABASE_URL: postgresql://scholar:${POSTGRES_PASSWORD}@db:5432/scholar
+      # Backend runs in Docker; it reaches the host Postgres (pg18 on host port 5000)
+      # via host.docker.internal, which Docker Desktop on macOS resolves automatically.
+      DATABASE_URL: postgresql://postgres@host.docker.internal:5000/scholar
     env_file:
       - .env
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
@@ -55,6 +34,3 @@ services:
       NEXT_PUBLIC_API_URL: http://backend:8000
     command: npm run dev
     # restart: unless-stopped
-
-volumes:
-  postgres_data:

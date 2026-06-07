@@ -37,9 +37,10 @@ async def lifespan(app: FastAPI):
         os.environ["LANGCHAIN_PROJECT"] = settings.langchain_project
     init_db()
     init_pgvector_schema()
-    from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+    from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
     from app.agents.orchestrator import build_graph
-    async with AsyncSqliteSaver.from_conn_string(settings.sqlite_path) as checkpointer:
+    async with AsyncPostgresSaver.from_conn_string(settings.database_url) as checkpointer:
+        await checkpointer.setup()
         app.state.checkpointer = checkpointer
         app.state.graph = build_graph(checkpointer)
         yield

@@ -3,7 +3,7 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    database_url: str = "postgresql://scholar:scholar_dev_password@db:5432/scholar"
+    database_url: str = "postgresql://postgres@localhost:5000/scholar"
     openai_api_key: str = ""
     langsmith_api_key: str = ""
     langchain_tracing_v2: bool = True
