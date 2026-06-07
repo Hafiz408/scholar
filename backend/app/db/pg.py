@@ -1,22 +1,59 @@
-"""Async Postgres access shim mirroring the previous aiosqlite usage.
+"""Async Postgres access with a shared connection pool.
 
+App request path (inside the app event loop):
     async with pg.connect() as db:
         async with db.execute("SELECT ... WHERE id = %s", (x,)) as cur:
             row = await cur.fetchone()        # dict | None (dict_row)
         await db.execute("INSERT ... VALUES (%s)", (x,))
         await db.commit()
 
-Placeholders are %s (psycopg3). Rows are dicts (psycopg dict_row).
+Tests / scripts running OUTSIDE the app's event loop must use connect_direct()
+(an AsyncConnectionPool is bound to the loop it was opened on, so a one-off
+connection avoids cross-loop errors):
+    async with pg.connect_direct() as db:
+        ...
+
+Placeholders are %s (psycopg3); rows come back as dicts (dict_row).
 """
 from contextlib import asynccontextmanager
 
 import psycopg
 from psycopg.rows import dict_row
+from psycopg_pool import AsyncConnectionPool
 
 from app.config import settings
 
+# Shared, lazily-opened pool for the app request path. Bound to the event loop
+# it is opened on (see open_pool, called from the FastAPI lifespan).
+_pool: AsyncConnectionPool | None = None
+
+
+async def open_pool() -> None:
+    """Open the shared async connection pool. Call once on app startup (lifespan)."""
+    global _pool
+    if _pool is None:
+        _pool = AsyncConnectionPool(
+            conninfo=settings.database_url,
+            min_size=2,
+            max_size=10,
+            open=False,  # open explicitly below (constructor-open is deprecated)
+            kwargs={"row_factory": dict_row},
+        )
+        await _pool.open()
+
+
+async def close_pool() -> None:
+    """Close the shared pool. Call on app shutdown (lifespan)."""
+    global _pool
+    if _pool is not None:
+        await _pool.close()
+        _pool = None
+
 
 class _CursorCM:
+    """Awaitable async cursor context manager so call sites can use either
+    `async with db.execute(...) as cur:` or `await db.execute(...)`."""
+
     def __init__(self, conn, sql, params):
         self._conn = conn
         self._sql = sql
@@ -53,7 +90,24 @@ class _ConnWrapper:
 
 @asynccontextmanager
 async def connect():
-    raw = await psycopg.AsyncConnection.connect(settings.database_url, row_factory=dict_row)
+    """Lease a pooled connection (app request path). The pool's context manager
+    commits on clean exit and rolls back on error, so explicit `await db.commit()`
+    calls remain valid (and idempotent)."""
+    if _pool is None:
+        raise RuntimeError(
+            "Postgres pool not initialized — open_pool() must run in the app lifespan. "
+            "Use connect_direct() for tests/scripts outside the app event loop."
+        )
+    async with _pool.connection() as raw:
+        yield _ConnWrapper(raw)
+
+
+@asynccontextmanager
+async def connect_direct():
+    """One-off (non-pooled) connection for tests/scripts outside the app loop."""
+    raw = await psycopg.AsyncConnection.connect(
+        settings.database_url, row_factory=dict_row
+    )
     try:
         yield _ConnWrapper(raw)
     finally:

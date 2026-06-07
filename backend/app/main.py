@@ -37,13 +37,18 @@ async def lifespan(app: FastAPI):
         os.environ["LANGCHAIN_PROJECT"] = settings.langchain_project
     init_db()
     init_pgvector_schema()
+    from app.db import pg
+    await pg.open_pool()
     from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
     from app.agents.orchestrator import build_graph
     async with AsyncPostgresSaver.from_conn_string(settings.database_url) as checkpointer:
         await checkpointer.setup()
         app.state.checkpointer = checkpointer
         app.state.graph = build_graph(checkpointer)
-        yield
+        try:
+            yield
+        finally:
+            await pg.close_pool()
 
 
 app = FastAPI(title="Scholar API", version="0.1.0", lifespan=lifespan)
