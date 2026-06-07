@@ -139,3 +139,21 @@ def init_pgvector_schema():
             cur.execute("DROP TABLE IF EXISTS knowledge_chunks CASCADE")
         cur.execute(_pgvector_schema(settings.embedding_dimensions))
     conn.close()
+
+
+async def init_orm_models() -> None:
+    """Ensure the pgvector extension and create all ORM-declared tables (async).
+
+    ``create_all`` is idempotent: it only creates tables that do not already
+    exist. The tables already exist from the raw ``init_db`` / ``init_pgvector_schema``
+    calls this phase, so this is effectively a no-op now — but it establishes the
+    ORM metadata as the source of truth for the data-access rewrite in a later phase.
+    """
+    from sqlalchemy import text
+    from app.core.database import get_async_engine
+    from app.models.db_models import Base
+
+    engine = get_async_engine()
+    async with engine.begin() as conn:
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        await conn.run_sync(Base.metadata.create_all)
