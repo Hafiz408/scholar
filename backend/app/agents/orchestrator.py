@@ -3,7 +3,7 @@ import json
 from datetime import datetime, timezone
 from typing import TypedDict
 from langgraph.graph import StateGraph, END
-from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from sqlalchemy import select, update
 from app.core.database import get_session
 from app.models.db_models import to_dict, KnowledgeSource, StudyGoal, StudySession
@@ -26,8 +26,8 @@ class ScholarState(TypedDict):
     goal_complete: bool
 
 
-def build_graph(checkpointer: AsyncSqliteSaver):
-    """Build minimal LangGraph StateGraph used for AsyncSqliteSaver chat checkpointing."""
+def build_graph(checkpointer: AsyncPostgresSaver):
+    """Build minimal LangGraph StateGraph used for AsyncPostgresSaver chat checkpointing."""
 
     graph = StateGraph(ScholarState)
 

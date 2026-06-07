@@ -2,7 +2,7 @@ import json
 import asyncio
 from app.core.logging import get_logger
 import time
-from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from sqlalchemy import select
 from app.core.database import get_session
 from app.models.db_models import KnowledgeSource
@@ -26,7 +26,7 @@ def _format_context(chunks) -> str:
 async def stream_super_chat(
     message: str,
     thread_id: str,
-    checkpointer: AsyncSqliteSaver,
+    checkpointer: AsyncPostgresSaver,
 ):
     """Async generator yielding SSE-formatted strings for cross-source super chat responses.
 
@@ -56,7 +56,7 @@ async def stream_super_chat(
 
         # Load existing chat history from LangGraph checkpointer (SUP-03)
         # thread_id comes from the caller — never generated server-side
-        # checkpoint_ns is required by AsyncSqliteSaver.aput(); empty string is the
+        # checkpoint_ns is required by AsyncPostgresSaver.aput(); empty string is the
         # default namespace. Omitting it raises KeyError: 'checkpoint_ns' on save.
         config = {"configurable": {"thread_id": thread_id, "checkpoint_ns": ""}}
         checkpoint_tuple = await checkpointer.aget_tuple(config)

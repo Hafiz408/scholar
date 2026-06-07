@@ -18,7 +18,7 @@ from app.core.logging import (
     set_request_id,
 )
 from app.core.database import get_async_engine, get_engine
-from app.core.db_schema import init_db, init_orm_models, init_pgvector_schema
+from app.core.db_schema import init_orm_models, init_pgvector_schema
 from app.routers.knowledge import router as knowledge_router
 
 # Configure the root logger once, at import time, so every per-module logger inherits
@@ -35,12 +35,10 @@ async def lifespan(app: FastAPI):
         os.environ["LANGCHAIN_API_KEY"] = settings.langsmith_api_key
         os.environ["LANGCHAIN_TRACING_V2"] = "true"
         os.environ["LANGCHAIN_PROJECT"] = settings.langchain_project
-    init_db()
+    # pgvector table + ivfflat index (+ dimension-change handling), then the ORM
+    # metadata creates the relational tables (create_all is idempotent).
     init_pgvector_schema()
-    # ORM metadata source-of-truth (idempotent create_all; no-op while tables exist).
     await init_orm_models()
-    from app.core import pg
-    await pg.open_pool()
     from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
     from app.agents.orchestrator import build_graph
     async with AsyncPostgresSaver.from_conn_string(settings.database_url) as checkpointer:
@@ -50,7 +48,7 @@ async def lifespan(app: FastAPI):
         try:
             yield
         finally:
-            await pg.close_pool()
+            await get_async_engine().dispose()
             await get_async_engine().dispose()
 
 
