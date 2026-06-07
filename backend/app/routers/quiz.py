@@ -1,12 +1,12 @@
 import aiosqlite
 import json
-import logging
+from app.core.logging import get_logger
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.config import settings
 from app.agents.quiz_agent import generate_quiz, evaluate_quiz, QuizQuestion, QuizResult
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/sessions", tags=["quiz"])
 

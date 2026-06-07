@@ -1,5 +1,5 @@
 import asyncio
-import logging
+from app.core.logging import get_logger
 from typing import Optional
 
 import aiosqlite
@@ -10,7 +10,7 @@ from app.ingestion.url_extractor import extract_url
 from app.ingestion.pageindex_builder import build_pageindex_tree
 from app.ingestion.embedder import embed_and_store
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 async def _update_status(db: aiosqlite.Connection, source_id: str, status: str) -> None:

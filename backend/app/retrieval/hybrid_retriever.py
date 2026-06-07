@@ -8,7 +8,7 @@ Implements RETR-05:
 import asyncio
 import hashlib
 import time
-import logging
+from app.core.logging import get_logger
 
 import aiosqlite
 
@@ -18,7 +18,7 @@ from app.retrieval.router import classify_query, _get_pageindex_doc_ids
 from app.retrieval.pageindex_retriever import fetch_pageindex_chunks
 from app.retrieval.vector_retriever import vector_search
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def merge_results(

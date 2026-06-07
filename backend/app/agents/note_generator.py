@@ -1,13 +1,13 @@
 import json
 import asyncio
-import logging
+from app.core.logging import get_logger
 import aiosqlite
 from app.config import settings
 from app.llm_factory import get_llm
 from app.agents.prompts import NOTE_SYSTEM_PROMPT
 from app.retrieval.hybrid_retriever import retrieve
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def _format_context(chunks) -> str:

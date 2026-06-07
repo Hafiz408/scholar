@@ -7,7 +7,7 @@ Returns a list of RetrievedChunk sorted by similarity (highest first).
 Returns [] on empty source_ids or any failure.
 """
 import asyncio
-import logging
+from app.core.logging import get_logger
 
 import numpy as np
 import psycopg2
@@ -17,7 +17,7 @@ from openai import OpenAI
 from app.config import settings
 from app.models.schemas import RetrievedChunk
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # SQL for cosine similarity search with source_id filter.
 # The query embedding is passed TWICE:

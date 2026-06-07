@@ -7,7 +7,7 @@ Never raises: per-page exceptions are logged; pipeline continues (VIS-04).
 """
 import asyncio
 import base64
-import logging
+from app.core.logging import get_logger
 
 import fitz  # PyMuPDF — already in requirements.txt (pymupdf>=1.26.0)
 from langchain_core.messages import HumanMessage
@@ -15,7 +15,7 @@ from langchain_core.messages import HumanMessage
 from app.config import settings
 from app.llm_factory import get_vision_llm
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # Render at 150 DPI — balances image clarity for diagrams/equations with token cost.
 # 72 DPI loses small text; 300 DPI triples image size and token cost.

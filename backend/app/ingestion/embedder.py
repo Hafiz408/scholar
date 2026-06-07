@@ -1,6 +1,6 @@
 import asyncio
 import uuid
-import logging
+from app.core.logging import get_logger
 import numpy as np
 import psycopg2
 from pgvector.psycopg2 import register_vector
@@ -8,7 +8,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from openai import OpenAI
 from app.config import settings
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 BATCH_SIZE = 50
 

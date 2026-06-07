@@ -1,8 +1,8 @@
 import pdfplumber
 import pypdf
-import logging
+from app.core.logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def extract_pdf(file_path: str) -> tuple[list[dict], dict]:

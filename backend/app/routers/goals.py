@@ -1,4 +1,4 @@
-import logging
+from app.core.logging import get_logger
 import aiosqlite
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel
@@ -6,7 +6,7 @@ from app.agents.orchestrator import create_goal_with_plan, get_goal_plan
 from app.agents.notion_mcp import run_notion_export
 from app.config import settings
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/goals", tags=["goals"])
 

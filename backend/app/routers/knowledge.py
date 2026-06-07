@@ -1,6 +1,6 @@
 import os
 import uuid
-import logging
+from app.core.logging import get_logger
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -14,7 +14,7 @@ from app.ingestion.pipeline import run_ingestion
 from app.ingestion.embedder import delete_chunks_for_source
 from app.ingestion.pageindex_builder import delete_pageindex_doc
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter()
 
@@ -98,7 +98,7 @@ async def get_status(source_id: str):
     )
 
 
-@router.get("/", response_model=list[KnowledgeSource])
+@router.get("", response_model=list[KnowledgeSource])
 async def list_knowledge_sources():
     """Return all knowledge sources ordered by creation date descending."""
     async with aiosqlite.connect(settings.sqlite_path) as db:

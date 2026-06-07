@@ -1,6 +1,6 @@
 import aiosqlite
 import json
-import logging
+from app.core.logging import get_logger
 import uuid
 from collections import defaultdict
 from fastapi import APIRouter, HTTPException
@@ -9,7 +9,7 @@ from app.config import settings
 from app.agents.test_agent import TestQuestion, generate_test
 from app.agents.quiz_agent import evaluate_quiz, QuizQuestion
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/goals", tags=["test"])
 

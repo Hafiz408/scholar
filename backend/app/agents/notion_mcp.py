@@ -1,12 +1,12 @@
 import asyncio
-import logging
+from app.core.logging import get_logger
 
 import aiosqlite
 import httpx
 
 from app.config import settings
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 NOTION_BASE_URL = "https://api.notion.com/v1"
 NOTION_VERSION = "2022-06-28"

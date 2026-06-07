@@ -1,13 +1,13 @@
 import json
 import asyncio
-import logging
+from app.core.logging import get_logger
 import time
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from app.llm_factory import get_llm
 from app.agents.prompts import CHAT_SYSTEM_PROMPT
 from app.retrieval.hybrid_retriever import retrieve
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def _format_context(chunks) -> str:

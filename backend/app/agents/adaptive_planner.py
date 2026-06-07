@@ -1,6 +1,6 @@
 import asyncio
 import json
-import logging
+from app.core.logging import get_logger
 import uuid
 
 import aiosqlite
@@ -10,7 +10,7 @@ from app.agents.prompts import ADAPTIVE_PLANNER_SYSTEM_PROMPT
 from app.config import settings
 from app.llm_factory import get_llm
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 PASS_THRESHOLD = 0.65  # score < 0.65 triggers follow-up; score == 0.65 does NOT
 
