@@ -2,8 +2,11 @@ import json
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
+from sqlalchemy import select
+
 from app.config import settings
-from app.core import pg
+from app.core.database import get_session
+from app.models.db_models import StudySession, StudyGoal, to_dict
 from app.agents.session_chat import stream_chat
 
 router = APIRouter(prefix="/sessions", tags=["chat"])
@@ -20,22 +23,22 @@ async def chat_in_session(
     request: Request,
 ):
     """Send a chat message — streams token/citations/done SSE events."""
-    async with pg.connect() as db:
-        async with db.execute(
-            """SELECT ss.id, ss.goal_id, ss.status,
-                      sg.knowledge_source_ids
-               FROM study_sessions ss
-               JOIN study_goals sg ON ss.goal_id = sg.id
-               WHERE ss.id = %s""",
-            (session_id,),
-        ) as cur:
-            row = await cur.fetchone()
+    async with get_session() as session:
+        result = (
+            await session.execute(
+                select(StudySession, StudyGoal)
+                .join(StudyGoal, StudySession.goal_id == StudyGoal.id)
+                .where(StudySession.id == session_id)
+            )
+        ).one_or_none()
 
-    if row is None:
+    if result is None:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    goal_id = row["goal_id"]
-    source_ids = json.loads(row["knowledge_source_ids"] or "[]")
+    sess_obj, goal_obj = result
+
+    goal_id = sess_obj.goal_id
+    source_ids = json.loads(goal_obj.knowledge_source_ids or "[]")
     checkpointer = request.app.state.checkpointer
 
     async def event_generator():

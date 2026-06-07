@@ -10,7 +10,11 @@ import hashlib
 import time
 from app.core.logging import get_logger
 
-from app.core import pg
+from sqlalchemy import select
+
+from app.config import settings
+from app.core.database import get_session
+from app.models.db_models import KnowledgeSource
 from app.models.schemas import RetrievedChunk, RetrievalResult
 from app.retrieval.router import classify_query, _get_pageindex_doc_ids
 from app.retrieval.pageindex_retriever import fetch_pageindex_chunks
@@ -86,15 +90,15 @@ async def _get_sources_with_pageindex(
     if not source_ids:
         return []
 
-    placeholders = ",".join(["%s"] * len(source_ids))
-    query = (
-        f"SELECT pageindex_doc_id, id, title FROM knowledge_sources "
-        f"WHERE id IN ({placeholders}) AND pageindex_doc_id IS NOT NULL"
+    stmt = (
+        select(KnowledgeSource.pageindex_doc_id, KnowledgeSource.id, KnowledgeSource.title)
+        .where(
+            KnowledgeSource.id.in_(source_ids),
+            KnowledgeSource.pageindex_doc_id.is_not(None),
+        )
     )
-
-    async with pg.connect() as db:
-        async with db.execute(query, source_ids) as cursor:
-            rows = await cursor.fetchall()
+    async with get_session() as session:
+        rows = (await session.execute(stmt)).mappings().all()
 
     return [(row["pageindex_doc_id"], row["id"], row["title"]) for row in rows]
 

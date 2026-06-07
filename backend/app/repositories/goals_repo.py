@@ -1,39 +1,57 @@
-"""Data access for study goals. Centralizes raw pg queries."""
-from app.core import pg
+"""Data access for study goals. Centralizes ORM queries (SQLAlchemy 2.0 async)."""
+from datetime import datetime, timezone
+
+from sqlalchemy import case, func, select
+
+from app.core.database import get_session
+from app.models.db_models import StudyGoal, StudySession, to_dict
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 async def list_goals_with_progress() -> list[dict]:
     """All goals, newest first, each annotated with total/completed session counts."""
-    async with pg.connect() as db:
-        async with db.execute(
-            """
-            SELECT g.id, g.title, g.topic, g.level, g.status,
-                   g.created_at, g.deadline_days,
-                   COUNT(s.id) AS total_sessions,
-                   COALESCE(SUM(CASE WHEN s.status = 'complete' THEN 1 ELSE 0 END), 0)
-                       AS completed_sessions
-            FROM study_goals g
-            LEFT JOIN study_sessions s ON s.goal_id = g.id
-            GROUP BY g.id
-            ORDER BY g.created_at DESC
-            """
-        ) as cur:
-            rows = await cur.fetchall()
+    stmt = (
+        select(
+            StudyGoal.id,
+            StudyGoal.title,
+            StudyGoal.topic,
+            StudyGoal.level,
+            StudyGoal.status,
+            StudyGoal.created_at,
+            StudyGoal.deadline_days,
+            func.count(StudySession.id).label("total_sessions"),
+            func.coalesce(
+                func.sum(case((StudySession.status == "complete", 1), else_=0)), 0
+            ).label("completed_sessions"),
+        )
+        .select_from(StudyGoal)
+        .join(StudySession, StudySession.goal_id == StudyGoal.id, isouter=True)
+        .group_by(StudyGoal.id)
+        .order_by(StudyGoal.created_at.desc())
+    )
+    async with get_session() as session:
+        rows = (await session.execute(stmt)).mappings().all()
     return [dict(r) for r in rows]
 
 
 async def get_goal_with_sessions(goal_id: str) -> dict | None:
     """A single goal plus its ordered sessions, or None if the goal is missing."""
-    async with pg.connect() as db:
-        async with db.execute(
-            "SELECT * FROM study_goals WHERE id = %s", (goal_id,)
-        ) as cur:
-            goal_row = await cur.fetchone()
-        if goal_row is None:
+    async with get_session() as session:
+        goal_obj = await session.get(StudyGoal, goal_id)
+        if goal_obj is None:
             return None
-        async with db.execute(
-            "SELECT * FROM study_sessions WHERE goal_id = %s ORDER BY session_number",
-            (goal_id,),
-        ) as cur:
-            session_rows = await cur.fetchall()
-    return {"goal": dict(goal_row), "sessions": [dict(r) for r in session_rows]}
+
+        stmt = (
+            select(StudySession)
+            .where(StudySession.goal_id == goal_id)
+            .order_by(StudySession.session_number)
+        )
+        session_rows = (await session.execute(stmt)).scalars().all()
+
+    return {
+        "goal": to_dict(goal_obj),
+        "sessions": [to_dict(s) for s in session_rows],
+    }

@@ -1,16 +1,25 @@
+from datetime import datetime, timezone
+
 from app.core.logging import get_logger
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel
+from sqlalchemy import select, update
+
 from app.agents.orchestrator import create_goal_with_plan, get_goal_plan
 from app.agents.notion_mcp import run_notion_export
 from app.config import settings
-from app.core import pg
+from app.core.database import get_session
+from app.models.db_models import StudySession, StudyGoal, to_dict
 from app.models.schemas import GoalSummary
 from app.repositories.goals_repo import list_goals_with_progress
 
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/goals", tags=["goals"])
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 class CreateGoalRequest(BaseModel):
@@ -62,14 +71,20 @@ async def get_goal(goal_id: str) -> dict:
 async def manual_adapt(goal_id: str) -> dict:
     """Manually trigger adaptive replanning for all failed sessions of a goal."""
     # Fetch all completed sessions with quiz_score < 65% for this goal
-    async with pg.connect() as db:
-        async with db.execute(
-            """SELECT id FROM study_sessions
-               WHERE goal_id = %s AND status = 'complete' AND quiz_score < 0.65
-               ORDER BY session_number""",
-            (goal_id,),
-        ) as cur:
-            failed_sessions = await cur.fetchall()
+    async with get_session() as session:
+        rows = (
+            await session.execute(
+                select(StudySession)
+                .where(
+                    StudySession.goal_id == goal_id,
+                    StudySession.status == "complete",
+                    StudySession.quiz_score < 0.65,
+                )
+                .order_by(StudySession.session_number)
+            )
+        ).scalars().all()
+
+    failed_sessions = [to_dict(r) for r in rows]
 
     if not failed_sessions:
         return {"followup_sessions_added": 0, "followup_sessions": []}

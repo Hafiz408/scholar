@@ -3,7 +3,9 @@ import asyncio
 from app.core.logging import get_logger
 import time
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
-from app.core import pg
+from sqlalchemy import select
+from app.core.database import get_session
+from app.models.db_models import KnowledgeSource
 from app.core.llm_factory import get_llm
 from app.agents.prompts import CHAT_SYSTEM_PROMPT
 from app.retrieval.hybrid_retriever import retrieve
@@ -34,12 +36,13 @@ async def stream_super_chat(
     """
     try:
         # Query ALL ready knowledge sources (SUP-01)
-        async with pg.connect() as db:
-            async with db.execute(
-                "SELECT id FROM knowledge_sources WHERE status = 'ready'"
-            ) as cur:
-                rows = await cur.fetchall()
-        source_ids = [row["id"] for row in rows]
+        async with get_session() as session:
+            rows = (
+                await session.execute(
+                    select(KnowledgeSource).where(KnowledgeSource.status == "ready")
+                )
+            ).scalars().all()
+        source_ids = [row.id for row in rows]
 
         # Empty-sources guard (SUP-02)
         if not source_ids:

@@ -2,8 +2,11 @@ import json
 from app.core.logging import get_logger
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from sqlalchemy import select, update
+
 from app.config import settings
-from app.core import pg
+from app.core.database import get_session
+from app.models.db_models import StudySession, StudyGoal, to_dict
 from app.agents.quiz_agent import generate_quiz, evaluate_quiz, QuizQuestion, QuizResult
 
 logger = get_logger(__name__)
@@ -25,20 +28,21 @@ class QuizSubmitRequest(BaseModel):
 @router.post("/{session_id}/quiz/generate")
 async def generate_session_quiz(session_id: str) -> list[QuizQuestionPublic]:
     """Generate 5 MCQ questions for a session. Does NOT expose correct_index."""
-    # Fetch session context
-    async with pg.connect() as db:
-        async with db.execute(
-            """SELECT ss.id, ss.topic, ss.notes_markdown, ss.status,
-                      sg.level
-               FROM study_sessions ss
-               JOIN study_goals sg ON ss.goal_id = sg.id
-               WHERE ss.id = %s""",
-            (session_id,),
-        ) as cur:
-            row = await cur.fetchone()
+    # Fetch session context via join
+    async with get_session() as session:
+        result = (
+            await session.execute(
+                select(StudySession, StudyGoal)
+                .join(StudyGoal, StudySession.goal_id == StudyGoal.id)
+                .where(StudySession.id == session_id)
+            )
+        ).one_or_none()
 
-    if row is None:
+    if result is None:
         raise HTTPException(status_code=404, detail="Session not found")
+
+    sess_obj, goal_obj = result
+    row = to_dict(sess_obj)
 
     notes_markdown = row["notes_markdown"]
     if not notes_markdown:
@@ -51,17 +55,18 @@ async def generate_session_quiz(session_id: str) -> list[QuizQuestionPublic]:
         session_id=session_id,
         notes_markdown=notes_markdown,
         topic=row["topic"],
-        level=row["level"],
+        level=goal_obj.level,
     )
 
     # Persist full questions (with correct_index) to Postgres for scoring later
-    async with pg.connect() as db:
+    async with get_session() as session:
         questions_json = json.dumps([q.model_dump() for q in questions])
-        await db.execute(
-            "UPDATE study_sessions SET quiz_questions=%s WHERE id=%s",
-            (questions_json, session_id),
+        await session.execute(
+            update(StudySession)
+            .where(StudySession.id == session_id)
+            .values(quiz_questions=questions_json)
         )
-        await db.commit()
+        await session.commit()
 
     # Return public-safe version WITHOUT correct_index
     return [
@@ -73,33 +78,35 @@ async def generate_session_quiz(session_id: str) -> list[QuizQuestionPublic]:
 @router.post("/{session_id}/quiz/submit")
 async def submit_session_quiz(session_id: str, body: QuizSubmitRequest) -> dict:
     """Submit quiz answers — returns score and per-question results. Marks session complete."""
-    async with pg.connect() as db:
-        async with db.execute(
-            "SELECT quiz_questions, status FROM study_sessions WHERE id = %s",
-            (session_id,),
-        ) as cur:
-            row = await cur.fetchone()
+    async with get_session() as session:
+        obj = (
+            await session.execute(
+                select(StudySession).where(StudySession.id == session_id)
+            )
+        ).scalar_one_or_none()
 
-    if row is None:
+    if obj is None:
         raise HTTPException(status_code=404, detail="Session not found")
 
+    row = to_dict(obj)
     quiz_questions_json = row["quiz_questions"]
     if not quiz_questions_json:
         raise HTTPException(status_code=422, detail="No quiz found for this session — generate quiz first")
 
-    # Reconstruct QuizQuestion objects (with correct_index, from SQLite)
+    # Reconstruct QuizQuestion objects (with correct_index, from Postgres)
     raw_questions = json.loads(quiz_questions_json)
     questions = [QuizQuestion(**q) for q in raw_questions]
 
     result = evaluate_quiz(questions, body.answers)
 
     # Persist score and mark session complete
-    async with pg.connect() as db:
-        await db.execute(
-            "UPDATE study_sessions SET quiz_score=%s, status='complete' WHERE id=%s",
-            (result.score, session_id),
+    async with get_session() as session:
+        await session.execute(
+            update(StudySession)
+            .where(StudySession.id == session_id)
+            .values(quiz_score=result.score, status="complete")
         )
-        await db.commit()
+        await session.commit()
 
     # Attempt adaptive planning AFTER score is committed — ADP-04
     followup_result = {"followup_session_added": False, "followup_session": None}

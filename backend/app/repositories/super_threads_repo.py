@@ -3,9 +3,19 @@
 Message bodies live in the LangGraph checkpointer; this table only tracks
 the lightweight metadata needed to list and label threads.
 """
-from app.core import pg
+from datetime import datetime, timezone
+
+from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
+
+from app.core.database import get_session
+from app.models.db_models import SuperThread, to_dict
 
 _TITLE_MAX = 60
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 def _make_title(message: str) -> str:
@@ -17,14 +27,9 @@ def _make_title(message: str) -> str:
 
 async def get_thread(thread_id: str) -> dict | None:
     """Fetch a single thread's metadata, or None if it doesn't exist."""
-    async with pg.connect() as db:
-        async with db.execute(
-            """SELECT thread_id, title, message_count, created_at, updated_at
-               FROM super_threads WHERE thread_id = %s""",
-            (thread_id,),
-        ) as cur:
-            row = await cur.fetchone()
-    return dict(row) if row else None
+    async with get_session() as session:
+        obj = await session.get(SuperThread, thread_id)
+    return to_dict(obj) if obj is not None else None
 
 
 async def upsert_thread_on_message(thread_id: str, first_user_message: str) -> None:
@@ -34,35 +39,40 @@ async def upsert_thread_on_message(thread_id: str, first_user_message: str) -> N
     message_count counts user turns (incremented once per user message), not
     total stored messages."""
     title = _make_title(first_user_message)
-    async with pg.connect() as db:
-        await db.execute(
-            """
-            INSERT INTO super_threads
-                (thread_id, title, message_count, created_at, updated_at)
-            VALUES (%s, %s, 1, now()::text, now()::text)
-            ON CONFLICT(thread_id) DO UPDATE SET
-                message_count = super_threads.message_count + 1,
-                updated_at = now()::text
-            """,
-            (thread_id, title),
-        )
-        await db.commit()
+    stmt = pg_insert(SuperThread).values(
+        thread_id=thread_id,
+        title=title,
+        message_count=1,
+        created_at=_now(),
+        updated_at=_now(),
+    )
+    stmt = stmt.on_conflict_do_update(
+        index_elements=[SuperThread.thread_id],
+        set_={
+            "message_count": SuperThread.message_count + 1,
+            "updated_at": _now(),
+        },
+    )
+    async with get_session() as session:
+        await session.execute(stmt)
+        await session.commit()
 
 
 async def list_threads() -> list[dict]:
     """All threads, most-recently-updated first."""
-    async with pg.connect() as db:
-        async with db.execute(
-            """SELECT thread_id, title, message_count, created_at, updated_at
-               FROM super_threads ORDER BY updated_at DESC"""
-        ) as cur:
-            rows = await cur.fetchall()
-    return [dict(r) for r in rows]
+    stmt = select(SuperThread).order_by(SuperThread.updated_at.desc())
+    async with get_session() as session:
+        rows = (await session.execute(stmt)).scalars().all()
+    return [to_dict(r) for r in rows]
 
 
 async def thread_exists(thread_id: str) -> bool:
-    async with pg.connect() as db:
-        async with db.execute(
-            "SELECT 1 FROM super_threads WHERE thread_id = %s", (thread_id,)
-        ) as cur:
-            return await cur.fetchone() is not None
+    async with get_session() as session:
+        result = (
+            await session.execute(
+                select(SuperThread.thread_id).where(
+                    SuperThread.thread_id == thread_id
+                )
+            )
+        ).scalar_one_or_none()
+    return result is not None

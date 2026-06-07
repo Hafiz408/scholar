@@ -8,8 +8,11 @@ from fastapi import APIRouter, BackgroundTasks, UploadFile, File, Form, HTTPExce
 
 from pydantic import ValidationError
 
+from sqlalchemy import select, delete
+
 from app.config import settings
-from app.core import pg
+from app.core.database import get_session
+from app.models.db_models import KnowledgeSource as KnowledgeSourceORM, to_dict
 from app.models.schemas import KnowledgeSource, IngestionStatus
 from app.ingestion.pipeline import run_ingestion
 from app.ingestion.embedder import delete_chunks_for_source
@@ -18,6 +21,10 @@ from app.ingestion.pageindex_builder import delete_pageindex_doc
 logger = get_logger(__name__)
 
 router = APIRouter()
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 @router.post("/upload", status_code=202)
@@ -57,18 +64,20 @@ async def upload_knowledge(
         source_type = "url"
         title = url
 
-    created_at = datetime.utcnow().isoformat()
-
-    async with pg.connect() as db:
-        await db.execute(
-            """
-            INSERT INTO knowledge_sources
-                (id, title, source_type, file_path, url, page_count, status, created_at)
-            VALUES (%s, %s, %s, %s, %s, 0, 'pending', %s)
-            """,
-            (source_id, title, source_type, save_path, url, created_at),
+    async with get_session() as session:
+        session.add(
+            KnowledgeSourceORM(
+                id=source_id,
+                title=title,
+                source_type=source_type,
+                file_path=save_path,
+                url=url,
+                page_count=0,
+                status="pending",
+                created_at=_now(),
+            )
         )
-        await db.commit()
+        await session.commit()
 
     background_tasks.add_task(run_ingestion, source_id, save_path, url, source_type, title)
 
@@ -78,16 +87,17 @@ async def upload_knowledge(
 @router.get("/{source_id}/status", response_model=IngestionStatus)
 async def get_status(source_id: str):
     """Return the current ingestion status for a knowledge source."""
-    async with pg.connect() as db:
-        async with db.execute(
-            "SELECT id, status, page_count FROM knowledge_sources WHERE id = %s",
-            (source_id,),
-        ) as cursor:
-            row = await cursor.fetchone()
+    async with get_session() as session:
+        obj = (
+            await session.execute(
+                select(KnowledgeSourceORM).where(KnowledgeSourceORM.id == source_id)
+            )
+        ).scalar_one_or_none()
 
-    if row is None:
+    if obj is None:
         raise HTTPException(status_code=404, detail="Knowledge source not found")
 
+    row = to_dict(obj)
     status = row["status"]
     page_count = row["page_count"] or 0
     return IngestionStatus(
@@ -101,14 +111,16 @@ async def get_status(source_id: str):
 @router.get("", response_model=list[KnowledgeSource])
 async def list_knowledge_sources():
     """Return all knowledge sources ordered by creation date descending."""
-    async with pg.connect() as db:
-        async with db.execute(
-            "SELECT * FROM knowledge_sources ORDER BY created_at DESC"
-        ) as cursor:
-            rows = await cursor.fetchall()
+    async with get_session() as session:
+        orm_rows = (
+            await session.execute(
+                select(KnowledgeSourceORM).order_by(KnowledgeSourceORM.created_at.desc())
+            )
+        ).scalars().all()
 
     sources = []
-    for row in rows:
+    for obj in orm_rows:
+        row = to_dict(obj)
         try:
             sources.append(
                 KnowledgeSource(
@@ -143,17 +155,17 @@ async def delete_knowledge_source(source_id: str):
     PageIndex deletion is best-effort — failure there will not prevent the overall delete.
     """
     # Step 1: Fetch pageindex_doc_id from Postgres (also validates source exists)
-    async with pg.connect() as db:
-        async with db.execute(
-            "SELECT pageindex_doc_id FROM knowledge_sources WHERE id = %s",
-            (source_id,),
-        ) as cursor:
-            row = await cursor.fetchone()
+    async with get_session() as session:
+        obj = (
+            await session.execute(
+                select(KnowledgeSourceORM).where(KnowledgeSourceORM.id == source_id)
+            )
+        ).scalar_one_or_none()
 
-        if row is None:
+        if obj is None:
             raise HTTPException(status_code=404, detail="Knowledge source not found")
 
-        pageindex_doc_id = row["pageindex_doc_id"]
+        pageindex_doc_id = obj.pageindex_doc_id
 
         # Step 2: Delete from pgvector (synchronous — fast operation)
         try:
@@ -166,9 +178,9 @@ async def delete_knowledge_source(source_id: str):
             delete_pageindex_doc(pageindex_doc_id)
 
         # Step 4: Delete from Postgres
-        await db.execute(
-            "DELETE FROM knowledge_sources WHERE id = %s", (source_id,)
+        await session.execute(
+            delete(KnowledgeSourceORM).where(KnowledgeSourceORM.id == source_id)
         )
-        await db.commit()
+        await session.commit()
 
     return Response(status_code=204)

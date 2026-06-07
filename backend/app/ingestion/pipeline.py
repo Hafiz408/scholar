@@ -2,7 +2,10 @@ import asyncio
 from app.core.logging import get_logger
 from typing import Optional
 
-from app.core import pg
+from sqlalchemy import update
+
+from app.core.database import get_session
+from app.models.db_models import KnowledgeSource
 from app.ingestion.pdf_extractor import extract_pdf
 from app.ingestion.url_extractor import extract_url
 from app.ingestion.pageindex_builder import build_pageindex_tree
@@ -11,12 +14,15 @@ from app.ingestion.embedder import embed_and_store
 logger = get_logger(__name__)
 
 
-async def _update_status(db, source_id: str, status: str) -> None:
+async def _update_status(source_id: str, status: str) -> None:
     """Write a new status value to the knowledge_sources row for source_id."""
-    await db.execute(
-        "UPDATE knowledge_sources SET status = %s WHERE id = %s", (status, source_id)
-    )
-    await db.commit()
+    async with get_session() as session:
+        await session.execute(
+            update(KnowledgeSource)
+            .where(KnowledgeSource.id == source_id)
+            .values(status=status)
+        )
+        await session.commit()
 
 
 async def run_ingestion(
@@ -43,54 +49,57 @@ async def run_ingestion(
         source_type: Either "pdf" or "url".
         title: Human-readable title (updated from trafilatura metadata for URLs).
     """
-    async with pg.connect() as db:
-        try:
-            # Stage 1: Extract text
-            if source_type == "pdf":
-                pages, meta = await asyncio.to_thread(extract_pdf, file_path)
-                page_count = meta["total_pages"]
+    try:
+        # Stage 1: Extract text
+        if source_type == "pdf":
+            pages, meta = await asyncio.to_thread(extract_pdf, file_path)
+            page_count = meta["total_pages"]
 
-                # Stage 1.5: Vision augmentation (opt-in, PDF only — VIS-05)
-                from app.ingestion.vision_extractor import augment_pages_with_vision
-                pages = await augment_pages_with_vision(pages, file_path)
-            else:
-                # URL source
-                extracted = await extract_url(url)
-                pages = [
-                    {
-                        "page_number": 1,
-                        "text": extracted["text"],
-                        "has_images": False,
-                        "word_count": extracted["word_count"],
-                    }
-                ]
-                page_count = extracted["page_count"]
-                title = extracted["title"]  # update title from trafilatura metadata
+            # Stage 1.5: Vision augmentation (opt-in, PDF only — VIS-05)
+            from app.ingestion.vision_extractor import augment_pages_with_vision
+            pages = await augment_pages_with_vision(pages, file_path)
+        else:
+            # URL source
+            extracted = await extract_url(url)
+            pages = [
+                {
+                    "page_number": 1,
+                    "text": extracted["text"],
+                    "has_images": False,
+                    "word_count": extracted["word_count"],
+                }
+            ]
+            page_count = extracted["page_count"]
+            title = extracted["title"]  # update title from trafilatura metadata
 
-            # Update page_count in Postgres
-            await db.execute(
-                "UPDATE knowledge_sources SET page_count = %s WHERE id = %s",
-                (page_count, source_id),
+        # Update page_count in Postgres
+        async with get_session() as session:
+            await session.execute(
+                update(KnowledgeSource)
+                .where(KnowledgeSource.id == source_id)
+                .values(page_count=page_count)
             )
-            await db.commit()
+            await session.commit()
 
-            # Stage 2: PageIndex (PDF only; URL returns None immediately)
-            await _update_status(db, source_id, "indexing_pageindex")
-            pageindex_doc_id = await build_pageindex_tree(file_path, title, source_id=source_id)
-            # build_pageindex_tree never raises — returns None on any failure
+        # Stage 2: PageIndex (PDF only; URL returns None immediately)
+        await _update_status(source_id, "indexing_pageindex")
+        pageindex_doc_id = await build_pageindex_tree(file_path, title, source_id=source_id)
+        # build_pageindex_tree never raises — returns None on any failure
 
-            # Stage 3: pgvector embeddings
-            await _update_status(db, source_id, "indexing_vectors")
-            chunk_count = await embed_and_store(pages, source_id, title)
-            logger.info("Stored %d chunks for %s", chunk_count, source_id)
+        # Stage 3: pgvector embeddings
+        await _update_status(source_id, "indexing_vectors")
+        chunk_count = await embed_and_store(pages, source_id, title)
+        logger.info("Stored %d chunks for %s", chunk_count, source_id)
 
-            # Stage 4: Ready
-            await db.execute(
-                "UPDATE knowledge_sources SET status = 'ready', pageindex_doc_id = %s WHERE id = %s",
-                (pageindex_doc_id, source_id),
+        # Stage 4: Ready
+        async with get_session() as session:
+            await session.execute(
+                update(KnowledgeSource)
+                .where(KnowledgeSource.id == source_id)
+                .values(status="ready", pageindex_doc_id=pageindex_doc_id)
             )
-            await db.commit()
+            await session.commit()
 
-        except Exception as e:
-            logger.error("Ingestion failed for %s: %s", source_id, e)
-            await _update_status(db, source_id, "failed")
+    except Exception as e:
+        logger.error("Ingestion failed for %s: %s", source_id, e)
+        await _update_status(source_id, "failed")

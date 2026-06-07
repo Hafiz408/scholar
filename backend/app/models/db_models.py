@@ -23,6 +23,7 @@ import datetime
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import DateTime, Float, ForeignKey, Integer, Text, func
+from sqlalchemy import inspect as sa_inspect
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from app.config import settings
@@ -32,6 +33,14 @@ class Base(DeclarativeBase):
     """Single declarative base for all Scholar ORM models."""
 
     pass
+
+
+def to_dict(obj) -> dict:
+    """Serialize an ORM instance to a plain dict of its column values.
+
+    Used by the data-access layer to preserve the dict return shapes that call
+    sites expect (the same shape the raw psycopg dict_row rows produced)."""
+    return {c.key: getattr(obj, c.key) for c in sa_inspect(obj).mapper.column_attrs}
 
 
 class KnowledgeSource(Base):

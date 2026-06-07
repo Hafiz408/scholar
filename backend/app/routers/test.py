@@ -2,10 +2,14 @@ import json
 from app.core.logging import get_logger
 import uuid
 from collections import defaultdict
+from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from sqlalchemy import select, update, func
+
 from app.config import settings
-from app.core import pg
+from app.core.database import get_session
+from app.models.db_models import StudyGoal, StudySession, CumulativeTest, to_dict
 from app.agents.test_agent import TestQuestion, generate_test
 from app.agents.quiz_agent import evaluate_quiz, QuizQuestion
 
@@ -15,6 +19,10 @@ router = APIRouter(prefix="/goals", tags=["test"])
 
 FINAL_TEST_PASS_THRESHOLD = 0.70
 WEAK_SESSION_THRESHOLD = 0.50
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 class TestQuestionPublic(BaseModel):
@@ -53,44 +61,53 @@ def _compute_weak_sessions(
 @router.post("/{goal_id}/test/generate")
 async def generate_final_test(goal_id: str) -> list[TestQuestionPublic]:
     """Generate cumulative MCQ test. Returns 400 if not all sessions are complete."""
-    async with pg.connect() as db:
+    async with get_session() as session:
         # Guard 1: goal must exist
-        async with db.execute(
-            "SELECT id, knowledge_source_ids FROM study_goals WHERE id=%s", (goal_id,)
-        ) as cur:
-            goal_row = await cur.fetchone()
-        if goal_row is None:
+        goal_obj = (
+            await session.execute(
+                select(StudyGoal).where(StudyGoal.id == goal_id)
+            )
+        ).scalar_one_or_none()
+
+        if goal_obj is None:
             raise HTTPException(status_code=404, detail="Goal not found")
 
         # Guard 2: goal must have at least one session
-        async with db.execute(
-            "SELECT COUNT(*) FROM study_sessions WHERE goal_id=%s", (goal_id,)
-        ) as cur:
-            total_row = await cur.fetchone()
-        if total_row["count"] == 0:
+        total_count = (
+            await session.execute(
+                select(func.count()).select_from(StudySession).where(StudySession.goal_id == goal_id)
+            )
+        ).scalar_one()
+
+        if total_count == 0:
             raise HTTPException(status_code=400, detail="Goal has no sessions")
 
         # Guard 3: ALL sessions must be complete (TST-04)
-        async with db.execute(
-            "SELECT COUNT(*) FROM study_sessions WHERE goal_id=%s AND status != 'complete'",
-            (goal_id,),
-        ) as cur:
-            incomplete_row = await cur.fetchone()
-        if incomplete_row["count"] > 0:
+        incomplete_count = (
+            await session.execute(
+                select(func.count())
+                .select_from(StudySession)
+                .where(StudySession.goal_id == goal_id, StudySession.status != "complete")
+            )
+        ).scalar_one()
+
+        if incomplete_count > 0:
             raise HTTPException(
                 status_code=400,
                 detail="Not all sessions are complete — complete all sessions before taking the final test",
             )
 
         # Fetch sessions for question generation
-        async with db.execute(
-            "SELECT session_number, topic FROM study_sessions WHERE goal_id=%s ORDER BY session_number",
-            (goal_id,),
-        ) as cur:
-            session_rows = await cur.fetchall()
+        session_rows = (
+            await session.execute(
+                select(StudySession)
+                .where(StudySession.goal_id == goal_id)
+                .order_by(StudySession.session_number)
+            )
+        ).scalars().all()
 
-    sessions = [{"session_number": r["session_number"], "topic": r["topic"]} for r in session_rows]
-    source_ids = json.loads(goal_row["knowledge_source_ids"] or "[]")
+    sessions = [{"session_number": r.session_number, "topic": r.topic} for r in session_rows]
+    source_ids = json.loads(goal_obj.knowledge_source_ids or "[]")
 
     questions = await generate_test(sessions=sessions, source_ids=source_ids)
 
@@ -100,12 +117,16 @@ async def generate_final_test(goal_id: str) -> list[TestQuestionPublic]:
     # Persist full questions (with correct_index and session_number) to cumulative_tests
     test_id = str(uuid.uuid4())
     questions_json = json.dumps([q.model_dump() for q in questions])
-    async with pg.connect() as db:
-        await db.execute(
-            "INSERT INTO cumulative_tests (id, goal_id, questions, created_at) VALUES (%s, %s, %s, now()::text)",
-            (test_id, goal_id, questions_json),
+    async with get_session() as session:
+        session.add(
+            CumulativeTest(
+                id=test_id,
+                goal_id=goal_id,
+                questions=questions_json,
+                created_at=_now(),
+            )
         )
-        await db.commit()
+        await session.commit()
 
     # Return public-safe version WITHOUT correct_index
     return [
@@ -122,19 +143,22 @@ async def generate_final_test(goal_id: str) -> list[TestQuestionPublic]:
 @router.post("/{goal_id}/test/submit")
 async def submit_final_test(goal_id: str, body: TestSubmitRequest) -> dict:
     """Score answers against the most recent test. Marks goal complete if score >= 70%."""
-    async with pg.connect() as db:
+    async with get_session() as session:
         # Load most recent test for this goal
-        async with db.execute(
-            "SELECT id, questions FROM cumulative_tests WHERE goal_id=%s ORDER BY created_at DESC LIMIT 1",
-            (goal_id,),
-        ) as cur:
-            test_row = await cur.fetchone()
+        test_obj = (
+            await session.execute(
+                select(CumulativeTest)
+                .where(CumulativeTest.goal_id == goal_id)
+                .order_by(CumulativeTest.created_at.desc())
+                .limit(1)
+            )
+        ).scalar_one_or_none()
 
-    if test_row is None:
+    if test_obj is None:
         raise HTTPException(status_code=422, detail="No test found for this goal — generate a test first")
 
-    test_id = test_row["id"]
-    raw = json.loads(test_row["questions"])
+    test_id = test_obj.id
+    raw = json.loads(test_obj.questions)
     questions = [TestQuestion(**q) for q in raw]
 
     # Cast TestQuestion to QuizQuestion for evaluate_quiz() reuse
@@ -155,17 +179,20 @@ async def submit_final_test(goal_id: str, body: TestSubmitRequest) -> dict:
     weak_session_numbers = _compute_weak_sessions(questions, result.per_question)
 
     # Persist score and weak_session_numbers to cumulative_tests
-    async with pg.connect() as db:
-        await db.execute(
-            "UPDATE cumulative_tests SET score=%s, weak_session_numbers=%s WHERE id=%s",
-            (result.score, json.dumps(weak_session_numbers), test_id),
+    async with get_session() as session:
+        await session.execute(
+            update(CumulativeTest)
+            .where(CumulativeTest.id == test_id)
+            .values(score=result.score, weak_session_numbers=json.dumps(weak_session_numbers))
         )
         # Mark goal complete if score >= threshold (TST-05)
         if result.score >= FINAL_TEST_PASS_THRESHOLD:
-            await db.execute(
-                "UPDATE study_goals SET status='complete' WHERE id=%s", (goal_id,)
+            await session.execute(
+                update(StudyGoal)
+                .where(StudyGoal.id == goal_id)
+                .values(status="complete")
             )
-        await db.commit()
+        await session.commit()
 
     return {
         "score": result.score,

@@ -3,8 +3,11 @@ import asyncio
 from pydantic import BaseModel, Field
 from typing import Literal
 
-from app.core import pg
+from sqlalchemy import select
+
+from app.core.database import get_session
 from app.core.llm_factory import get_llm
+from app.models.db_models import KnowledgeSource
 
 
 class RouterDecision(BaseModel):
@@ -30,16 +33,15 @@ async def _get_pageindex_doc_ids(source_ids: list[str]) -> list[str]:
     if not source_ids:
         return []
 
-    placeholders = ",".join(["%s"] * len(source_ids))
-    query = (
-        f"SELECT pageindex_doc_id FROM knowledge_sources "
-        f"WHERE id IN ({placeholders}) AND pageindex_doc_id IS NOT NULL"
+    stmt = (
+        select(KnowledgeSource.pageindex_doc_id)
+        .where(
+            KnowledgeSource.id.in_(source_ids),
+            KnowledgeSource.pageindex_doc_id.is_not(None),
+        )
     )
-
-    async with pg.connect() as db:
-        async with db.execute(query, source_ids) as cursor:
-            rows = await cursor.fetchall()
-
+    async with get_session() as session:
+        rows = (await session.execute(stmt)).mappings().all()
     return [row["pageindex_doc_id"] for row in rows]
 
 

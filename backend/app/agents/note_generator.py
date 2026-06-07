@@ -1,12 +1,19 @@
 import json
 import asyncio
+from datetime import datetime, timezone
 from app.core.logging import get_logger
-from app.core import pg
+from sqlalchemy import update
+from app.core.database import get_session
+from app.models.db_models import StudySession
 from app.core.llm_factory import get_llm
 from app.agents.prompts import NOTE_SYSTEM_PROMPT
 from app.retrieval.hybrid_retriever import retrieve
 
 logger = get_logger(__name__)
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 def _format_context(chunks) -> str:
@@ -47,12 +54,13 @@ async def stream_notes(
         notes_markdown = "".join(full_notes)
 
         # Persist to Postgres — update session status to in_progress and save notes
-        async with pg.connect() as db:
-            await db.execute(
-                "UPDATE study_sessions SET notes_markdown=%s, status=%s WHERE id=%s",
-                (notes_markdown, "in_progress", session_id),
+        async with get_session() as session:
+            await session.execute(
+                update(StudySession)
+                .where(StudySession.id == session_id)
+                .values(notes_markdown=notes_markdown, status="in_progress")
             )
-            await db.commit()
+            await session.commit()
 
         done_payload = json.dumps({
             "type": "notes_done",
