@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
 from fastapi.responses import StreamingResponse
 from app.agents.super_agent import stream_super_chat
+from app.repositories.super_threads_repo import upsert_thread_on_message
 
 router = APIRouter(prefix="/super", tags=["super"])
 
@@ -19,6 +20,9 @@ async def super_chat_stream(body: SuperChatRequest, request: Request):
     thread_id must be a non-empty UUID provided by the frontend (from localStorage).
     """
     checkpointer = request.app.state.checkpointer
+
+    # Record/refresh thread metadata so it appears in GET /super/threads.
+    await upsert_thread_on_message(body.thread_id, body.message)
 
     async def event_generator():
         async for event in stream_super_chat(
