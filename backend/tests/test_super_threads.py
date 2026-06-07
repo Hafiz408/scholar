@@ -40,3 +40,53 @@ def test_title_truncated_for_long_first_message():
     t = next(t for t in threads if t["thread_id"] == thread_id)
     assert len(t["title"]) <= 60
     assert t["title"].endswith("...")
+
+
+import uuid as _uuid
+
+from fastapi.testclient import TestClient
+
+from app.main import app
+
+
+def test_list_threads_endpoint_returns_recorded_thread():
+    thread_id = str(_uuid.uuid4())
+
+    async def _seed():
+        await repo.upsert_thread_on_message(thread_id, "endpoint list test")
+
+    asyncio.run(_seed())
+
+    with TestClient(app) as client:
+        res = client.get("/super/threads")
+
+    assert res.status_code == 200
+    threads = res.json()
+    assert any(t["thread_id"] == thread_id for t in threads)
+    mine = next(t for t in threads if t["thread_id"] == thread_id)
+    assert mine["title"] == "endpoint list test"
+    assert mine["message_count"] == 1
+
+
+def test_get_thread_detail_unknown_returns_404():
+    with TestClient(app) as client:
+        res = client.get(f"/super/threads/unknown-{_uuid.uuid4().hex}")
+    assert res.status_code == 404
+
+
+def test_get_thread_detail_known_returns_messages_list():
+    thread_id = str(_uuid.uuid4())
+
+    async def _seed():
+        await repo.upsert_thread_on_message(thread_id, "detail test")
+
+    asyncio.run(_seed())
+
+    with TestClient(app) as client:
+        res = client.get(f"/super/threads/{thread_id}")
+
+    assert res.status_code == 200
+    body = res.json()
+    assert body["thread_id"] == thread_id
+    assert body["title"] == "detail test"
+    assert isinstance(body["messages"], list)
