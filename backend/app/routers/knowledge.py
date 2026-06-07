@@ -8,6 +8,8 @@ import aiosqlite
 import psycopg2
 from fastapi import APIRouter, BackgroundTasks, UploadFile, File, Form, HTTPException, Response
 
+from pydantic import ValidationError
+
 from app.config import settings
 from app.models.schemas import KnowledgeSource, IngestionStatus
 from app.ingestion.pipeline import run_ingestion
@@ -110,24 +112,29 @@ async def list_knowledge_sources():
 
     sources = []
     for row in rows:
-        sources.append(
-            KnowledgeSource(
-                id=row["id"],
-                title=row["title"],
-                source_type=row["source_type"],
-                file_path=row["file_path"],
-                url=row["url"],
-                page_count=row["page_count"] or 0,
-                pageindex_doc_id=row["pageindex_doc_id"],
-                status=row["status"],
-                # Tolerate a missing/non-string created_at so one bad row never 500s the whole list.
-                created_at=(
-                    datetime.fromisoformat(row["created_at"])
-                    if isinstance(row["created_at"], str)
-                    else datetime.now(timezone.utc)
-                ),
+        try:
+            sources.append(
+                KnowledgeSource(
+                    id=row["id"],
+                    title=row["title"],
+                    source_type=row["source_type"],
+                    file_path=row["file_path"],
+                    url=row["url"],
+                    page_count=row["page_count"] or 0,
+                    pageindex_doc_id=row["pageindex_doc_id"],
+                    status=row["status"],
+                    # Tolerate a missing/non-string created_at so one bad row never 500s the whole list.
+                    created_at=(
+                        datetime.fromisoformat(row["created_at"])
+                        if isinstance(row["created_at"], str)
+                        else datetime.now(timezone.utc)
+                    ),
+                )
             )
-        )
+        except ValidationError as exc:
+            # Skip malformed/legacy rows (e.g. missing source_type) so one bad
+            # row never 500s the whole list.
+            logger.warning("Skipping malformed knowledge_sources row id=%s: %s", row["id"], exc)
     return sources
 
 

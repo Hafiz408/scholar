@@ -106,8 +106,8 @@ class TestGoalsEndpoint:
         async def _insert_source():
             async with aiosqlite.connect(settings.sqlite_path) as db:
                 await db.execute(
-                    "INSERT OR IGNORE INTO knowledge_sources (id, title, status) VALUES (?, ?, ?)",
-                    (source_id, "Test Source", "ready"),
+                    "INSERT OR IGNORE INTO knowledge_sources (id, title, source_type, status) VALUES (?, ?, ?, ?)",
+                    (source_id, "Test Source", "pdf", "ready"),
                 )
                 await db.commit()
 
@@ -140,8 +140,8 @@ class TestGoalsEndpoint:
         async def _insert_source():
             async with aiosqlite.connect(settings.sqlite_path) as db:
                 await db.execute(
-                    "INSERT OR IGNORE INTO knowledge_sources (id, title, status) VALUES (?, ?, ?)",
-                    (source_id, "Test Source for GET", "ready"),
+                    "INSERT OR IGNORE INTO knowledge_sources (id, title, source_type, status) VALUES (?, ?, ?, ?)",
+                    (source_id, "Test Source for GET", "pdf", "ready"),
                 )
                 await db.commit()
 
