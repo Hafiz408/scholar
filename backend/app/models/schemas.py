@@ -107,13 +107,15 @@ class QuizResult(BaseModel):
 
 # Goals & Super-Thread response models
 class GoalSummary(BaseModel):
+    # Descriptive/nullable columns are Optional so one legacy/partial row never
+    # 500s the whole list (the computed counts are always present).
     id: str
-    title: str
-    topic: str
-    level: str
-    status: str
-    created_at: Optional[datetime]
-    deadline_days: int
+    title: Optional[str] = None
+    topic: Optional[str] = None
+    level: Optional[str] = None
+    status: Optional[str] = None
+    created_at: Optional[datetime] = None
+    deadline_days: Optional[int] = None
     total_sessions: int
     completed_sessions: int
 
@@ -121,9 +123,9 @@ class GoalSummary(BaseModel):
 class SuperThreadSummary(BaseModel):
     thread_id: str
     title: Optional[str] = None
-    message_count: int
-    created_at: datetime
-    updated_at: datetime
+    message_count: Optional[int] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
 
 class SuperThreadMessage(BaseModel):

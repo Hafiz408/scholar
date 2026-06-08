@@ -5,12 +5,108 @@ LLM calls are mocked via unittest.mock.patch so tests run offline.
 Uses FastAPI TestClient (sync) — no Docker runtime needed for test execution,
 but tests should also pass inside the container via: docker compose exec backend pytest tests/
 """
+import asyncio
 import json
+import uuid
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi.testclient import TestClient
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.pool import NullPool
 
+from app.config import settings
 from app.main import app
+from app.models.db_models import KnowledgeSource, StudyGoal, StudySession
+
+
+# ---------------------------------------------------------------------------
+# ORM seed helpers (replace the old aiosqlite helpers)
+# ---------------------------------------------------------------------------
+
+def _make_session_factory():
+    """Fresh NullPool engine + sessionmaker — safe to use inside asyncio.run()."""
+    url = settings.database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    engine = create_async_engine(url, poolclass=NullPool, echo=False)
+    return async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession), engine
+
+
+def _insert_source(source_id: str, title: str = "Test Source", source_type: str = "pdf") -> None:
+    """Seed a knowledge_sources row via the ORM."""
+    async def _run():
+        factory, engine = _make_session_factory()
+        async with factory() as session:
+            # Use merge so INSERT OR IGNORE semantics apply (idempotent)
+            existing = await session.get(KnowledgeSource, source_id)
+            if existing is None:
+                session.add(
+                    KnowledgeSource(
+                        id=source_id,
+                        title=title,
+                        source_type=source_type,
+                        status="ready",
+                    )
+                )
+                await session.commit()
+        await engine.dispose()
+    asyncio.run(_run())
+
+
+def _insert_goal_and_session(
+    goal_id: str,
+    session_id: str,
+    notes_markdown: str | None = None,
+    quiz_questions: str | None = None,
+    session_status: str = "pending",
+) -> None:
+    """Seed a study_goals + study_sessions row via the ORM."""
+    async def _run():
+        factory, engine = _make_session_factory()
+        async with factory() as session:
+            if await session.get(StudyGoal, goal_id) is None:
+                session.add(
+                    StudyGoal(
+                        id=goal_id,
+                        title="G",
+                        topic="T",
+                        level="beginner",
+                        deadline_days=7,
+                        sessions_per_week=1,
+                        knowledge_source_ids="[]",
+                        status="active",
+                        created_at="2026-01-01T00:00:00",
+                    )
+                )
+            if await session.get(StudySession, session_id) is None:
+                session.add(
+                    StudySession(
+                        id=session_id,
+                        goal_id=goal_id,
+                        session_number=1,
+                        title="S1",
+                        topic="T",
+                        estimated_minutes=45,
+                        status=session_status,
+                        notes_markdown=notes_markdown,
+                        quiz_questions=quiz_questions,
+                        created_at="2026-01-01T00:00:00",
+                    )
+                )
+            await session.commit()
+        await engine.dispose()
+    asyncio.run(_run())
+
+
+def _get_session_row(session_id: str) -> dict | None:
+    """Read a study_sessions row from the DB via the ORM."""
+    async def _run():
+        from sqlalchemy import select
+        factory, engine = _make_session_factory()
+        async with factory() as session:
+            obj = await session.get(StudySession, session_id)
+            result = {"status": obj.status, "quiz_score": obj.quiz_score} if obj else None
+        await engine.dispose()
+        return result
+    return asyncio.run(_run())
 
 
 # ---------------------------------------------------------------------------
@@ -98,20 +194,8 @@ def _create_goal_and_get_session(client, mock_planner, source_id: str):
 class TestGoalsEndpoint:
     def test_create_goal_returns_201(self, client, mock_planner):
         """POST /goals with valid body returns 201 and a goal_id."""
-        import aiosqlite, asyncio, uuid
-        from app.config import settings
-
         source_id = str(uuid.uuid4())
-
-        async def _insert_source():
-            async with aiosqlite.connect(settings.sqlite_path) as db:
-                await db.execute(
-                    "INSERT OR IGNORE INTO knowledge_sources (id, title, source_type, status) VALUES (?, ?, ?, ?)",
-                    (source_id, "Test Source", "pdf", "ready"),
-                )
-                await db.commit()
-
-        asyncio.run(_insert_source())
+        _insert_source(source_id, title="Test Source")
 
         response = client.post(
             "/goals",
@@ -132,20 +216,8 @@ class TestGoalsEndpoint:
 
     def test_get_goal_returns_plan(self, client, mock_planner):
         """GET /goals/{goal_id} returns 200 with goal data and a non-empty sessions list."""
-        import aiosqlite, asyncio, uuid
-        from app.config import settings
-
         source_id = str(uuid.uuid4())
-
-        async def _insert_source():
-            async with aiosqlite.connect(settings.sqlite_path) as db:
-                await db.execute(
-                    "INSERT OR IGNORE INTO knowledge_sources (id, title, source_type, status) VALUES (?, ?, ?, ?)",
-                    (source_id, "Test Source for GET", "pdf", "ready"),
-                )
-                await db.commit()
-
-        asyncio.run(_insert_source())
+        _insert_source(source_id, title="Test Source for GET")
 
         # Create the goal first
         create_response = client.post(
@@ -211,25 +283,9 @@ class TestQuizEndpoint:
 
     def test_quiz_generate_returns_422_when_notes_absent(self, client, mock_planner):
         """POST /sessions/{id}/quiz/generate returns 422 when session has no notes_markdown."""
-        import aiosqlite, asyncio, uuid
-        from app.config import settings
-
         session_id = str(uuid.uuid4())
         goal_id = str(uuid.uuid4())
-
-        async def _insert_session():
-            async with aiosqlite.connect(settings.sqlite_path) as db:
-                await db.execute(
-                    "INSERT OR IGNORE INTO study_goals (id, title, topic, level, deadline_days, sessions_per_week, knowledge_source_ids, status) VALUES (?,?,?,?,?,?,?,?)",
-                    (goal_id, "G", "T", "beginner", 7, 1, "[]", "active"),
-                )
-                await db.execute(
-                    "INSERT OR IGNORE INTO study_sessions (id, goal_id, session_number, title, topic, estimated_minutes, status) VALUES (?,?,?,?,?,?,?)",
-                    (session_id, goal_id, 1, "S1", "T", 45, "pending"),
-                )
-                await db.commit()
-
-        asyncio.run(_insert_session())
+        _insert_goal_and_session(goal_id, session_id, notes_markdown=None)
 
         response = client.post(f"/sessions/{session_id}/quiz/generate")
         # notes_markdown is NULL -> 422 (no notes yet)
@@ -245,9 +301,6 @@ class TestQuizEndpoint:
 
     def test_quiz_submit_scores_and_completes_session(self, client):
         """POST /sessions/{id}/quiz/submit returns QuizResult with score and marks session complete."""
-        import aiosqlite, asyncio, uuid, json as _json
-        from app.config import settings
-
         session_id = str(uuid.uuid4())
         goal_id = str(uuid.uuid4())
 
@@ -258,21 +311,13 @@ class TestQuizEndpoint:
             for i in range(1, 6)
         ]
 
-        async def _setup():
-            async with aiosqlite.connect(settings.sqlite_path) as db:
-                await db.execute(
-                    "INSERT OR IGNORE INTO study_goals (id, title, topic, level, deadline_days, sessions_per_week, knowledge_source_ids, status) VALUES (?,?,?,?,?,?,?,?)",
-                    (goal_id, "G", "T", "beginner", 7, 1, "[]", "active"),
-                )
-                await db.execute(
-                    "INSERT OR IGNORE INTO study_sessions (id, goal_id, session_number, title, topic, estimated_minutes, status, notes_markdown, quiz_questions) VALUES (?,?,?,?,?,?,?,?,?)",
-                    (session_id, goal_id, 1, "S1", "T", 45, "in_progress",
-                     "# Notes\n\nSome content.",
-                     _json.dumps(questions_data)),
-                )
-                await db.commit()
-
-        asyncio.run(_setup())
+        _insert_goal_and_session(
+            goal_id,
+            session_id,
+            notes_markdown="# Notes\n\nSome content.",
+            quiz_questions=json.dumps(questions_data),
+            session_status="in_progress",
+        )
 
         # Submit all correct answers (correct_index=0 -> answer A for each)
         answers = {f"q{i}": 0 for i in range(1, 6)}
@@ -288,19 +333,10 @@ class TestQuizEndpoint:
         assert len(result["per_question"]) == 5
 
         # Confirm session status updated to complete
-        async def _check_status():
-            async with aiosqlite.connect(settings.sqlite_path) as db:
-                async with db.execute(
-                    "SELECT status, quiz_score FROM study_sessions WHERE id=?", (session_id,)
-                ) as cur:
-                    row = await cur.fetchone()
-            return row
-
-        import asyncio
-        row = asyncio.run(_check_status())
+        row = _get_session_row(session_id)
         assert row is not None
-        assert row[0] == "complete"
-        assert row[1] == 1.0
+        assert row["status"] == "complete"
+        assert row["quiz_score"] == 1.0
 
 
 class TestHealthEndpoint:

@@ -4,7 +4,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 
 from app.config import settings
-from app.core.database import get_session
+from app.core.database import get_session as get_db_session
 from app.models.db_models import StudySession, StudyGoal, to_dict
 from app.agents.note_generator import stream_notes
 
@@ -14,7 +14,7 @@ router = APIRouter(prefix="/sessions", tags=["sessions"])
 @router.get("/{session_id}")
 async def get_session(session_id: str):
     """Return a single study session (used by the study page to render notes/chat/quiz)."""
-    async with get_session() as session:
+    async with get_db_session() as session:
         obj = (
             await session.execute(
                 select(StudySession).where(StudySession.id == session_id)
@@ -31,7 +31,7 @@ async def get_session(session_id: str):
 async def start_session(session_id: str, request: Request):
     """Start a study session — streams notes as SSE notes_chunk events."""
     # Fetch session + goal context via join
-    async with get_session() as session:
+    async with get_db_session() as session:
         result = (
             await session.execute(
                 select(StudySession, StudyGoal)

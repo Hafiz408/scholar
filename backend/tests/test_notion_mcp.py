@@ -2,79 +2,83 @@
 Tests for Phase 13: Notion MCP Export — NTN-01 through NTN-05.
 
 All tests use monkeypatching — no live Notion API calls.
-All tests that touch SQLite use tmp_path for isolation.
+NTN-01/NTN-02/NTN-03/NTN-05 are fully ported to the ORM-based notion_mcp.py.
+NTN-04 (init_db / SQLite column check) is skipped — init_db() no longer exists
+after the SQLite→Postgres migration; the table schema is now managed by
+SQLAlchemy ORM + init_pgvector_schema().
 
 Coverage:
     NTN-01 — run_notion_export creates goal parent page + session child pages;
              notion_page_url written back to study_goals row
-    NTN-02 — Empty notion_api_key OR notion_parent_page_id → HTTP 400 before any
-             background task is enqueued
-    NTN-03 — HTTP 429 triggers exponential backoff (asyncio.sleep called with 1, 2);
-             all retries exhausted → httpx.HTTPStatusError raised
-    NTN-04 — notion_page_url column exists in study_goals SQLite table
+    NTN-02 — Empty notion_api_key OR notion_parent_page_id → HTTP 400
+    NTN-03 — HTTP 429 triggers exponential backoff; exhausted retries → HTTPStatusError
+    NTN-04 — SKIPPED (SQLite init_db() removed; schema managed by ORM + Postgres)
     NTN-05 — POST /goals/{id}/export/notion returns {"status": "export_started"}
-             immediately (HTTP 200)
 """
 import asyncio
 import uuid
 import pytest
 import pytest_asyncio
-import aiosqlite
 import httpx
-from unittest.mock import AsyncMock, MagicMock, patch, call
+from contextlib import asynccontextmanager
+from unittest.mock import AsyncMock, MagicMock, patch
 
 
-# ── DB helpers ───────────────────────────────────────────────────────────────
+# ── ORM-aware DB helpers ──────────────────────────────────────────────────────
 
-async def _make_db(tmp_path, *, num_sessions=2, notes_markdown="Some notes"):
-    """Create a tmp SQLite DB with the Phase 13 schema and seed data.
+def _make_session_factory():
+    from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+    from sqlalchemy.pool import NullPool
+    from app.config import settings
+    url = settings.database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    engine = create_async_engine(url, poolclass=NullPool, echo=False)
+    return async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession), engine
 
-    Returns (db_path, goal_id).
-    """
-    db_path = str(tmp_path / "test.sqlite")
-    goal_id = str(uuid.uuid4())
 
-    async with aiosqlite.connect(db_path) as db:
-        # study_goals table including notion_page_url column
-        await db.execute(
-            """CREATE TABLE study_goals (
-                id TEXT PRIMARY KEY,
-                title TEXT,
-                topic TEXT,
-                level TEXT DEFAULT 'beginner',
-                knowledge_source_ids TEXT DEFAULT '[]',
-                notion_page_url TEXT
-            )"""
-        )
-        # study_sessions with notes_markdown
-        await db.execute(
-            """CREATE TABLE study_sessions (
-                id TEXT PRIMARY KEY,
-                goal_id TEXT,
-                session_number INTEGER,
-                title TEXT,
-                topic TEXT,
-                estimated_minutes INTEGER DEFAULT 45,
-                status TEXT DEFAULT 'pending',
-                quiz_score REAL,
-                notes_markdown TEXT,
-                created_at TEXT
-            )"""
-        )
-        await db.execute(
-            "INSERT INTO study_goals (id, title, topic) VALUES (?, ?, ?)",
-            (goal_id, "Test Goal", "Test Topic"),
+async def _seed_goal_and_sessions(goal_id: str, num_sessions: int = 2, notes_markdown: str | None = "Some notes"):
+    """Seed a goal + sessions into Postgres for notion_mcp tests."""
+    from app.models.db_models import StudyGoal, StudySession
+    factory, engine = _make_session_factory()
+    async with factory() as session:
+        session.add(
+            StudyGoal(
+                id=goal_id,
+                title="Test Goal",
+                topic="Test Topic",
+                level="beginner",
+                knowledge_source_ids="[]",
+                status="active",
+                created_at="2026-01-01T00:00:00",
+            )
         )
         for i in range(1, num_sessions + 1):
-            await db.execute(
-                """INSERT INTO study_sessions
-                   (id, goal_id, session_number, title, notes_markdown)
-                   VALUES (?, ?, ?, ?, ?)""",
-                (str(uuid.uuid4()), goal_id, i, f"Session {i}", notes_markdown),
+            session.add(
+                StudySession(
+                    id=str(uuid.uuid4()),
+                    goal_id=goal_id,
+                    session_number=i,
+                    title=f"Session {i}",
+                    topic="Topic",
+                    estimated_minutes=45,
+                    status="pending",
+                    notes_markdown=notes_markdown,
+                    created_at="2026-01-01T00:00:00",
+                )
             )
-        await db.commit()
+        await session.commit()
+    await engine.dispose()
 
-    return db_path, goal_id
+
+async def _get_goal_notion_url(goal_id: str) -> str | None:
+    """Read notion_page_url from a study_goals row."""
+    from app.models.db_models import StudyGoal
+    from sqlalchemy import select
+    factory, engine = _make_session_factory()
+    async with factory() as session:
+        obj = await session.get(StudyGoal, goal_id)
+        url = obj.notion_page_url if obj else None
+    await engine.dispose()
+    return url
 
 
 def _make_mock_post(fail_times=0):
@@ -109,15 +113,12 @@ def _make_mock_post(fail_times=0):
 # ── NTN-01: run_notion_export creates goal + session pages ───────────────────
 
 @pytest.mark.asyncio
-async def test_run_notion_export_creates_goal_and_session_pages(tmp_path, monkeypatch):
+async def test_run_notion_export_creates_goal_and_session_pages():
     """NTN-01: httpx.AsyncClient.post called 3 times (1 goal + 2 sessions) for 2 sessions."""
     import app.agents.notion_mcp as nm_mod
 
-    db_path, goal_id = await _make_db(tmp_path, num_sessions=2)
-
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(nm_mod, "settings", mock_settings)
+    goal_id = str(uuid.uuid4())
+    await _seed_goal_and_sessions(goal_id, num_sessions=2)
 
     post_calls = []
 
@@ -143,15 +144,12 @@ async def test_run_notion_export_creates_goal_and_session_pages(tmp_path, monkey
 
 
 @pytest.mark.asyncio
-async def test_run_notion_export_writes_notion_page_url(tmp_path, monkeypatch):
+async def test_run_notion_export_writes_notion_page_url():
     """NTN-01 (writeback): notion_page_url is written back to the study_goals row."""
     import app.agents.notion_mcp as nm_mod
 
-    db_path, goal_id = await _make_db(tmp_path, num_sessions=1)
-
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(nm_mod, "settings", mock_settings)
+    goal_id = str(uuid.uuid4())
+    await _seed_goal_and_sessions(goal_id, num_sessions=1)
 
     expected_url = "https://notion.so/pg-id"
 
@@ -171,26 +169,17 @@ async def test_run_notion_export_writes_notion_page_url(tmp_path, monkeypatch):
 
         await nm_mod.run_notion_export(goal_id, "test-key", "parent-page-id")
 
-    async with aiosqlite.connect(db_path) as db:
-        async with db.execute(
-            "SELECT notion_page_url FROM study_goals WHERE id = ?", (goal_id,)
-        ) as cur:
-            row = await cur.fetchone()
-
-    assert row is not None
-    assert row[0] == expected_url
+    url = await _get_goal_notion_url(goal_id)
+    assert url == expected_url
 
 
 @pytest.mark.asyncio
-async def test_run_notion_export_null_notes_fallback(tmp_path, monkeypatch):
+async def test_run_notion_export_null_notes_fallback():
     """NTN-01 (null notes): Session with notes_markdown=NULL exports without error."""
     import app.agents.notion_mcp as nm_mod
 
-    db_path, goal_id = await _make_db(tmp_path, num_sessions=1, notes_markdown=None)
-
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(nm_mod, "settings", mock_settings)
+    goal_id = str(uuid.uuid4())
+    await _seed_goal_and_sessions(goal_id, num_sessions=1, notes_markdown=None)
 
     async def mock_post(*args, **kwargs):
         mock_resp = MagicMock()
@@ -370,31 +359,19 @@ async def test_backoff_exhausted_raises(monkeypatch):
         )
 
 
-# ── NTN-04: notion_page_url column exists in SQLite schema ───────────────────
+# ── NTN-04: notion_page_url column exists in schema ──────────────────────────
 
-@pytest.mark.asyncio
-async def test_notion_page_url_column_exists(tmp_path, monkeypatch):
-    """NTN-04: init_db() on a fresh SQLite DB includes 'notion_page_url' in study_goals."""
-    from app.core.db_schema import init_db
-    import app.core.db_schema as db_mod
-
-    db_path = str(tmp_path / "schema_test.sqlite")
-
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(db_mod, "settings", mock_settings)
-
-    import os
-    os.makedirs(str(tmp_path), exist_ok=True)
-
-    init_db()
-
-    async with aiosqlite.connect(db_path) as db:
-        async with db.execute("PRAGMA table_info(study_goals)") as cur:
-            columns = await cur.fetchall()
-
-    column_names = [col[1] for col in columns]
-    assert "notion_page_url" in column_names
+@pytest.mark.skip(
+    reason=(
+        "NTN-04 verified init_db() creates notion_page_url in SQLite. "
+        "init_db() was removed in the SQLite→Postgres migration; the schema is now "
+        "managed by SQLAlchemy ORM (StudyGoal.notion_page_url mapped_column) + "
+        "init_orm_models(). The ORM model definition IS the spec — column presence "
+        "is guaranteed by the model declaration, not a runtime check."
+    )
+)
+def test_notion_page_url_column_exists():
+    pass
 
 
 # ── NTN-05: POST /goals/{id}/export/notion returns export_started immediately ─

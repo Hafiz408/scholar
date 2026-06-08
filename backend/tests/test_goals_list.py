@@ -1,34 +1,60 @@
 import asyncio
 import uuid
 
-import aiosqlite
 from fastapi.testclient import TestClient
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.pool import NullPool
 
 from app.config import settings
 from app.main import app
+from app.models.db_models import StudyGoal, StudySession
+
+
+def _make_session_factory():
+    """Create a fresh async engine + sessionmaker with NullPool.
+
+    NullPool prevents connections from being pooled/reused across event loops,
+    which avoids the "Future attached to a different loop" error when each
+    asyncio.run() creates a new loop.
+    """
+    url = settings.database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    engine = create_async_engine(url, poolclass=NullPool, echo=False)
+    return async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession), engine
 
 
 def _seed_goal_with_sessions(goal_id: str, total: int, complete: int) -> None:
     async def _seed():
-        async with aiosqlite.connect(settings.sqlite_path) as db:
-            await db.execute(
-                """INSERT INTO study_goals
-                   (id, title, topic, level, deadline_days, sessions_per_week,
-                    knowledge_source_ids, status, created_at)
-                   VALUES (?, 'List Test Goal', 'Biology', 'beginner', 7, 1, '[]',
-                           'active', datetime('now'))""",
-                (goal_id,),
+        factory, engine = _make_session_factory()
+        async with factory() as session:
+            session.add(
+                StudyGoal(
+                    id=goal_id,
+                    title="List Test Goal",
+                    topic="Biology",
+                    level="beginner",
+                    deadline_days=7,
+                    sessions_per_week=1,
+                    knowledge_source_ids="[]",
+                    status="active",
+                    created_at="2026-01-01T00:00:00",
+                )
             )
             for n in range(1, total + 1):
                 status = "complete" if n <= complete else "pending"
-                await db.execute(
-                    """INSERT INTO study_sessions
-                       (id, goal_id, session_number, title, topic, estimated_minutes,
-                        status, created_at)
-                       VALUES (?, ?, ?, 'S', 'T', 30, ?, datetime('now'))""",
-                    (str(uuid.uuid4()), goal_id, n, status),
+                session.add(
+                    StudySession(
+                        id=str(uuid.uuid4()),
+                        goal_id=goal_id,
+                        session_number=n,
+                        title="S",
+                        topic="T",
+                        estimated_minutes=30,
+                        status=status,
+                        created_at="2026-01-01T00:00:00",
+                    )
                 )
-            await db.commit()
+            await session.commit()
+        await engine.dispose()
 
     asyncio.run(_seed())
 
