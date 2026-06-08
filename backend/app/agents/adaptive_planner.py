@@ -1,20 +1,25 @@
 import asyncio
 import json
-import logging
+from datetime import datetime, timezone
+from app.core.logging import get_logger
 import uuid
 
-import aiosqlite
-
+from sqlalchemy import select, update
+from app.core.database import get_session
+from app.models.db_models import to_dict, KnowledgeSource, StudySession, StudyGoal
 from app.agents.planner import SessionPlan
 from app.agents.prompts import ADAPTIVE_PLANNER_SYSTEM_PROMPT
-from app.config import settings
-from app.llm_factory import get_llm
+from app.core.llm_factory import get_llm
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 PASS_THRESHOLD = 0.65  # score < 0.65 triggers follow-up; score == 0.65 does NOT
 
 _adaptive_chain = get_llm(temperature=0).with_structured_output(SessionPlan)
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 async def generate_followup_session(
@@ -40,41 +45,40 @@ async def generate_followup_session(
 
 
 async def insert_followup_session(
-    db: aiosqlite.Connection,
+    session,
     goal_id: str,
     after_session_number: int,
     session_plan: SessionPlan,
 ) -> dict:
     """Atomically renumber downstream sessions and insert the follow-up session.
 
-    Accepts an OPEN aiosqlite connection. Caller is responsible for commit.
+    Accepts an OPEN ORM AsyncSession. Caller is responsible for commit.
     Step 1: Increment session_number for all sessions strictly after the insertion point.
     Step 2: Insert the new follow-up session at after_session_number + 1.
     """
     new_session_number = after_session_number + 1
 
     # Renumber all sessions after the insertion point (strictly greater-than, NOT >=)
-    await db.execute(
-        """UPDATE study_sessions
-           SET session_number = session_number + 1
-           WHERE goal_id = ? AND session_number > ?""",
-        (goal_id, after_session_number),
+    await session.execute(
+        update(StudySession)
+        .where(StudySession.goal_id == goal_id)
+        .where(StudySession.session_number > after_session_number)
+        .values(session_number=StudySession.session_number + 1)
     )
 
     # Insert the new follow-up session
     new_id = str(uuid.uuid4())
-    await db.execute(
-        """INSERT INTO study_sessions
-           (id, goal_id, session_number, title, topic, estimated_minutes, status, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, 'pending', datetime('now'))""",
-        (
-            new_id,
-            goal_id,
-            new_session_number,
-            session_plan.title,
-            session_plan.topic,
-            session_plan.estimated_minutes,
-        ),
+    session.add(
+        StudySession(
+            id=new_id,
+            goal_id=goal_id,
+            session_number=new_session_number,
+            title=session_plan.title,
+            topic=session_plan.topic,
+            estimated_minutes=session_plan.estimated_minutes,
+            status="pending",
+            created_at=_now(),
+        )
     )
 
     return {
@@ -88,21 +92,17 @@ async def insert_followup_session(
 
 
 async def _fetch_source_titles(source_ids: list[str]) -> list[str]:
-    """Fetch knowledge source titles by ID from SQLite.
+    """Fetch knowledge source titles by ID from Postgres.
 
-    Opens its own connection. Returns list of titles (skips any not found).
+    Opens its own session. Returns list of titles (skips any not found).
     """
-    titles = []
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        for source_id in source_ids:
-            async with db.execute(
-                "SELECT title FROM knowledge_sources WHERE id = ?",
-                (source_id,),
-            ) as cur:
-                row = await cur.fetchone()
-                if row is not None:
-                    titles.append(row[0])
-    return titles
+    async with get_session() as session:
+        rows = (
+            await session.execute(
+                select(KnowledgeSource).where(KnowledgeSource.id.in_(source_ids))
+            )
+        ).scalars().all()
+    return [row.title for row in rows if row.title is not None]
 
 
 async def handle_quiz_failure(session_id: str) -> dict:
@@ -116,18 +116,21 @@ async def handle_quiz_failure(session_id: str) -> dict:
             "followup_session": dict | None
         }
     """
-    # Fetch session + goal context using UUID
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
-        async with db.execute(
-            """SELECT ss.quiz_score, ss.session_number, ss.topic, ss.goal_id,
-                      sg.level, sg.knowledge_source_ids
-               FROM study_sessions ss
-               JOIN study_goals sg ON ss.goal_id = sg.id
-               WHERE ss.id = ?""",
-            (session_id,),
-        ) as cur:
-            row = await cur.fetchone()
+    # Fetch session + goal context using UUID via a JOIN
+    async with get_session() as session:
+        result = await session.execute(
+            select(
+                StudySession.quiz_score,
+                StudySession.session_number,
+                StudySession.topic,
+                StudySession.goal_id,
+                StudyGoal.level,
+                StudyGoal.knowledge_source_ids,
+            )
+            .join(StudyGoal, StudySession.goal_id == StudyGoal.id)
+            .where(StudySession.id == session_id)
+        )
+        row = result.mappings().one_or_none()
 
     # No session found or quiz not yet scored
     if row is None or row["quiz_score"] is None:
@@ -150,10 +153,10 @@ async def handle_quiz_failure(session_id: str) -> dict:
     )
 
     # Insert follow-up session atomically (UPDATE + INSERT in one commit)
-    async with aiosqlite.connect(settings.sqlite_path) as db:
+    async with get_session() as session:
         followup = await insert_followup_session(
-            db, row["goal_id"], row["session_number"], session_plan
+            session, row["goal_id"], row["session_number"], session_plan
         )
-        await db.commit()
+        await session.commit()
 
     return {"followup_session_added": True, "followup_session": followup}

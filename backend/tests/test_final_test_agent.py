@@ -1,12 +1,12 @@
 """
 Tests for Phase 11: Final Test Agent + Orchestrator V2.
 
-All tests use monkeypatching — no live LLM calls. All tests use a tmp_path
-in-memory SQLite DB, never the real settings.sqlite_path.
+All tests use monkeypatching for LLM calls. Database seeding uses the ORM
+against the test Postgres instance (same DB the app uses).
 
 Coverage:
     TST-01 / TST-02  — generate_test() tags session_number; caps at MAX_TEST_QUESTIONS
-    TST-03           — init_db() creates cumulative_tests table (idempotent)
+    TST-03           — SKIPPED (init_db() removed; schema managed by ORM + Postgres)
     TST-04           — generate_final_test() returns 400 for incomplete/no sessions
     TST-05           — submit_final_test() marks goal complete when score >= 0.70
     TST-06           — submit_final_test() returns weak_session_numbers
@@ -15,82 +15,113 @@ Coverage:
 """
 import asyncio
 import json
-import sqlite3
 import uuid
 
-import aiosqlite
 import pytest
 import pytest_asyncio
 from unittest.mock import AsyncMock, MagicMock
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.pool import NullPool
+
+from app.config import settings
+from app.models.db_models import StudyGoal, StudySession, CumulativeTest
+
+
+# ── ORM seed helpers ─────────────────────────────────────────────────────────
+
+def _make_session_factory():
+    url = settings.database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    engine = create_async_engine(url, poolclass=NullPool, echo=False)
+    return async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession), engine
+
+
+async def _seed_goal_and_two_complete_sessions():
+    """Seed: one active goal + two complete sessions. Returns (goal_id, s1_id, s2_id)."""
+    goal_id = str(uuid.uuid4())
+    s1_id = str(uuid.uuid4())
+    s2_id = str(uuid.uuid4())
+
+    factory, engine = _make_session_factory()
+    async with factory() as session:
+        session.add(StudyGoal(
+            id=goal_id,
+            title="Biology Goal",
+            topic="Cell Biology",
+            knowledge_source_ids="[]",
+            status="active",
+            created_at="2026-01-01T00:00:00",
+        ))
+        session.add(StudySession(
+            id=s1_id,
+            goal_id=goal_id,
+            session_number=1,
+            title="Session 1: Cells",
+            topic="Cells",
+            estimated_minutes=45,
+            status="complete",
+            created_at="2026-01-01T00:00:00",
+        ))
+        session.add(StudySession(
+            id=s2_id,
+            goal_id=goal_id,
+            session_number=2,
+            title="Session 2: DNA",
+            topic="DNA",
+            estimated_minutes=45,
+            status="complete",
+            created_at="2026-01-01T00:00:00",
+        ))
+        await session.commit()
+    await engine.dispose()
+    return goal_id, s1_id, s2_id
+
+
+async def _seed_cumulative_test(goal_id: str, questions_json: str) -> str:
+    """Seed a cumulative_tests row. Returns test_id."""
+    test_id = str(uuid.uuid4())
+    factory, engine = _make_session_factory()
+    async with factory() as session:
+        session.add(CumulativeTest(
+            id=test_id,
+            goal_id=goal_id,
+            questions=questions_json,
+            created_at="2026-01-01T00:00:00",
+        ))
+        await session.commit()
+    await engine.dispose()
+    return test_id
+
+
+async def _get_goal_status(goal_id: str) -> str | None:
+    factory, engine = _make_session_factory()
+    async with factory() as session:
+        obj = await session.get(StudyGoal, goal_id)
+        status = obj.status if obj else None
+    await engine.dispose()
+    return status
+
+
+async def _set_session_status(session_id: str, status: str):
+    factory, engine = _make_session_factory()
+    async with factory() as session:
+        obj = await session.get(StudySession, session_id)
+        if obj:
+            obj.status = status
+            await session.commit()
+    await engine.dispose()
+
+
+async def _set_session_quiz_score(session_id: str, score: float):
+    factory, engine = _make_session_factory()
+    async with factory() as session:
+        obj = await session.get(StudySession, session_id)
+        if obj:
+            obj.quiz_score = score
+            await session.commit()
+    await engine.dispose()
+
 
 # ── Fixtures ─────────────────────────────────────────────────────────────────
-
-SQLITE_SCHEMA_MINIMAL = """
-CREATE TABLE IF NOT EXISTS study_goals (
-    id TEXT PRIMARY KEY,
-    title TEXT,
-    topic TEXT,
-    knowledge_source_ids TEXT DEFAULT '[]',
-    deadline_days INTEGER,
-    level TEXT DEFAULT 'beginner',
-    sessions_per_week INTEGER,
-    status TEXT DEFAULT 'active',
-    created_at TEXT
-);
-
-CREATE TABLE IF NOT EXISTS study_sessions (
-    id TEXT PRIMARY KEY,
-    goal_id TEXT,
-    session_number INTEGER,
-    title TEXT,
-    topic TEXT,
-    estimated_minutes INTEGER DEFAULT 45,
-    status TEXT DEFAULT 'pending',
-    quiz_score REAL,
-    created_at TEXT
-);
-
-CREATE TABLE IF NOT EXISTS cumulative_tests (
-    id TEXT PRIMARY KEY,
-    goal_id TEXT NOT NULL,
-    questions TEXT NOT NULL,
-    score REAL,
-    weak_session_numbers TEXT,
-    created_at TEXT
-);
-"""
-
-
-@pytest_asyncio.fixture
-async def tmp_db(tmp_path):
-    """Create a temporary SQLite DB with minimal schema.
-
-    Seeds: one goal (status='active') + two complete sessions.
-    Returns (db_path, goal_id, session1_id, session2_id).
-    """
-    db_path = str(tmp_path / "test.sqlite")
-    goal_id = str(uuid.uuid4())
-    session1_id = str(uuid.uuid4())
-    session2_id = str(uuid.uuid4())
-
-    async with aiosqlite.connect(db_path) as db:
-        await db.executescript(SQLITE_SCHEMA_MINIMAL)
-        await db.execute(
-            "INSERT INTO study_goals (id, title, topic, knowledge_source_ids, status) VALUES (?, ?, ?, ?, ?)",
-            (goal_id, "Biology Goal", "Cell Biology", "[]", "active"),
-        )
-        await db.execute(
-            "INSERT INTO study_sessions (id, goal_id, session_number, title, topic, status) VALUES (?, ?, ?, ?, ?, ?)",
-            (session1_id, goal_id, 1, "Session 1: Cells", "Cells", "complete"),
-        )
-        await db.execute(
-            "INSERT INTO study_sessions (id, goal_id, session_number, title, topic, status) VALUES (?, ?, ?, ?, ?, ?)",
-            (session2_id, goal_id, 2, "Session 2: DNA", "DNA", "complete"),
-        )
-        await db.commit()
-
-    return db_path, goal_id, session1_id, session2_id
-
 
 @pytest.fixture
 def mock_test_output():
@@ -148,17 +179,11 @@ def mock_retrieve(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_generate_test_tags_session_numbers(monkeypatch, mock_retrieve):
-    """TST-01/TST-02: generate_test() enforces session_number post-LLM on every question.
-
-    The mock chain returns fresh questions per call (via side_effect factory). With 2
-    sessions we get 4 total. Even if LLM returns the wrong session_number, the loop
-    enforces the correct value.
-    """
+    """TST-01/TST-02: generate_test() enforces session_number post-LLM on every question."""
     import app.agents.test_agent as ta_mod
     from app.agents.test_agent import TestOutput, TestQuestion, generate_test
 
     def make_output(session_number_from_llm: int) -> TestOutput:
-        """Return fresh TestOutput with WRONG session_number to prove enforcement."""
         return TestOutput(questions=[
             TestQuestion(
                 id=str(uuid.uuid4()),
@@ -194,9 +219,7 @@ async def test_generate_test_tags_session_numbers(monkeypatch, mock_retrieve):
     ]
     questions = await generate_test(sessions=sessions, source_ids=[])
 
-    # 2 sessions × 2 questions each = 4 (under MAX_TEST_QUESTIONS=15)
     assert len(questions) == 4
-    # session_number is enforced post-LLM; first 2 from session 1, next 2 from session 2
     assert questions[0].session_number == 1
     assert questions[1].session_number == 1
     assert questions[2].session_number == 2
@@ -209,7 +232,6 @@ async def test_generate_test_caps_at_15_questions(monkeypatch, mock_retrieve):
     import app.agents.test_agent as ta_mod
     from app.agents.test_agent import TestOutput, TestQuestion, generate_test
 
-    # Each LLM call returns 2 questions
     def make_output_for_session(session_number: int) -> TestOutput:
         return TestOutput(
             questions=[
@@ -235,7 +257,6 @@ async def test_generate_test_caps_at_15_questions(monkeypatch, mock_retrieve):
     call_count = [0]
 
     def mock_invoke(messages):
-        # determine session_number from call_count
         sn = call_count[0] + 1
         call_count[0] += 1
         return make_output_for_session(sn)
@@ -253,62 +274,37 @@ async def test_generate_test_caps_at_15_questions(monkeypatch, mock_retrieve):
 
 # ── TST-03: init_db() creates cumulative_tests table ─────────────────────────
 
-def test_init_db_creates_cumulative_tests_table(tmp_path, monkeypatch):
-    """TST-03: fresh DB after init_db() has cumulative_tests table."""
-    from app.db import database as db_mod
-
-    db_path = str(tmp_path / "fresh.sqlite")
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(db_mod, "settings", mock_settings)
-
-    db_mod.init_db()
-
-    conn = sqlite3.connect(db_path)
-    # Should not raise — table exists
-    conn.execute("SELECT 1 FROM cumulative_tests LIMIT 0")
-    conn.close()
+@pytest.mark.skip(
+    reason=(
+        "TST-03 verified init_db() creates cumulative_tests in SQLite. "
+        "init_db() was removed in the SQLite→Postgres migration. The schema is now "
+        "managed by SQLAlchemy ORM (CumulativeTest model) + init_orm_models(). "
+        "The model declaration IS the spec; table presence is guaranteed by create_all "
+        "at app startup."
+    )
+)
+def test_init_db_creates_cumulative_tests_table():
+    pass
 
 
-def test_init_db_idempotent(tmp_path, monkeypatch):
-    """TST-03: calling init_db() twice on the same DB raises no error."""
-    from app.db import database as db_mod
-
-    db_path = str(tmp_path / "idempotent.sqlite")
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(db_mod, "settings", mock_settings)
-
-    db_mod.init_db()
-    db_mod.init_db()  # second call — must not raise
-
-    conn = sqlite3.connect(db_path)
-    conn.execute("SELECT 1 FROM cumulative_tests LIMIT 0")
-    conn.close()
+@pytest.mark.skip(reason="init_db() removed — see test_init_db_creates_cumulative_tests_table")
+def test_init_db_idempotent():
+    pass
 
 
 # ── TST-04: generate_final_test returns 400 for bad goal state ────────────────
 
 @pytest.mark.asyncio
 async def test_generate_endpoint_400_when_sessions_incomplete(
-    tmp_db, monkeypatched_chain, mock_retrieve, monkeypatch
+    monkeypatched_chain, mock_retrieve
 ):
     """TST-04: goal with a pending session returns 400."""
     import app.routers.test as router_mod
     from fastapi import HTTPException
 
-    db_path, goal_id, session1_id, session2_id = tmp_db
-
-    # Make session2 pending
-    async with aiosqlite.connect(db_path) as db:
-        await db.execute(
-            "UPDATE study_sessions SET status='pending' WHERE id=?", (session2_id,)
-        )
-        await db.commit()
-
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(router_mod, "settings", mock_settings)
+    goal_id, s1_id, s2_id = await _seed_goal_and_two_complete_sessions()
+    # Make s2 pending
+    await _set_session_status(s2_id, "pending")
 
     with pytest.raises(HTTPException) as exc_info:
         await router_mod.generate_final_test(goal_id)
@@ -317,25 +313,24 @@ async def test_generate_endpoint_400_when_sessions_incomplete(
 
 
 @pytest.mark.asyncio
-async def test_generate_endpoint_400_when_no_sessions(tmp_path, monkeypatch):
+async def test_generate_endpoint_400_when_no_sessions():
     """TST-04: goal with no sessions returns 400."""
     import app.routers.test as router_mod
     from fastapi import HTTPException
 
-    db_path = str(tmp_path / "nosessions.sqlite")
     goal_id = str(uuid.uuid4())
-
-    async with aiosqlite.connect(db_path) as db:
-        await db.executescript(SQLITE_SCHEMA_MINIMAL)
-        await db.execute(
-            "INSERT INTO study_goals (id, title, topic, knowledge_source_ids, status) VALUES (?, ?, ?, ?, ?)",
-            (goal_id, "Empty Goal", "Nothing", "[]", "active"),
-        )
-        await db.commit()
-
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(router_mod, "settings", mock_settings)
+    factory, engine = _make_session_factory()
+    async with factory() as session:
+        session.add(StudyGoal(
+            id=goal_id,
+            title="Empty Goal",
+            topic="Nothing",
+            knowledge_source_ids="[]",
+            status="active",
+            created_at="2026-01-01T00:00:00",
+        ))
+        await session.commit()
+    await engine.dispose()
 
     with pytest.raises(HTTPException) as exc_info:
         await router_mod.generate_final_test(goal_id)
@@ -346,7 +341,6 @@ async def test_generate_endpoint_400_when_no_sessions(tmp_path, monkeypatch):
 # ── TST-05: submit_final_test marks goal complete at score >= 0.70 ─────────────
 
 def _build_questions_json(q1_id: str, q2_id: str) -> str:
-    """Helper: build JSON for 2 questions — q1 correct_index=0, q2 correct_index=1."""
     return json.dumps([
         {
             "id": q1_id,
@@ -367,82 +361,68 @@ def _build_questions_json(q1_id: str, q2_id: str) -> str:
     ])
 
 
-async def _seed_test(db_path: str, goal_id: str) -> tuple[str, str, str]:
-    """Seed a cumulative_test row and return (test_id, q1_id, q2_id)."""
-    q1_id = str(uuid.uuid4())
-    q2_id = str(uuid.uuid4())
-    test_id = str(uuid.uuid4())
-    async with aiosqlite.connect(db_path) as db:
-        await db.execute(
-            "INSERT INTO cumulative_tests (id, goal_id, questions, created_at) VALUES (?, ?, ?, datetime('now'))",
-            (test_id, goal_id, _build_questions_json(q1_id, q2_id)),
-        )
-        await db.commit()
-    return test_id, q1_id, q2_id
-
-
 @pytest.mark.asyncio
-async def test_submit_marks_goal_complete_on_passing_score(tmp_db, monkeypatch):
+async def test_submit_marks_goal_complete_on_passing_score():
     """TST-05: score=1.0 (all correct) marks goal.status='complete'."""
     import app.routers.test as router_mod
     from app.routers.test import TestSubmitRequest
 
-    db_path, goal_id, session1_id, session2_id = tmp_db
-    test_id, q1_id, q2_id = await _seed_test(db_path, goal_id)
+    goal_id, s1_id, s2_id = await _seed_goal_and_two_complete_sessions()
+    q1_id = str(uuid.uuid4())
+    q2_id = str(uuid.uuid4())
+    await _seed_cumulative_test(goal_id, _build_questions_json(q1_id, q2_id))
 
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(router_mod, "settings", mock_settings)
-
-    # Both correct
     body = TestSubmitRequest(answers={q1_id: 0, q2_id: 1})
     result = await router_mod.submit_final_test(goal_id, body)
 
     assert result["score"] == 1.0
     assert result["goal_complete"] is True
 
-    async with aiosqlite.connect(db_path) as db:
-        async with db.execute("SELECT status FROM study_goals WHERE id=?", (goal_id,)) as cur:
-            row = await cur.fetchone()
-    assert row[0] == "complete"
+    status = await _get_goal_status(goal_id)
+    assert status == "complete"
 
 
 @pytest.mark.asyncio
-async def test_submit_does_not_mark_complete_on_fail(tmp_db, monkeypatch):
+async def test_submit_does_not_mark_complete_on_fail():
     """TST-05: score=0.0 (all wrong) — goal.status stays 'active'."""
     import app.routers.test as router_mod
     from app.routers.test import TestSubmitRequest
 
-    db_path, goal_id, session1_id, session2_id = tmp_db
-    test_id, q1_id, q2_id = await _seed_test(db_path, goal_id)
+    goal_id, s1_id, s2_id = await _seed_goal_and_two_complete_sessions()
+    q1_id = str(uuid.uuid4())
+    q2_id = str(uuid.uuid4())
+    await _seed_cumulative_test(goal_id, _build_questions_json(q1_id, q2_id))
 
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(router_mod, "settings", mock_settings)
-
-    # Both wrong (selecting wrong index)
     body = TestSubmitRequest(answers={q1_id: 3, q2_id: 3})
     result = await router_mod.submit_final_test(goal_id, body)
 
     assert result["score"] == 0.0
     assert result["goal_complete"] is False
 
-    async with aiosqlite.connect(db_path) as db:
-        async with db.execute("SELECT status FROM study_goals WHERE id=?", (goal_id,)) as cur:
-            row = await cur.fetchone()
-    assert row[0] == "active"
+    status = await _get_goal_status(goal_id)
+    assert status == "active"
 
 
 @pytest.mark.asyncio
-async def test_submit_exactly_70_percent_marks_complete(tmp_path, monkeypatch):
+async def test_submit_exactly_70_percent_marks_complete():
     """TST-05: exactly 70% correct (7/10) marks goal complete."""
     import app.routers.test as router_mod
     from app.routers.test import TestSubmitRequest
 
-    db_path = str(tmp_path / "threshold.sqlite")
     goal_id = str(uuid.uuid4())
+    factory, engine = _make_session_factory()
+    async with factory() as session:
+        session.add(StudyGoal(
+            id=goal_id,
+            title="Goal",
+            topic="Topic",
+            knowledge_source_ids="[]",
+            status="active",
+            created_at="2026-01-01T00:00:00",
+        ))
+        await session.commit()
+    await engine.dispose()
 
-    # Create 10 questions, all in session 1
     question_ids = [str(uuid.uuid4()) for _ in range(10)]
     questions_data = [
         {
@@ -450,62 +430,39 @@ async def test_submit_exactly_70_percent_marks_complete(tmp_path, monkeypatch):
             "session_number": 1,
             "question": f"Q{i}?",
             "options": ["A", "B", "C", "D"],
-            "correct_index": 0,  # correct answer is always index 0
+            "correct_index": 0,
             "explanation": "A is correct.",
         }
         for i, qid in enumerate(question_ids)
     ]
+    await _seed_cumulative_test(goal_id, json.dumps(questions_data))
 
-    test_id = str(uuid.uuid4())
-
-    async with aiosqlite.connect(db_path) as db:
-        await db.executescript(SQLITE_SCHEMA_MINIMAL)
-        await db.execute(
-            "INSERT INTO study_goals (id, title, topic, knowledge_source_ids, status) VALUES (?, ?, ?, ?, ?)",
-            (goal_id, "Goal", "Topic", "[]", "active"),
-        )
-        await db.execute(
-            "INSERT INTO cumulative_tests (id, goal_id, questions, created_at) VALUES (?, ?, ?, datetime('now'))",
-            (test_id, goal_id, json.dumps(questions_data)),
-        )
-        await db.commit()
-
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(router_mod, "settings", mock_settings)
-
-    # Answer 7/10 correctly (first 7 get index 0, last 3 get wrong index)
     answers = {qid: 0 for qid in question_ids[:7]}
     answers.update({qid: 3 for qid in question_ids[7:]})
-
     body = TestSubmitRequest(answers=answers)
     result = await router_mod.submit_final_test(goal_id, body)
 
     assert abs(result["score"] - 0.70) < 0.001
     assert result["goal_complete"] is True
 
-    async with aiosqlite.connect(db_path) as db:
-        async with db.execute("SELECT status FROM study_goals WHERE id=?", (goal_id,)) as cur:
-            row = await cur.fetchone()
-    assert row[0] == "complete"
+    status = await _get_goal_status(goal_id)
+    assert status == "complete"
 
 
 # ── TST-06: weak_session_numbers ─────────────────────────────────────────────
 
 @pytest.mark.asyncio
-async def test_submit_returns_weak_session_numbers(tmp_db, monkeypatch):
+async def test_submit_returns_weak_session_numbers():
     """TST-06: session with < 50% correct appears in weak_session_numbers."""
     import app.routers.test as router_mod
     from app.routers.test import TestSubmitRequest
 
-    db_path, goal_id, session1_id, session2_id = tmp_db
+    goal_id, s1_id, s2_id = await _seed_goal_and_two_complete_sessions()
 
-    # 2 questions for session 1, 2 questions for session 2
     q_s1a = str(uuid.uuid4())
     q_s1b = str(uuid.uuid4())
     q_s2a = str(uuid.uuid4())
     q_s2b = str(uuid.uuid4())
-    test_id = str(uuid.uuid4())
 
     questions_data = [
         {"id": q_s1a, "session_number": 1, "question": "S1Q1?", "options": ["A","B","C","D"], "correct_index": 0, "explanation": "A"},
@@ -513,17 +470,7 @@ async def test_submit_returns_weak_session_numbers(tmp_db, monkeypatch):
         {"id": q_s2a, "session_number": 2, "question": "S2Q1?", "options": ["A","B","C","D"], "correct_index": 1, "explanation": "B"},
         {"id": q_s2b, "session_number": 2, "question": "S2Q2?", "options": ["A","B","C","D"], "correct_index": 1, "explanation": "B"},
     ]
-
-    async with aiosqlite.connect(db_path) as db:
-        await db.execute(
-            "INSERT INTO cumulative_tests (id, goal_id, questions, created_at) VALUES (?, ?, ?, datetime('now'))",
-            (test_id, goal_id, json.dumps(questions_data)),
-        )
-        await db.commit()
-
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(router_mod, "settings", mock_settings)
+    await _seed_cumulative_test(goal_id, json.dumps(questions_data))
 
     # Session 1: 0/2 correct (both wrong) → weak
     # Session 2: 2/2 correct → strong
@@ -538,34 +485,22 @@ async def test_submit_returns_weak_session_numbers(tmp_db, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_submit_mixed_weak_sessions(tmp_db, monkeypatch):
+async def test_submit_mixed_weak_sessions():
     """TST-06: session 1 weak, session 2 strong — weak_session_numbers == [1]."""
     import app.routers.test as router_mod
     from app.routers.test import TestSubmitRequest
 
-    db_path, goal_id, session1_id, session2_id = tmp_db
+    goal_id, s1_id, s2_id = await _seed_goal_and_two_complete_sessions()
 
     q_s1a = str(uuid.uuid4())
     q_s2a = str(uuid.uuid4())
-    test_id = str(uuid.uuid4())
 
     questions_data = [
         {"id": q_s1a, "session_number": 1, "question": "S1Q1?", "options": ["A","B","C","D"], "correct_index": 0, "explanation": "A"},
         {"id": q_s2a, "session_number": 2, "question": "S2Q1?", "options": ["A","B","C","D"], "correct_index": 1, "explanation": "B"},
     ]
+    await _seed_cumulative_test(goal_id, json.dumps(questions_data))
 
-    async with aiosqlite.connect(db_path) as db:
-        await db.execute(
-            "INSERT INTO cumulative_tests (id, goal_id, questions, created_at) VALUES (?, ?, ?, datetime('now'))",
-            (test_id, goal_id, json.dumps(questions_data)),
-        )
-        await db.commit()
-
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(router_mod, "settings", mock_settings)
-
-    # Session 1: wrong, Session 2: correct
     body = TestSubmitRequest(answers={q_s1a: 3, q_s2a: 1})
     result = await router_mod.submit_final_test(goal_id, body)
 
@@ -593,15 +528,11 @@ def test_scholar_state_has_v2_annotations():
 # ── ORC-02: update_goal_progress() returns correct shape ─────────────────────
 
 @pytest.mark.asyncio
-async def test_update_goal_progress_returns_correct_shape(tmp_db, monkeypatch):
+async def test_update_goal_progress_returns_correct_shape():
     """ORC-02: goal with all sessions complete returns sessions_complete=True."""
     import app.agents.orchestrator as orc_mod
 
-    db_path, goal_id, session1_id, session2_id = tmp_db
-
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(orc_mod, "settings", mock_settings)
+    goal_id, s1_id, s2_id = await _seed_goal_and_two_complete_sessions()
 
     result = await orc_mod.update_goal_progress(goal_id)
 
@@ -614,39 +545,23 @@ async def test_update_goal_progress_returns_correct_shape(tmp_db, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_update_goal_progress_identifies_weak_sessions(tmp_db, monkeypatch):
+async def test_update_goal_progress_identifies_weak_sessions():
     """ORC-02: session with quiz_score=0.50 (< 0.65) appears in weak_session_ids."""
     import app.agents.orchestrator as orc_mod
 
-    db_path, goal_id, session1_id, session2_id = tmp_db
-
-    # Set session1 quiz_score to 0.50 (below PASS_THRESHOLD of 0.65)
-    async with aiosqlite.connect(db_path) as db:
-        await db.execute(
-            "UPDATE study_sessions SET quiz_score=0.50 WHERE id=?", (session1_id,)
-        )
-        await db.commit()
-
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(orc_mod, "settings", mock_settings)
+    goal_id, s1_id, s2_id = await _seed_goal_and_two_complete_sessions()
+    await _set_session_quiz_score(s1_id, 0.50)
 
     result = await orc_mod.update_goal_progress(goal_id)
 
-    assert session1_id in result["weak_session_ids"]
-    assert session2_id not in result["weak_session_ids"]
+    assert s1_id in result["weak_session_ids"]
+    assert s2_id not in result["weak_session_ids"]
 
 
 @pytest.mark.asyncio
-async def test_update_goal_progress_nonexistent_goal(tmp_db, monkeypatch):
+async def test_update_goal_progress_nonexistent_goal():
     """ORC-02: non-existent goal_id returns empty dict {}."""
     import app.agents.orchestrator as orc_mod
-
-    db_path, goal_id, session1_id, session2_id = tmp_db
-
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(orc_mod, "settings", mock_settings)
 
     result = await orc_mod.update_goal_progress("nonexistent-goal-id")
 

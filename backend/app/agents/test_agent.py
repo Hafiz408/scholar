@@ -1,13 +1,13 @@
 import asyncio
 import uuid
-import logging
+from app.core.logging import get_logger
 
 from pydantic import BaseModel
 
-from app.llm_factory import get_llm
+from app.core.llm_factory import get_llm
 from app.retrieval.hybrid_retriever import retrieve
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 MAX_TEST_QUESTIONS = 15
 QUESTIONS_PER_SESSION = 2  # target; LLM may return 1 or 2

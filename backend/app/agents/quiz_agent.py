@@ -1,7 +1,7 @@
 import asyncio
 import uuid
 from pydantic import BaseModel
-from app.llm_factory import get_llm
+from app.core.llm_factory import get_llm
 from app.agents.prompts import QUIZ_SYSTEM_PROMPT
 
 

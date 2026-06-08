@@ -1,11 +1,13 @@
 import asyncio
 
-import aiosqlite
 from pydantic import BaseModel, Field
 from typing import Literal
 
-from app.config import settings
-from app.llm_factory import get_llm
+from sqlalchemy import select
+
+from app.core.database import get_session
+from app.core.llm_factory import get_llm
+from app.models.db_models import KnowledgeSource
 
 
 class RouterDecision(BaseModel):
@@ -27,21 +29,20 @@ _router_chain = get_llm(temperature=0).with_structured_output(RouterDecision)
 
 
 async def _get_pageindex_doc_ids(source_ids: list[str]) -> list[str]:
-    """Query SQLite for non-null pageindex_doc_id values for the given source IDs."""
+    """Query Postgres for non-null pageindex_doc_id values for the given source IDs."""
     if not source_ids:
         return []
 
-    placeholders = ",".join("?" * len(source_ids))
-    query = (
-        f"SELECT pageindex_doc_id FROM knowledge_sources "
-        f"WHERE id IN ({placeholders}) AND pageindex_doc_id IS NOT NULL"
+    stmt = (
+        select(KnowledgeSource.pageindex_doc_id)
+        .where(
+            KnowledgeSource.id.in_(source_ids),
+            KnowledgeSource.pageindex_doc_id.is_not(None),
+        )
     )
-
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        async with db.execute(query, source_ids) as cursor:
-            rows = await cursor.fetchall()
-
-    return [row[0] for row in rows]
+    async with get_session() as session:
+        rows = (await session.execute(stmt)).mappings().all()
+    return [row["pageindex_doc_id"] for row in rows]
 
 
 async def classify_query(query: str, source_ids: list[str]) -> str:

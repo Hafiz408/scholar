@@ -1,11 +1,17 @@
 import uuid
 import json
-import aiosqlite
+from datetime import datetime, timezone
 from typing import TypedDict
 from langgraph.graph import StateGraph, END
-from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
-from app.config import settings
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+from sqlalchemy import select, update
+from app.core.database import get_session
+from app.models.db_models import to_dict, KnowledgeSource, StudyGoal, StudySession
 from app.agents.planner import generate_plan, StudyPlanOutput
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 class ScholarState(TypedDict):
@@ -20,8 +26,8 @@ class ScholarState(TypedDict):
     goal_complete: bool
 
 
-def build_graph(checkpointer: AsyncSqliteSaver):
-    """Build minimal LangGraph StateGraph used for AsyncSqliteSaver chat checkpointing."""
+def build_graph(checkpointer: AsyncPostgresSaver):
+    """Build minimal LangGraph StateGraph used for AsyncPostgresSaver chat checkpointing."""
 
     graph = StateGraph(ScholarState)
 
@@ -44,19 +50,17 @@ async def create_goal_with_plan(
     sessions_per_week: int,
     source_ids: list[str],
 ) -> dict:
-    """Create a study goal, generate session plan via Planner agent, persist to SQLite."""
+    """Create a study goal, generate session plan via Planner agent, persist to Postgres."""
     # Fetch source titles for prompt context
     source_titles: list[str] = []
     if source_ids:
-        async with aiosqlite.connect(settings.sqlite_path) as db:
-            db.row_factory = aiosqlite.Row
-            placeholders = ",".join("?" * len(source_ids))
-            async with db.execute(
-                f"SELECT id, title FROM knowledge_sources WHERE id IN ({placeholders})",
-                source_ids,
-            ) as cur:
-                rows = await cur.fetchall()
-        source_titles = [row["title"] for row in rows]
+        async with get_session() as session:
+            rows = (
+                await session.execute(
+                    select(KnowledgeSource).where(KnowledgeSource.id.in_(source_ids))
+                )
+            ).scalars().all()
+        source_titles = [row.title for row in rows if row.title is not None]
 
     # Generate plan via LLM
     plan_output: StudyPlanOutput = await generate_plan(
@@ -70,26 +74,37 @@ async def create_goal_with_plan(
 
     goal_id = str(uuid.uuid4())
 
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        # Insert goal — use knowledge_source_ids column (matches SQLite schema)
-        await db.execute(
-            """INSERT INTO study_goals
-               (id, title, topic, level, deadline_days, sessions_per_week, knowledge_source_ids, status, created_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))""",
-            (goal_id, title, topic, level, deadline_days, sessions_per_week,
-             json.dumps(source_ids)),
+    async with get_session() as session:
+        # Insert goal
+        session.add(
+            StudyGoal(
+                id=goal_id,
+                title=title,
+                topic=topic,
+                level=level,
+                deadline_days=deadline_days,
+                sessions_per_week=sessions_per_week,
+                knowledge_source_ids=json.dumps(source_ids),
+                status="active",
+                created_at=_now(),
+            )
         )
         # Insert sessions from plan
         for sess in plan_output.sessions:
             session_id = str(uuid.uuid4())
-            await db.execute(
-                """INSERT INTO study_sessions
-                   (id, goal_id, session_number, title, topic, estimated_minutes, status, created_at)
-                   VALUES (?, ?, ?, ?, ?, ?, 'pending', datetime('now'))""",
-                (session_id, goal_id, sess.session_number, sess.title,
-                 sess.topic, sess.estimated_minutes),
+            session.add(
+                StudySession(
+                    id=session_id,
+                    goal_id=goal_id,
+                    session_number=sess.session_number,
+                    title=sess.title,
+                    topic=sess.topic,
+                    estimated_minutes=sess.estimated_minutes,
+                    status="pending",
+                    created_at=_now(),
+                )
             )
-        await db.commit()
+        await session.commit()
 
     return {
         "goal_id": goal_id,
@@ -100,50 +115,39 @@ async def create_goal_with_plan(
 
 async def update_goal_progress(goal_id: str) -> dict:
     """Return computed progress state for a goal (ORC-02)."""
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
-        async with db.execute(
-            "SELECT status FROM study_goals WHERE id=?", (goal_id,)
-        ) as cur:
-            goal = await cur.fetchone()
-        async with db.execute(
-            "SELECT id, status, quiz_score FROM study_sessions WHERE goal_id=? ORDER BY session_number",
-            (goal_id,),
-        ) as cur:
-            sessions = await cur.fetchall()
-    if goal is None:
+    async with get_session() as session:
+        goal_obj = (
+            await session.execute(
+                select(StudyGoal).where(StudyGoal.id == goal_id)
+            )
+        ).scalar_one_or_none()
+
+        sessions = (
+            await session.execute(
+                select(StudySession)
+                .where(StudySession.goal_id == goal_id)
+                .order_by(StudySession.session_number)
+            )
+        ).scalars().all()
+
+    if goal_obj is None:
         return {}
+
     total = len(sessions)
-    completed = sum(1 for s in sessions if s["status"] == "complete")
+    completed = sum(1 for s in sessions if s.status == "complete")
     weak_ids = [
-        s["id"] for s in sessions
-        if s["quiz_score"] is not None and s["quiz_score"] < 0.65
+        s.id for s in sessions
+        if s.quiz_score is not None and s.quiz_score < 0.65
     ]
     return {
         "sessions_complete": total > 0 and completed == total,
         "weak_session_ids": weak_ids,
         "followup_sessions_added": 0,
-        "goal_complete": goal["status"] == "complete",
+        "goal_complete": goal_obj.status == "complete",
     }
 
 
 async def get_goal_plan(goal_id: str) -> dict | None:
-    """Retrieve a goal and all its sessions from SQLite."""
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
-        async with db.execute(
-            "SELECT * FROM study_goals WHERE id = ?", (goal_id,)
-        ) as cur:
-            goal_row = await cur.fetchone()
-        if goal_row is None:
-            return None
-        async with db.execute(
-            "SELECT * FROM study_sessions WHERE goal_id = ? ORDER BY session_number",
-            (goal_id,),
-        ) as cur:
-            session_rows = await cur.fetchall()
-
-    return {
-        "goal": dict(goal_row),
-        "sessions": [dict(r) for r in session_rows],
-    }
+    """Retrieve a goal and all its sessions. Data access lives in goals_repo."""
+    from app.repositories.goals_repo import get_goal_with_sessions
+    return await get_goal_with_sessions(goal_id)

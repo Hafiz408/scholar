@@ -1,8 +1,8 @@
 import asyncio
-import logging
+from app.core.logging import get_logger
 import trafilatura
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 async def extract_url(url: str) -> dict:

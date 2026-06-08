@@ -1,8 +1,11 @@
-import aiosqlite
 import json
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
+from sqlalchemy import select
+
 from app.config import settings
+from app.core.database import get_session as get_db_session
+from app.models.db_models import StudySession, StudyGoal, to_dict
 from app.agents.note_generator import stream_notes
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
@@ -11,47 +14,43 @@ router = APIRouter(prefix="/sessions", tags=["sessions"])
 @router.get("/{session_id}")
 async def get_session(session_id: str):
     """Return a single study session (used by the study page to render notes/chat/quiz)."""
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
-        async with db.execute(
-            """SELECT id, goal_id, session_number, title, topic, estimated_minutes,
-                      status, quiz_score, notes_markdown, created_at
-               FROM study_sessions WHERE id = ?""",
-            (session_id,),
-        ) as cur:
-            row = await cur.fetchone()
+    async with get_db_session() as session:
+        obj = (
+            await session.execute(
+                select(StudySession).where(StudySession.id == session_id)
+            )
+        ).scalar_one_or_none()
 
-    if row is None:
+    if obj is None:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    return dict(row)
+    return to_dict(obj)
 
 
 @router.post("/{session_id}/start")
 async def start_session(session_id: str, request: Request):
     """Start a study session — streams notes as SSE notes_chunk events."""
-    # Fetch session + goal context
-    async with aiosqlite.connect(settings.sqlite_path) as db:
-        db.row_factory = aiosqlite.Row
-        async with db.execute(
-            """SELECT ss.id, ss.goal_id, ss.topic, ss.status,
-                      sg.level, sg.knowledge_source_ids
-               FROM study_sessions ss
-               JOIN study_goals sg ON ss.goal_id = sg.id
-               WHERE ss.id = ?""",
-            (session_id,),
-        ) as cur:
-            row = await cur.fetchone()
+    # Fetch session + goal context via join
+    async with get_db_session() as session:
+        result = (
+            await session.execute(
+                select(StudySession, StudyGoal)
+                .join(StudyGoal, StudySession.goal_id == StudyGoal.id)
+                .where(StudySession.id == session_id)
+            )
+        ).one_or_none()
 
-    if row is None:
+    if result is None:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    if row["status"] not in ("pending", "in_progress"):
-        raise HTTPException(status_code=409, detail=f"Session status is '{row['status']}' — cannot start")
+    sess_obj, goal_obj = result
 
-    source_ids = json.loads(row["knowledge_source_ids"] or "[]")
-    topic = row["topic"]
-    level = row["level"]
+    if sess_obj.status not in ("pending", "in_progress"):
+        raise HTTPException(status_code=409, detail=f"Session status is '{sess_obj.status}' — cannot start")
+
+    source_ids = json.loads(goal_obj.knowledge_source_ids or "[]")
+    topic = sess_obj.topic
+    level = goal_obj.level
 
     async def event_generator():
         async for event in stream_notes(session_id, topic, source_ids, level):

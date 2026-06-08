@@ -13,7 +13,7 @@ import pytest_asyncio
 def test_get_vision_llm_raises_when_model_empty(monkeypatch):
     """VIS-01: ValueError raised with descriptive message when vision_model is ''."""
     from app.config import Settings
-    import app.llm_factory as factory
+    import app.core.llm_factory as factory
 
     monkeypatch.setattr(factory, "settings", Settings(vision_model="", _env_file=None))
     with pytest.raises(ValueError, match="vision_model"):
@@ -24,7 +24,7 @@ def test_get_vision_llm_returns_chat_model_when_configured(monkeypatch):
     """VIS-01: Returns a BaseChatModel when vision_model is set (openai provider)."""
     from app.config import Settings
     from langchain_core.language_models.chat_models import BaseChatModel
-    import app.llm_factory as factory
+    import app.core.llm_factory as factory
 
     monkeypatch.setattr(
         factory,
@@ -192,25 +192,21 @@ async def test_pipeline_calls_vision_augmentation_for_pdf(monkeypatch):
     monkeypatch.setattr(pipeline_mod, "build_pageindex_tree", fake_build_pageindex)
     monkeypatch.setattr(pipeline_mod, "embed_and_store", fake_embed_and_store)
 
-    # Patch aiosqlite to avoid real DB connection
-    import aiosqlite
+    # Patch get_session (ORM) to avoid real DB connection.
+    # pipeline.py calls get_session() twice: once to update page_count,
+    # once to mark status=ready. Both are fire-and-forget within the test.
+    from contextlib import asynccontextmanager
+    from unittest.mock import AsyncMock, MagicMock
 
-    class FakeConn:
-        row_factory = None
+    mock_session = AsyncMock()
+    mock_session.execute = AsyncMock(return_value=MagicMock())
+    mock_session.commit = AsyncMock()
 
-        async def execute(self, *a, **kw):
-            return None
+    @asynccontextmanager
+    async def fake_get_session():
+        yield mock_session
 
-        async def commit(self):
-            return None
-
-        async def __aenter__(self):
-            return self
-
-        async def __aexit__(self, *a):
-            return None
-
-    monkeypatch.setattr(aiosqlite, "connect", lambda *a, **kw: FakeConn())
+    monkeypatch.setattr(pipeline_mod, "get_session", fake_get_session)
 
     await pipeline_mod.run_ingestion(
         source_id="test-uuid",

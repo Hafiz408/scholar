@@ -13,7 +13,8 @@ Coverage:
 """
 import json
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch, call
+from contextlib import asynccontextmanager
+from unittest.mock import AsyncMock, MagicMock, patch
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -26,34 +27,33 @@ async def collect(gen):
     return results
 
 
-def _make_aiosqlite_mock(rows):
-    """Return a mock that satisfies `async with aiosqlite.connect(...) as db:` usage.
+def _make_orm_session_mock(source_rows):
+    """Return a mock context manager for get_session() that yields a fake AsyncSession.
+
+    source_rows: list of (id,) tuples representing ready KnowledgeSource rows.
 
     The super_agent does:
-        async with aiosqlite.connect(path) as db:
-            async with db.execute(sql) as cur:
-                rows = await cur.fetchall()
-
-    We need two nested async context managers.
+        async with get_session() as session:
+            rows = (await session.execute(select(...))).scalars().all()
+        source_ids = [row.id for row in rows]
     """
-    mock_cursor = AsyncMock()
-    mock_cursor.fetchall = AsyncMock(return_value=rows)
+    mock_objs = []
+    for (source_id,) in source_rows:
+        obj = MagicMock()
+        obj.id = source_id
+        mock_objs.append(obj)
 
-    # inner async context manager: db.execute(...)
-    mock_cursor_cm = MagicMock()
-    mock_cursor_cm.__aenter__ = AsyncMock(return_value=mock_cursor)
-    mock_cursor_cm.__aexit__ = AsyncMock(return_value=False)
+    mock_result = MagicMock()
+    mock_result.scalars.return_value.all.return_value = mock_objs
 
-    mock_db = MagicMock()
-    mock_db.execute = MagicMock(return_value=mock_cursor_cm)
+    mock_session = AsyncMock()
+    mock_session.execute = AsyncMock(return_value=mock_result)
 
-    # outer async context manager: aiosqlite.connect(...)
-    mock_connect_cm = MagicMock()
-    mock_connect_cm.__aenter__ = AsyncMock(return_value=mock_db)
-    mock_connect_cm.__aexit__ = AsyncMock(return_value=False)
+    @asynccontextmanager
+    async def fake_get_session():
+        yield mock_session
 
-    mock_connect = MagicMock(return_value=mock_connect_cm)
-    return mock_connect
+    return fake_get_session
 
 
 def _make_retrieve_mock(chunks=None, strategy_used="hybrid", latency_ms=10):
@@ -94,12 +94,12 @@ def _make_checkpointer_mock():
 async def test_sup01_retrieve_called_with_all_source_ids():
     """SUP-01: retrieve() is called with source_ids from all ready knowledge sources."""
     rows = [("source_id_a",), ("source_id_b",)]
-    mock_connect = _make_aiosqlite_mock(rows)
+    fake_get_session = _make_orm_session_mock(rows)
     mock_retrieve = _make_retrieve_mock()
     mock_llm = _make_llm_mock()
     mock_cp = _make_checkpointer_mock()
 
-    with patch("app.agents.super_agent.aiosqlite.connect", mock_connect), \
+    with patch("app.agents.super_agent.get_session", fake_get_session), \
          patch("app.agents.super_agent.retrieve", mock_retrieve), \
          patch("app.agents.super_agent.get_llm", return_value=mock_llm):
         from app.agents.super_agent import stream_super_chat
@@ -121,11 +121,11 @@ async def test_sup01_retrieve_called_with_all_source_ids():
 @pytest.mark.asyncio
 async def test_sup02_empty_kb_yields_error_event():
     """SUP-02: empty source list yields a single SSE error event with 'No books indexed yet'."""
-    mock_connect = _make_aiosqlite_mock([])  # no rows
+    fake_get_session = _make_orm_session_mock([])
     mock_retrieve = _make_retrieve_mock()
     mock_cp = _make_checkpointer_mock()
 
-    with patch("app.agents.super_agent.aiosqlite.connect", mock_connect), \
+    with patch("app.agents.super_agent.get_session", fake_get_session), \
          patch("app.agents.super_agent.retrieve", mock_retrieve):
         from app.agents.super_agent import stream_super_chat
         events = await collect(stream_super_chat(
@@ -144,11 +144,11 @@ async def test_sup02_empty_kb_yields_error_event():
 @pytest.mark.asyncio
 async def test_sup02_retrieve_not_called_when_empty_kb():
     """SUP-02: retrieve() must NOT be called when source list is empty."""
-    mock_connect = _make_aiosqlite_mock([])
+    fake_get_session = _make_orm_session_mock([])
     mock_retrieve = _make_retrieve_mock()
     mock_cp = _make_checkpointer_mock()
 
-    with patch("app.agents.super_agent.aiosqlite.connect", mock_connect), \
+    with patch("app.agents.super_agent.get_session", fake_get_session), \
          patch("app.agents.super_agent.retrieve", mock_retrieve):
         from app.agents.super_agent import stream_super_chat
         await collect(stream_super_chat(
@@ -166,14 +166,14 @@ async def test_sup02_retrieve_not_called_when_empty_kb():
 async def test_sup03_thread_id_passed_unchanged_to_checkpointer():
     """SUP-03: thread_id from request is passed unchanged to checkpointer.aput config."""
     rows = [("source_id_x",)]
-    mock_connect = _make_aiosqlite_mock(rows)
+    fake_get_session = _make_orm_session_mock(rows)
     mock_retrieve = _make_retrieve_mock()
     mock_llm = _make_llm_mock()
     mock_cp = _make_checkpointer_mock()
 
     frontend_thread_id = "my-frontend-uuid"
 
-    with patch("app.agents.super_agent.aiosqlite.connect", mock_connect), \
+    with patch("app.agents.super_agent.get_session", fake_get_session), \
          patch("app.agents.super_agent.retrieve", mock_retrieve), \
          patch("app.agents.super_agent.get_llm", return_value=mock_llm):
         from app.agents.super_agent import stream_super_chat
@@ -187,7 +187,7 @@ async def test_sup03_thread_id_passed_unchanged_to_checkpointer():
     aput_call = mock_cp.aput.call_args
     # aput(config, checkpoint, metadata, channel_versions)
     config_arg = aput_call[0][0] if len(aput_call[0]) > 0 else aput_call[1].get("config")
-    # thread_id must pass through unchanged; checkpoint_ns is required by AsyncSqliteSaver.aput().
+    # thread_id must pass through unchanged; checkpoint_ns is required by AsyncPostgresSaver.aput().
     assert config_arg["configurable"]["thread_id"] == frontend_thread_id
     assert config_arg["configurable"].get("checkpoint_ns") == ""
 
@@ -198,12 +198,12 @@ async def test_sup03_thread_id_passed_unchanged_to_checkpointer():
 async def test_sup04_sse_event_sequence():
     """SUP-04: SSE event sequence is token(s) → citations → done."""
     rows = [("source_id_y",)]
-    mock_connect = _make_aiosqlite_mock(rows)
+    fake_get_session = _make_orm_session_mock(rows)
     mock_retrieve = _make_retrieve_mock()
     mock_llm = _make_llm_mock(tokens=("Hello", " world"))
     mock_cp = _make_checkpointer_mock()
 
-    with patch("app.agents.super_agent.aiosqlite.connect", mock_connect), \
+    with patch("app.agents.super_agent.get_session", fake_get_session), \
          patch("app.agents.super_agent.retrieve", mock_retrieve), \
          patch("app.agents.super_agent.get_llm", return_value=mock_llm):
         from app.agents.super_agent import stream_super_chat
@@ -235,12 +235,12 @@ async def test_sup04_sse_event_sequence():
 async def test_sup04_token_event_json_shape():
     """SUP-04: token events have JSON with keys 'type' and 'content'."""
     rows = [("source_id_z",)]
-    mock_connect = _make_aiosqlite_mock(rows)
+    fake_get_session = _make_orm_session_mock(rows)
     mock_retrieve = _make_retrieve_mock()
     mock_llm = _make_llm_mock(tokens=("Hello",))
     mock_cp = _make_checkpointer_mock()
 
-    with patch("app.agents.super_agent.aiosqlite.connect", mock_connect), \
+    with patch("app.agents.super_agent.get_session", fake_get_session), \
          patch("app.agents.super_agent.retrieve", mock_retrieve), \
          patch("app.agents.super_agent.get_llm", return_value=mock_llm):
         from app.agents.super_agent import stream_super_chat
@@ -263,12 +263,12 @@ async def test_sup04_token_event_json_shape():
 async def test_sup04_citations_event_json_shape():
     """SUP-04: citations event has JSON with keys 'type' and 'chunks'."""
     rows = [("source_id_z",)]
-    mock_connect = _make_aiosqlite_mock(rows)
+    fake_get_session = _make_orm_session_mock(rows)
     mock_retrieve = _make_retrieve_mock()
     mock_llm = _make_llm_mock(tokens=("Hello",))
     mock_cp = _make_checkpointer_mock()
 
-    with patch("app.agents.super_agent.aiosqlite.connect", mock_connect), \
+    with patch("app.agents.super_agent.get_session", fake_get_session), \
          patch("app.agents.super_agent.retrieve", mock_retrieve), \
          patch("app.agents.super_agent.get_llm", return_value=mock_llm):
         from app.agents.super_agent import stream_super_chat
@@ -290,12 +290,12 @@ async def test_sup04_citations_event_json_shape():
 async def test_sup04_done_event_json_shape():
     """SUP-04: done event has JSON with keys 'type', 'strategy_used', 'latency_ms'."""
     rows = [("source_id_z",)]
-    mock_connect = _make_aiosqlite_mock(rows)
+    fake_get_session = _make_orm_session_mock(rows)
     mock_retrieve = _make_retrieve_mock(strategy_used="hybrid", latency_ms=42)
     mock_llm = _make_llm_mock(tokens=("Hello",))
     mock_cp = _make_checkpointer_mock()
 
-    with patch("app.agents.super_agent.aiosqlite.connect", mock_connect), \
+    with patch("app.agents.super_agent.get_session", fake_get_session), \
          patch("app.agents.super_agent.retrieve", mock_retrieve), \
          patch("app.agents.super_agent.get_llm", return_value=mock_llm):
         from app.agents.super_agent import stream_super_chat

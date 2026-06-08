@@ -1,77 +1,96 @@
 """
 Tests for Phase 10: Adaptive Planner (ADP-01 through ADP-05).
 
-All tests use monkeypatching — no live LLM calls. All tests use a tmp_path
-in-memory SQLite DB, never the real settings.sqlite_path.
+All tests use monkeypatching for LLM calls. Database seeding uses the ORM
+against the test Postgres instance (same DB the app uses).
 """
 import asyncio
+import uuid
 import pytest
 import pytest_asyncio
-import aiosqlite
 from unittest.mock import MagicMock
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.pool import NullPool
+from sqlalchemy import select
+
+from app.config import settings
+from app.models.db_models import StudyGoal, StudySession, KnowledgeSource
 
 
-# ── Fixtures ─────────────────────────────────────────────────────────────────
+# ── Session factory helpers ───────────────────────────────────────────────────
 
-@pytest_asyncio.fixture
-async def tmp_db(tmp_path):
-    """Create a temporary SQLite DB with minimal schema.
+def _make_session_factory():
+    url = settings.database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    engine = create_async_engine(url, poolclass=NullPool, echo=False)
+    return async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession), engine
 
-    Returns (db_path, goal_id, session1_id, session2_id).
-    session1 is the "target" session; session2 is a downstream session.
+
+async def _create_test_data():
+    """Seed goal + 2 sessions for adaptive planner tests.
+
+    Returns (goal_id, session1_id, session2_id).
+    session1 is 'complete' (the target); session2 is 'pending' (downstream).
     """
-    import uuid
-
-    db_path = str(tmp_path / "test.sqlite")
     goal_id = str(uuid.uuid4())
     session1_id = str(uuid.uuid4())
     session2_id = str(uuid.uuid4())
 
-    async with aiosqlite.connect(db_path) as db:
-        await db.execute(
-            """CREATE TABLE study_goals (
-                id TEXT PRIMARY KEY,
-                title TEXT,
-                topic TEXT,
-                level TEXT DEFAULT 'beginner',
-                knowledge_source_ids TEXT DEFAULT '[]'
-            )"""
-        )
-        await db.execute(
-            """CREATE TABLE study_sessions (
-                id TEXT PRIMARY KEY,
-                goal_id TEXT,
-                session_number INTEGER,
-                title TEXT,
-                topic TEXT,
-                estimated_minutes INTEGER DEFAULT 45,
-                status TEXT DEFAULT 'pending',
-                quiz_score REAL,
-                created_at TEXT
-            )"""
-        )
-        await db.execute(
-            """CREATE TABLE knowledge_sources (
-                id TEXT PRIMARY KEY,
-                title TEXT
-            )"""
-        )
-        await db.execute(
-            "INSERT INTO study_goals (id, title, topic, level, knowledge_source_ids) VALUES (?, ?, ?, ?, ?)",
-            (goal_id, "Biology Goal", "Cell Biology", "beginner", "[]"),
-        )
-        await db.execute(
-            "INSERT INTO study_sessions (id, goal_id, session_number, title, topic, status) VALUES (?, ?, ?, ?, ?, ?)",
-            (session1_id, goal_id, 1, "Session 1: Cells", "Cell membrane", "complete"),
-        )
-        await db.execute(
-            "INSERT INTO study_sessions (id, goal_id, session_number, title, topic, status) VALUES (?, ?, ?, ?, ?, ?)",
-            (session2_id, goal_id, 2, "Session 2: DNA", "DNA replication", "pending"),
-        )
-        await db.commit()
+    factory, engine = _make_session_factory()
+    async with factory() as session:
+        session.add(StudyGoal(
+            id=goal_id,
+            title="Biology Goal",
+            topic="Cell Biology",
+            level="beginner",
+            knowledge_source_ids="[]",
+            status="active",
+            created_at="2026-01-01T00:00:00",
+        ))
+        session.add(StudySession(
+            id=session1_id,
+            goal_id=goal_id,
+            session_number=1,
+            title="Session 1: Cells",
+            topic="Cell membrane",
+            estimated_minutes=45,
+            status="complete",
+            created_at="2026-01-01T00:00:00",
+        ))
+        session.add(StudySession(
+            id=session2_id,
+            goal_id=goal_id,
+            session_number=2,
+            title="Session 2: DNA",
+            topic="DNA replication",
+            estimated_minutes=45,
+            status="pending",
+            created_at="2026-01-01T00:00:00",
+        ))
+        await session.commit()
+    await engine.dispose()
+    return goal_id, session1_id, session2_id
 
-    return db_path, goal_id, session1_id, session2_id
 
+async def _set_quiz_score(session_id: str, score: float | None):
+    factory, engine = _make_session_factory()
+    async with factory() as session:
+        obj = await session.get(StudySession, session_id)
+        if obj is not None:
+            obj.quiz_score = score
+            await session.commit()
+    await engine.dispose()
+
+
+async def _get_session_number(session_id: str) -> int | None:
+    factory, engine = _make_session_factory()
+    async with factory() as session:
+        obj = await session.get(StudySession, session_id)
+        num = obj.session_number if obj else None
+    await engine.dispose()
+    return num
+
+
+# ── Fixtures ─────────────────────────────────────────────────────────────────
 
 @pytest.fixture
 def mock_session_plan():
@@ -101,26 +120,12 @@ def monkeypatched_chain(monkeypatch, mock_session_plan):
 # ── ADP-01: score < threshold triggers follow-up insertion ───────────────────
 
 @pytest.mark.asyncio
-async def test_score_below_threshold_inserts_followup(
-    tmp_db, monkeypatched_chain, monkeypatch
-):
+async def test_score_below_threshold_inserts_followup(monkeypatched_chain):
     """ADP-01: quiz_score=0.50 (below 0.65) triggers follow-up insertion."""
     import app.agents.adaptive_planner as ap_mod
 
-    db_path, goal_id, session1_id, session2_id = tmp_db
-
-    # Set quiz_score to 0.50 in tmp DB
-    async with aiosqlite.connect(db_path) as db:
-        await db.execute(
-            "UPDATE study_sessions SET quiz_score = ? WHERE id = ?",
-            (0.50, session1_id),
-        )
-        await db.commit()
-
-    # Redirect the module to use our tmp DB
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(ap_mod, "settings", mock_settings)
+    goal_id, session1_id, session2_id = await _create_test_data()
+    await _set_quiz_score(session1_id, 0.50)
 
     result = await ap_mod.handle_quiz_failure(session1_id)
 
@@ -130,24 +135,12 @@ async def test_score_below_threshold_inserts_followup(
 
 
 @pytest.mark.asyncio
-async def test_score_at_threshold_no_insertion(
-    tmp_db, monkeypatched_chain, monkeypatch
-):
+async def test_score_at_threshold_no_insertion(monkeypatched_chain):
     """ADP-01 boundary: quiz_score=0.65 (at threshold) does NOT trigger insertion."""
     import app.agents.adaptive_planner as ap_mod
 
-    db_path, goal_id, session1_id, session2_id = tmp_db
-
-    async with aiosqlite.connect(db_path) as db:
-        await db.execute(
-            "UPDATE study_sessions SET quiz_score = ? WHERE id = ?",
-            (0.65, session1_id),
-        )
-        await db.commit()
-
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(ap_mod, "settings", mock_settings)
+    goal_id, session1_id, session2_id = await _create_test_data()
+    await _set_quiz_score(session1_id, 0.65)
 
     result = await ap_mod.handle_quiz_failure(session1_id)
 
@@ -156,16 +149,12 @@ async def test_score_at_threshold_no_insertion(
 
 
 @pytest.mark.asyncio
-async def test_null_score_no_insertion(tmp_db, monkeypatch):
+async def test_null_score_no_insertion():
     """ADP-01: quiz_score=None (not yet scored) does NOT trigger insertion."""
     import app.agents.adaptive_planner as ap_mod
 
-    db_path, goal_id, session1_id, session2_id = tmp_db
-    # quiz_score is already NULL by default — no update needed
-
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(ap_mod, "settings", mock_settings)
+    goal_id, session1_id, session2_id = await _create_test_data()
+    # quiz_score is already NULL — no update needed
 
     result = await ap_mod.handle_quiz_failure(session1_id)
 
@@ -176,24 +165,12 @@ async def test_null_score_no_insertion(tmp_db, monkeypatch):
 # ── ADP-02: downstream session renumbering ───────────────────────────────────
 
 @pytest.mark.asyncio
-async def test_downstream_session_renumbered(
-    tmp_db, monkeypatched_chain, monkeypatch
-):
+async def test_downstream_session_renumbered(monkeypatched_chain):
     """ADP-02: session2 (session_number=2) is shifted to 3 after follow-up insertion."""
     import app.agents.adaptive_planner as ap_mod
 
-    db_path, goal_id, session1_id, session2_id = tmp_db
-
-    async with aiosqlite.connect(db_path) as db:
-        await db.execute(
-            "UPDATE study_sessions SET quiz_score = ? WHERE id = ?",
-            (0.40, session1_id),
-        )
-        await db.commit()
-
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(ap_mod, "settings", mock_settings)
+    goal_id, session1_id, session2_id = await _create_test_data()
+    await _set_quiz_score(session1_id, 0.40)
 
     result = await ap_mod.handle_quiz_failure(session1_id)
 
@@ -201,69 +178,34 @@ async def test_downstream_session_renumbered(
     assert result["followup_session"]["session_number"] == 2
 
     # Verify session2 was renumbered from 2 to 3
-    async with aiosqlite.connect(db_path) as db:
-        async with db.execute(
-            "SELECT session_number FROM study_sessions WHERE id = ?",
-            (session2_id,),
-        ) as cur:
-            row = await cur.fetchone()
-    assert row[0] == 3
+    num = await _get_session_number(session2_id)
+    assert num == 3
 
 
 @pytest.mark.asyncio
-async def test_completed_session_keeps_number(
-    tmp_db, monkeypatched_chain, monkeypatch
-):
+async def test_completed_session_keeps_number(monkeypatched_chain):
     """ADP-02: session1 (the completed session) retains session_number=1 (not incremented)."""
     import app.agents.adaptive_planner as ap_mod
 
-    db_path, goal_id, session1_id, session2_id = tmp_db
-
-    async with aiosqlite.connect(db_path) as db:
-        await db.execute(
-            "UPDATE study_sessions SET quiz_score = ? WHERE id = ?",
-            (0.40, session1_id),
-        )
-        await db.commit()
-
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(ap_mod, "settings", mock_settings)
+    goal_id, session1_id, session2_id = await _create_test_data()
+    await _set_quiz_score(session1_id, 0.40)
 
     await ap_mod.handle_quiz_failure(session1_id)
 
     # session1 should still be at session_number=1
-    async with aiosqlite.connect(db_path) as db:
-        async with db.execute(
-            "SELECT session_number FROM study_sessions WHERE id = ?",
-            (session1_id,),
-        ) as cur:
-            row = await cur.fetchone()
-    assert row[0] == 1
+    num = await _get_session_number(session1_id)
+    assert num == 1
 
 
 # ── ADP-04: exception in planner propagates (router wraps it) ────────────────
 
 @pytest.mark.asyncio
-async def test_exception_propagates_from_planner(tmp_db, monkeypatch):
-    """ADP-04: RuntimeError from _adaptive_chain.invoke is NOT swallowed by the planner.
-
-    The quiz router's try/except is the correct isolation point.
-    """
+async def test_exception_propagates_from_planner(monkeypatch):
+    """ADP-04: RuntimeError from _adaptive_chain.invoke is NOT swallowed by the planner."""
     import app.agents.adaptive_planner as ap_mod
 
-    db_path, goal_id, session1_id, session2_id = tmp_db
-
-    async with aiosqlite.connect(db_path) as db:
-        await db.execute(
-            "UPDATE study_sessions SET quiz_score = ? WHERE id = ?",
-            (0.40, session1_id),
-        )
-        await db.commit()
-
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(ap_mod, "settings", mock_settings)
+    goal_id, session1_id, session2_id = await _create_test_data()
+    await _set_quiz_score(session1_id, 0.40)
 
     # Make chain raise
     failing_chain = MagicMock()
@@ -277,25 +219,14 @@ async def test_exception_propagates_from_planner(tmp_db, monkeypatch):
 # ── ADP-05: manual_adapt returns correct shape ───────────────────────────────
 
 @pytest.mark.asyncio
-async def test_manual_adapt_returns_shape(tmp_db, monkeypatched_chain, monkeypatch):
+async def test_manual_adapt_returns_shape(monkeypatched_chain):
     """ADP-05: POST /goals/{id}/adapt returns followup_sessions_added and followup_sessions."""
-    import app.agents.adaptive_planner as ap_mod
     import app.routers.goals as goals_mod
 
-    db_path, goal_id, session1_id, session2_id = tmp_db
+    goal_id, session1_id, session2_id = await _create_test_data()
 
     # Set session1 as failed (quiz_score < 0.65, status = complete)
-    async with aiosqlite.connect(db_path) as db:
-        await db.execute(
-            "UPDATE study_sessions SET quiz_score = ?, status = ? WHERE id = ?",
-            (0.40, "complete", session1_id),
-        )
-        await db.commit()
-
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(ap_mod, "settings", mock_settings)
-    monkeypatch.setattr(goals_mod, "settings", mock_settings)
+    await _set_quiz_score(session1_id, 0.40)
 
     result = await goals_mod.manual_adapt(goal_id)
 
@@ -308,16 +239,12 @@ async def test_manual_adapt_returns_shape(tmp_db, monkeypatched_chain, monkeypat
 
 
 @pytest.mark.asyncio
-async def test_manual_adapt_no_failed_sessions(tmp_db, monkeypatch):
+async def test_manual_adapt_no_failed_sessions():
     """ADP-05: Goal with no failed sessions returns followup_sessions_added=0 and empty list."""
     import app.routers.goals as goals_mod
 
-    db_path, goal_id, session1_id, session2_id = tmp_db
+    goal_id, session1_id, session2_id = await _create_test_data()
     # All sessions have quiz_score >= 0.65 or are pending — no failures
-
-    mock_settings = MagicMock()
-    mock_settings.sqlite_path = db_path
-    monkeypatch.setattr(goals_mod, "settings", mock_settings)
 
     result = await goals_mod.manual_adapt(goal_id)
 

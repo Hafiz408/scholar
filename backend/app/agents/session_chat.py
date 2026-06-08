@@ -1,13 +1,13 @@
 import json
 import asyncio
-import logging
+from app.core.logging import get_logger
 import time
-from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
-from app.llm_factory import get_llm
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+from app.core.llm_factory import get_llm
 from app.agents.prompts import CHAT_SYSTEM_PROMPT
 from app.retrieval.hybrid_retriever import retrieve
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def _format_context(chunks) -> str:
@@ -25,7 +25,7 @@ async def stream_chat(
     goal_id: str,
     message: str,
     source_ids: list[str],
-    checkpointer: AsyncSqliteSaver,
+    checkpointer: AsyncPostgresSaver,
 ):
     """Async generator yielding SSE-formatted strings for chat responses."""
     try:
@@ -33,7 +33,7 @@ async def stream_chat(
         context = _format_context(retrieval.chunks)
 
         # Load existing chat history from LangGraph checkpointer
-        # checkpoint_ns is required by AsyncSqliteSaver.aput(); empty string is the
+        # checkpoint_ns is required by AsyncPostgresSaver.aput(); empty string is the
         # default namespace. Omitting it raises KeyError: 'checkpoint_ns' on save.
         config = {"configurable": {"thread_id": goal_id, "checkpoint_ns": ""}}
         checkpoint_tuple = await checkpointer.aget_tuple(config)

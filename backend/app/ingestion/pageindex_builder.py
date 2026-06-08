@@ -8,14 +8,14 @@ All failures return None so the vector-only pipeline continues unblocked.
 """
 import asyncio
 import json
-import logging
+from app.core.logging import get_logger
 import os
 from pathlib import Path
 from typing import Optional
 
 from app.config import settings
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # Configure litellm env vars at module load so PageIndex picks them up on import.
 # PageIndex uses litellm internally; OPENAI_API_KEY is the key it reads.

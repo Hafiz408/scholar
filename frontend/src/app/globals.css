@@ -2,6 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Scholar design tokens ──────────────────────────────────────────────────
+   "Modern scholarly" — warm paper surfaces, indigo primary, serif headings.
+   Mirrors tailwind.config.ts. Light theme only. Font variables (--font-sans,
+   --font-serif) are injected by next/font in layout.tsx.                       */
+:root {
+  /* Brand */
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+
+  /* Warm neutral surfaces */
+  --color-surface: #faf9f7;
+  --color-surface-subtle: #f6f5f2;
+  --color-surface-card: #ffffff;
+  --color-surface-border: #e8e6e1;
+
+  /* Ink */
+  --color-ink: #1c1a17;
+  --color-ink-soft: #4a463f;
+  --color-ink-muted: #8a857b;
+}
+
+/* ─── Base element styles ──────────────────────────────────────────────────── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-ink-soft);
+    font-family: var(--font-sans), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: var(--color-ink);
+  }
+}
+
 /* Confetti animation for TestPanel */
 .confetti-container {
   position: fixed;

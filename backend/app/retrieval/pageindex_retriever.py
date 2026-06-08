@@ -9,7 +9,7 @@ All failures return [] — never raise — so the hybrid retriever falls back
 to vector-only without disruption.
 """
 import json
-import logging
+from app.core.logging import get_logger
 import re
 from pathlib import Path
 from typing import Optional
@@ -20,7 +20,7 @@ from app.agents.prompts import PAGEINDEX_TREE_SEARCH_PROMPT
 from app.config import settings
 from app.models.schemas import RetrievedChunk
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # Module-level LLM client singleton (connection-pooled).
 _llm_client: Optional[AsyncOpenAI] = None

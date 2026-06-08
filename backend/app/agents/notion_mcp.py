@@ -1,12 +1,13 @@
 import asyncio
-import logging
+from app.core.logging import get_logger
 
-import aiosqlite
 import httpx
 
-from app.config import settings
+from sqlalchemy import select, update
+from app.core.database import get_session
+from app.models.db_models import StudyGoal, StudySession
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 NOTION_BASE_URL = "https://api.notion.com/v1"
 NOTION_VERSION = "2022-06-28"
@@ -47,34 +48,32 @@ async def run_notion_export(goal_id: str, api_key: str, parent_page_id: str) -> 
 
     Creates a parent page for the goal under parent_page_id, then creates one
     child page per session (sequential). Writes the goal page URL back to the
-    study_goals row in SQLite after export completes.
+    study_goals row in Postgres after export completes.
     """
     try:
         headers = _make_headers(api_key)
 
         # Fetch goal and sessions from the database
-        async with aiosqlite.connect(settings.sqlite_path) as db:
-            db.row_factory = aiosqlite.Row
+        async with get_session() as session:
+            goal_obj = (
+                await session.execute(
+                    select(StudyGoal).where(StudyGoal.id == goal_id)
+                )
+            ).scalar_one_or_none()
 
-            async with db.execute(
-                "SELECT title FROM study_goals WHERE id = ?", (goal_id,)
-            ) as cur:
-                goal_row = await cur.fetchone()
-
-            if goal_row is None:
+            if goal_obj is None:
                 logger.error("run_notion_export: goal %s not found in DB", goal_id)
                 return
 
-            goal_title = goal_row["title"]
+            goal_title = goal_obj.title
 
-            async with db.execute(
-                """SELECT session_number, title, notes_markdown
-                   FROM study_sessions
-                   WHERE goal_id = ?
-                   ORDER BY session_number""",
-                (goal_id,),
-            ) as cur:
-                sessions = await cur.fetchall()
+            sessions = (
+                await session.execute(
+                    select(StudySession)
+                    .where(StudySession.goal_id == goal_id)
+                    .order_by(StudySession.session_number)
+                )
+            ).scalars().all()
 
         async with httpx.AsyncClient(timeout=30.0) as client:
             # Step 1 — Create goal parent page
@@ -93,10 +92,10 @@ async def run_notion_export(goal_id: str, api_key: str, parent_page_id: str) -> 
             goal_page_url = goal_resp["url"]
 
             # Step 2 — Create one child page per session (sequential)
-            for session in sessions:
-                session_number = session["session_number"]
-                session_title = session["title"]
-                notes = session["notes_markdown"] or ""  # NULL fallback to empty string
+            for sess in sessions:
+                session_number = sess.session_number
+                session_title = sess.title
+                notes = sess.notes_markdown or ""  # NULL fallback to empty string
 
                 session_body = {
                     "parent": {"page_id": goal_page_id},
@@ -133,12 +132,13 @@ async def run_notion_export(goal_id: str, api_key: str, parent_page_id: str) -> 
                 )
 
         # Write URL back to DB
-        async with aiosqlite.connect(settings.sqlite_path) as db:
-            await db.execute(
-                "UPDATE study_goals SET notion_page_url = ? WHERE id = ?",
-                (goal_page_url, goal_id),
+        async with get_session() as session:
+            await session.execute(
+                update(StudyGoal)
+                .where(StudyGoal.id == goal_id)
+                .values(notion_page_url=goal_page_url)
             )
-            await db.commit()
+            await session.commit()
 
         logger.info("run_notion_export: goal %s exported to %s", goal_id, goal_page_url)
 
