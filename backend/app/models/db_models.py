@@ -1,9 +1,8 @@
 """SQLAlchemy 2.0 declarative ORM models for the Scholar Postgres schema.
 
-These models mirror the raw DDL in ``app/core/db_schema.py`` EXACTLY — same table
-names, column names, and types. This is the ORM foundation (phase O1); data-access
-files are rewritten to use these models in a later phase. For now the ORM and the
-raw ``app/core/pg.py`` shim coexist against the same tables.
+These models are the sole data-access layer — every router/agent/repository reads
+and writes through ``get_session()`` and these classes. ``Base.metadata`` is also
+the source of truth for table creation (see ``db_schema.init_orm_models``).
 
 Type mapping (matching the raw schema):
     TEXT             -> Text          (Mapped[str] / Mapped[str | None])

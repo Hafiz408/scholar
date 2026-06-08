@@ -15,32 +15,31 @@ sequenceDiagram
     participant P as Pipeline
     participant PI as PageIndex Builder
     participant EM as Embedder
-    participant PG as pgvector
-    participant DB as SQLite
+    participant PG as Postgres/pgvector
     participant FS as Disk
 
     U->>API: POST /knowledge/upload (PDF or URL)
-    API->>DB: INSERT knowledge_sources (status=pending)
+    API->>PG: INSERT knowledge_sources (status=pending)
     API-->>U: { source_id }  ← returns immediately
     API->>P: BackgroundTask: run_ingestion()
 
     Note over P: Stage 1 — Text extraction (+ optional vision for diagrams)
-    P->>DB: UPDATE page_count
+    P->>PG: UPDATE page_count
 
     Note over P: Stage 2 — PageIndex tree (PDF only)
-    P->>DB: status = indexing_pageindex
+    P->>PG: status = indexing_pageindex
     P->>PI: build_pageindex_tree()
     Note over PI: ~140–220 LLM calls build a hierarchical<br/>tree with node_id + summary + text
     PI->>FS: write {source_id}_tree.json
     PI-->>P: source_id (or None on failure → vector-only)
 
     Note over P: Stage 3 — Vector embeddings
-    P->>DB: status = indexing_vectors
+    P->>PG: status = indexing_vectors
     P->>EM: chunk (600/100) → embed → upsert
     EM->>PG: UPSERT (source_id, chunk_index, content, vector)
 
     Note over P: Stage 4 — Ready
-    P->>DB: status = ready, pageindex_doc_id = source_id (or NULL)
+    P->>PG: status = ready, pageindex_doc_id = source_id (or NULL)
 
     U->>API: GET /knowledge/{id}/status (poll)
     API-->>U: { status: "ready" }
@@ -143,7 +142,7 @@ sequenceDiagram
     participant API as /sessions/{id}/quiz/submit
     participant EV as evaluate_quiz()
     participant AD as Adaptive Planner
-    participant DB as SQLite
+    participant DB as Postgres
 
     U->>API: submit answers
     API->>EV: score (pure Python)

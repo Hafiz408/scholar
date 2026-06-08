@@ -9,7 +9,6 @@ class Settings(BaseSettings):
     langchain_tracing_v2: bool = True
     langchain_project: str = "scholar-v2"
     environment: str = "development"
-    sqlite_path: str = "./data/scholar.db"
     upload_dir: str = "./data/uploads"
     max_upload_size_mb: int = 50
 

@@ -447,7 +447,7 @@
     <div class="stat-box"><div class="stat-val">7</div><div class="stat-label">LangGraph-backed<br>agents</div></div>
     <div class="stat-box"><div class="stat-val em">0.94</div><div class="stat-label">Hybrid faithfulness<br>(RAGAS)</div></div>
     <div class="stat-box"><div class="stat-val">4</div><div class="stat-label">LLM providers via<br>one .env</div></div>
-    <div class="stat-box"><div class="stat-val">3</div><div class="stat-label">storage tiers,<br>each by access pattern</div></div>
+    <div class="stat-box"><div class="stat-val">2</div><div class="stat-label">storage tiers —<br>Postgres + disk</div></div>
   </div>
   <p class="lead">Scholar is a full-stack RAG application: a <strong>FastAPI + LangGraph</strong> backend over a <strong>dual retrieval engine</strong>, a <strong>Next.js 14</strong> frontend with native SSE streaming, and a <strong>RAGAS</strong> evaluation harness that benchmarks the retrieval strategies head-to-head. Everything is model-agnostic — the same checkout runs on OpenAI, Anthropic, Google, or any OpenAI-compatible endpoint by editing <code>.env</code> alone.</p>
 </section>
@@ -484,7 +484,7 @@
     <div class="card"><div class="card-title"><span class="tag tag-purple">domain</span> Goal &amp; Session</div><div class="card-desc">A <strong>goal</strong> (topic + level + deadline) expands into N ordered <strong>sessions</strong>. Sessions unlock sequentially; each has notes, chat, and a quiz.</div></div>
     <div class="card"><div class="card-title"><span class="tag tag-amber">domain</span> Adaptive learning</div><div class="card-desc">Failing a quiz inserts a remedial session right after the current one and atomically renumbers the rest, so a second failure can't corrupt the order.</div></div>
     <div class="card"><div class="card-title"><span class="tag tag-purple">domain</span> Super Agent</div><div class="card-desc">A goal-independent chat that retrieves across every <code>ready</code> source. Keyed by a <code>thread_id</code> the browser owns in localStorage.</div></div>
-    <div class="card"><div class="card-title"><span class="tag tag-indigo">infra</span> Checkpointer</div><div class="card-desc">LangGraph's <code>AsyncSqliteSaver</code>. Persists conversation state per <code>thread_id</code> so chat survives a browser refresh without a bespoke history table.</div></div>
+    <div class="card"><div class="card-title"><span class="tag tag-indigo">infra</span> Checkpointer</div><div class="card-desc">LangGraph's <code>AsyncPostgresSaver</code>. Persists conversation state per <code>thread_id</code> so chat survives a browser refresh without a bespoke history table.</div></div>
   </div>
 </section>
 
@@ -492,7 +492,7 @@
 <section id="architecture">
   <div class="section-label">Under the Hood</div>
   <h2>Architecture Overview</h2>
-  <p>Five layers. The frontend talks HTTP/SSE to FastAPI; routes dispatch to agents; agents share one retrieval engine and one model factory; state is split across three stores by access pattern.</p>
+  <p>Five layers. The frontend talks HTTP/SSE to FastAPI; routes dispatch to agents; agents share one retrieval engine and one model factory; state is split across two stores by access pattern.</p>
 
   <div class="arch-diagram">
     <div class="arch-layers">
@@ -527,7 +527,7 @@
       <div class="arch-layer layer-db">
         <div class="arch-layer-label">Storage + External Providers</div>
         <div class="arch-layer-items">
-          <span class="arch-item">PostgreSQL + pgvector (embeddings)</span><span class="arch-item">SQLite (goals · sessions · checkpoints)</span><span class="arch-item">Disk (PDFs · tree.json)</span><span class="arch-item">LLM / Embedding provider</span>
+          <span class="arch-item">PostgreSQL + pgvector (relational data · embeddings · checkpoints)</span><span class="arch-item">Disk (PDFs · tree.json)</span><span class="arch-item">LLM / Embedding provider</span>
         </div>
       </div>
     </div>
@@ -535,7 +535,7 @@
 
   <div class="callout callout-indigo">
     <span class="callout-icon">🧩</span>
-    <div class="callout-body">All learning logic lives in <strong>agents</strong> that share the retrieval engine and the model factory. Conversational agents (session chat, super) persist history through the LangGraph <code>AsyncSqliteSaver</code> checkpointer, built once in the app <code>lifespan</code> and stored on <code>app.state</code> for handlers to reuse.</div>
+    <div class="callout-body">All learning logic lives in <strong>agents</strong> that share the retrieval engine and the model factory. Conversational agents (session chat, super) persist history through the LangGraph <code>AsyncPostgresSaver</code> checkpointer, built once in the app <code>lifespan</code> and stored on <code>app.state</code> for handlers to reuse.</div>
   </div>
 </section>
 
@@ -556,7 +556,7 @@
     </div>
     <div class="flow-step">
       <div class="flow-step-line"><div class="flow-dot" style="border-color:var(--purple);color:var(--purple2);">3</div><div class="flow-connector"></div></div>
-      <div class="flow-content"><div class="flow-title">Create a goal</div><div class="flow-desc"><code>POST /goals</code> with topic/level/deadline/source_ids. The <strong>Planner</strong> computes a session count (<code>ceil(deadline_days / 7 × sessions_per_week)</code>) and the LLM returns an ordered plan via structured output. Goal + sessions are inserted into SQLite.</div></div>
+      <div class="flow-content"><div class="flow-title">Create a goal</div><div class="flow-desc"><code>POST /goals</code> with topic/level/deadline/source_ids. The <strong>Planner</strong> computes a session count (<code>ceil(deadline_days / 7 × sessions_per_week)</code>) and the LLM returns an ordered plan via structured output. Goal + sessions are inserted into Postgres.</div></div>
     </div>
     <div class="flow-step">
       <div class="flow-step-line"><div class="flow-dot" style="border-color:var(--indigo);color:var(--indigo2);">4</div><div class="flow-connector"></div></div>
@@ -695,7 +695,7 @@
   </table>
 
   <h3>Why LangGraph here?</h3>
-  <p>The orchestrator builds a minimal <code>StateGraph</code> with a single pass-through <code>chat</code> node whose only purpose is to give the <code>AsyncSqliteSaver</code> checkpointer a graph to attach to. The conversational agents then read and write history with one config object — no bespoke history table, no manual message-window management:</p>
+  <p>The orchestrator builds a minimal <code>StateGraph</code> with a single pass-through <code>chat</code> node whose only purpose is to give the <code>AsyncPostgresSaver</code> checkpointer a graph to attach to. The conversational agents then read and write history with one config object — no bespoke history table, no manual message-window management:</p>
   <div class="code-block"><div class="code-header"><span class="lang">session_chat.py</span><span>checkpointer config</span></div><div class="code-body">config = {<span class="str">"configurable"</span>: {<span class="str">"thread_id"</span>: goal_id, <span class="str">"checkpoint_ns"</span>: <span class="str">""</span>}}
 <span class="cm"># checkpoint_ns="" is required — the default namespace.</span>
 <span class="cm"># session chat → thread_id = goal_id  (one conversation per goal)</span>
@@ -706,9 +706,9 @@
 <section id="model-factory">
   <div class="section-label">Under the Hood</div>
   <h2>Model Factory — Provider-Agnostic by Design</h2>
-  <p>No model name is hardcoded anywhere in the application. A single factory (<code>app/llm_factory.py</code>) builds the right LangChain client from <code>.env</code>. Chat, planner, quiz, notes, router, the PageIndex navigation LLM, vision, <strong>and</strong> the RAGAS evaluation judge all read from this one place.</p>
+  <p>No model name is hardcoded anywhere in the application. A single factory (<code>app/core/llm_factory.py</code>) builds the right LangChain client from <code>.env</code>. Chat, planner, quiz, notes, router, the PageIndex navigation LLM, vision, <strong>and</strong> the RAGAS evaluation judge all read from this one place.</p>
 
-  <div class="code-block"><div class="code-header"><span class="lang">llm_factory.py</span><span>get_llm()</span></div><div class="code-body"><span class="kw">def</span> <span class="fn">get_llm</span>(*, temperature=<span class="nb">0</span>, streaming=<span class="kw">False</span>) -> BaseChatModel:
+  <div class="code-block"><div class="code-header"><span class="lang">app/core/llm_factory.py</span><span>get_llm()</span></div><div class="code-body"><span class="kw">def</span> <span class="fn">get_llm</span>(*, temperature=<span class="nb">0</span>, streaming=<span class="kw">False</span>) -> BaseChatModel:
     <span class="cm"># provider switch on LLM_PROVIDER:</span>
     <span class="cm">#   openai | openai-compat → ChatOpenAI (+ base_url override)</span>
     <span class="cm">#   anthropic              → ChatAnthropic</span>
@@ -735,13 +735,13 @@
 <section id="storage">
   <div class="section-label">Under the Hood</div>
   <h2>Storage Model — Three Stores, by Access Pattern</h2>
-  <p>Scholar deliberately splits state across three stores, each chosen for what it's good at rather than forcing everything into one database.</p>
+  <p>Scholar uses two storage tiers: a single PostgreSQL instance (with pgvector) for all structured data, and local disk for binary blobs.</p>
 
   <table class="data-table">
     <thead><tr><th>What</th><th>Where</th><th>Why</th></tr></thead>
     <tbody>
-      <tr><td>Vector embeddings (<code>knowledge_chunks</code>)</td><td><strong>PostgreSQL + pgvector</strong></td><td>Fast cosine similarity at scale via an <code>ivfflat</code> index — the only piece that needs a real DB.</td></tr>
-      <tr><td>Goals, sessions, notes, quiz data, chat history, cumulative tests</td><td><strong>SQLite</strong></td><td>Simple, embedded, and directly compatible with the LangGraph checkpointer (same file).</td></tr>
+      <tr><td>Vector embeddings (<code>knowledge_chunks</code>)</td><td><strong>PostgreSQL + pgvector</strong></td><td>Fast cosine similarity at scale via an <code>ivfflat</code> index.</td></tr>
+      <tr><td>Goals, sessions, notes, quiz data, chat history, cumulative tests, LangGraph checkpoints</td><td><strong>PostgreSQL</strong> (SQLAlchemy async ORM)</td><td>Single server-grade store for all relational data; the LangGraph <code>AsyncPostgresSaver</code> checkpointer writes to the same database. Connection pooling via asyncpg; ORM-parameterised queries for security and scalability.</td></tr>
       <tr><td>PageIndex document trees</td><td><strong>Local disk</strong> <code>{id}_tree.json</code></td><td>Read-only JSON blobs loaded at query time — no DB row needed.</td></tr>
       <tr><td>Uploaded PDFs</td><td><strong>Local disk</strong> <code>data/uploads/</code></td><td>Raw files for text/vision extraction.</td></tr>
     </tbody>
@@ -810,7 +810,7 @@
     <thead><tr><th>User action</th><th>Route</th><th>Internal</th></tr></thead>
     <tbody>
       <tr><td>Upload PDF / URL</td><td><code>POST /knowledge/upload</code></td><td><code>run_ingestion()</code> (background) → returns <code>source_id</code></td></tr>
-      <tr><td>Poll status / list / delete</td><td><code>GET /knowledge/{id}/status</code> · <code>GET /knowledge/</code> · <code>DELETE /{id}</code></td><td>SQLite + pgvector + disk (cascading delete)</td></tr>
+      <tr><td>Poll status / list / delete</td><td><code>GET /knowledge/{id}/status</code> · <code>GET /knowledge/</code> · <code>DELETE /{id}</code></td><td>Postgres + pgvector + disk (cascading delete)</td></tr>
       <tr><td>Create goal</td><td><code>POST /goals</code></td><td>Planner agent → goal + sessions</td></tr>
       <tr><td>Get goal + plan</td><td><code>GET /goals/{id}</code></td><td>goal + ordered sessions</td></tr>
       <tr><td>Manual adapt</td><td><code>POST /goals/{id}/adapt</code></td><td>Adaptive Planner over failed sessions</td></tr>
@@ -916,7 +916,7 @@
   <p>The trade-offs worth defending in an interview — what was chosen, what was rejected, and why.</p>
   <div class="tradeoff-grid">
     <div class="tradeoff-card"><div class="t-decision">Two retrievers, not one</div><div class="t-chose">✓ Chose: PageIndex + Vector + router</div><div class="t-rejected">✗ Rejected: vector-only RAG</div><div class="t-why">Each strategy has a measured blind spot. The benchmark proves hybrid keeps PageIndex's <code>0.94</code> faithfulness while nearly matching vector's <code>0.92</code> precision. A single strategy can't do both.</div></div>
-    <div class="tradeoff-card"><div class="t-decision">Three storage tiers</div><div class="t-chose">✓ Chose: Postgres+pgvector / SQLite / disk</div><div class="t-rejected">✗ Rejected: one database for everything</div><div class="t-why">Only embeddings need a real vector DB. Relational state fits SQLite (and shares a file with the checkpointer); trees are read-only JSON. Right tool per access pattern.</div></div>
+    <div class="tradeoff-card"><div class="t-decision">Two storage tiers</div><div class="t-chose">✓ Chose: Postgres+pgvector (all data + checkpoints) / disk (blobs)</div><div class="t-rejected">✗ Rejected: split relational data across multiple stores</div><div class="t-why">Originally SQLite held relational state; migrated to a single PostgreSQL (with pgvector for embeddings + ivfflat index) accessed via SQLAlchemy 2.0 async ORM. The LangGraph <code>AsyncPostgresSaver</code> checkpointer lives in the same DB — one consistent, server-grade, async store. Trees and PDFs stay on disk as read-only blobs.</div></div>
     <div class="tradeoff-card"><div class="t-decision">Native SSE, no library</div><div class="t-chose">✓ Chose: fetch + ReadableStream parser</div><div class="t-rejected">✗ Rejected: EventSource / SSE lib</div><div class="t-why"><code>EventSource</code> can't POST a JSON body or set headers, and pulling in a library for ~25 lines of well-specified parsing isn't worth the dependency. Returns a clean <code>AbortController</code> cleanup.</div></div>
     <div class="tradeoff-card"><div class="t-decision">LangGraph only for chat</div><div class="t-chose">✓ Chose: checkpointer for conversations</div><div class="t-rejected">✗ Rejected: model the whole app as a graph</div><div class="t-why">Planning/quiz/notes are stateless one-shots — a graph would be ceremony. LangGraph earns its place exactly where state persistence matters: multi-turn chat surviving refreshes.</div></div>
     <div class="tradeoff-card"><div class="t-decision">Pure-Python quiz scoring</div><div class="t-chose">✓ Chose: compare to stored correct_index</div><div class="t-rejected">✗ Rejected: LLM-graded answers</div><div class="t-why">Deterministic, free, instant, and ungameable. The <code>correct_index</code> is stored server-side and never sent to the client on generate.</div></div>
@@ -953,7 +953,7 @@
       <tr><td><code>VISION_MAX_PAGES</code></td><td><code>20</code></td><td>Cost guard; <code>0</code> = unlimited</td></tr>
       <tr><td><code>NOTION_API_KEY</code> · <code>NOTION_PARENT_PAGE_ID</code></td><td>—</td><td>Both required to enable Notion export</td></tr>
       <tr><td><code>LANGCHAIN_API_KEY</code></td><td>—</td><td>Enables LangSmith tracing; absent = silent no-op</td></tr>
-      <tr><td><code>DATABASE_URL</code> · <code>SQLITE_PATH</code> · <code>UPLOAD_DIR</code></td><td>—</td><td>pgvector DSN · SQLite file · disk path for PDFs + trees</td></tr>
+      <tr><td><code>DATABASE_URL</code> · <code>UPLOAD_DIR</code></td><td>—</td><td>Postgres DSN (all relational data + pgvector + checkpoints) · disk path for PDFs + trees</td></tr>
     </tbody>
   </table>
   <div class="callout callout-indigo">
@@ -1007,9 +1007,9 @@
   </div>
 
   <div class="faq-panel active" id="faq-arch">
-    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Why SQLite <em>and</em> PostgreSQL?</div><div class="faq-a">They serve different access patterns. <strong>pgvector</strong> is the only piece that genuinely needs a server DB — fast cosine similarity over an <code>ivfflat</code> index. Everything relational (goals, sessions, quiz data, chat checkpoints) fits comfortably in embedded <strong>SQLite</strong>, which also happens to be exactly what the LangGraph <code>AsyncSqliteSaver</code> wants. Forcing chat history into Postgres would add an ORM and a migration story for no benefit.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Why Postgres for everything?</div><div class="faq-a">Everything now lives in a single <strong>PostgreSQL</strong> database — relational tables (goals, sessions, quiz data, chat history, cumulative tests), the pgvector <code>knowledge_chunks</code> embeddings table (with its <code>ivfflat</code> cosine index), and the LangGraph <code>AsyncPostgresSaver</code> checkpointer. Data access goes through the <strong>SQLAlchemy 2.0 async ORM</strong> (asyncpg) with connection pooling. The project originally used embedded SQLite for relational state, but migrated to Postgres for a server-grade, async, scalable store: ORM-parameterised queries add a security boundary, connection pooling handles concurrency, and a single consistent datastore simplifies ops compared to keeping SQLite and Postgres in sync.</div></div>
     <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Why not model the whole app as a LangGraph graph?</div><div class="faq-a">Most agents are stateless one-shots — planning, quiz generation, note generation. Wrapping those in a graph is ceremony. LangGraph is used precisely where it pays off: <strong>multi-turn conversation persistence</strong>. The orchestrator builds a minimal graph with a single pass-through node just so the checkpointer has something to attach to.</div></div>
-    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How does chat survive a refresh?</div><div class="faq-a">The <code>AsyncSqliteSaver</code> checkpointer stores conversation state per <code>thread_id</code>. Session chat uses <code>thread_id = goal_id</code>; the Super Agent uses a client UUID kept in <code>localStorage</code>. On each turn the agent loads prior messages from the checkpoint, appends, and writes back — no bespoke history table. (Caveat: the frontend doesn't yet re-hydrate that history on page load.)</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How does chat survive a refresh?</div><div class="faq-a">The <code>AsyncPostgresSaver</code> checkpointer stores conversation state per <code>thread_id</code> in Postgres. Session chat uses <code>thread_id = goal_id</code>; the Super Agent uses a client UUID kept in <code>localStorage</code>. On each turn the agent loads prior messages from the checkpoint, appends, and writes back — no bespoke history table. (Caveat: the frontend doesn't yet re-hydrate that history on page load.)</div></div>
     <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Why a custom SSE parser instead of a library?</div><div class="faq-a">The browser's native <code>EventSource</code> can't issue a POST with a JSON body or custom headers, which the streaming endpoints need. The SSE wire format is ~25 lines to parse off a <code>fetch</code> <code>ReadableStream</code>, and doing it by hand returns a clean <code>AbortController</code>-based cleanup that wires straight into React effects.</div></div>
   </div>
 
@@ -1023,7 +1023,7 @@
 
   <div class="faq-panel" id="faq-prod">
     <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How does adaptive learning actually trigger?</div><div class="faq-a">On quiz submit, pure-Python scoring computes a fraction. Below <code>0.65</code>, <code>handle_quiz_failure()</code> generates one targeted remedial session and inserts it after the current one, atomically renumbering later sessions so stacked failures can't corrupt the order. The final test flags any session scoring under <code>0.50</code> as weak.</div></div>
-    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How would you make this multi-user / production-ready?</div><div class="faq-a">Add auth + per-user data scoping; move ingestion to a real job queue (Celery/RQ) for retries and concurrency; promote relational state from SQLite to Postgres; re-hydrate chat history on load; replace status polling with WebSockets; and expand the eval set to 50–100 Q&amp;A across domains with CI regression gates.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How would you make this multi-user / production-ready?</div><div class="faq-a">Add auth + per-user data scoping; move ingestion to a real job queue (Celery/RQ) for retries and concurrency; re-hydrate chat history on load; replace status polling with WebSockets; and expand the eval set to 50–100 Q&amp;A across domains with CI regression gates.</div></div>
     <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How do I switch the model or run fully local?</div><div class="faq-a">Edit <code>.env</code>. Set <code>LLM_PROVIDER=anthropic</code> + a Claude model, or <code>openai-compat</code> with <code>LLM_BASE_URL=http://localhost:11434/v1</code> for Ollama. The same change flows to chat, planner, notes, quiz, router, PageIndex navigation, vision, <em>and</em> the RAGAS judge — nothing is hardcoded.</div></div>
     <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">What happens if PageIndex tree-building fails?</div><div class="faq-a">Graceful degradation. The builder logs a warning and returns <code>None</code>; ingestion still completes vector-only and the source becomes <code>ready</code> with <code>pageindex_doc_id = NULL</code>. The router reads that and routes the source to vector with no LLM call. Nothing breaks — you just lose structural retrieval for that one book.</div></div>
     <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How is observability handled?</div><div class="faq-a">When <code>LANGCHAIN_API_KEY</code> is set, every agent/LLM call is traced in LangSmith (strategy, latency, token cost) under project <code>scholar-v2</code>. Absent the key it's a silent no-op — no code paths change.</div></div>
@@ -1063,7 +1063,7 @@
     <div class="cheat-box full">
       <h4>One-liners per layer</h4>
       <ul class="bullets">
-        <li><strong>Backend:</strong> FastAPI; agents share one retrieval engine + one model factory; conversations persist via a LangGraph SQLite checkpointer.</li>
+        <li><strong>Backend:</strong> FastAPI; agents share one retrieval engine + one model factory; conversations persist via a LangGraph Postgres checkpointer (<code>AsyncPostgresSaver</code>).</li>
         <li><strong>Retrieval:</strong> PageIndex tree-nav + pgvector cosine, merged 0.6/0.4, routed per query, vector fallback when no tree.</li>
         <li><strong>Frontend:</strong> Next.js 14 App Router; native SSE parser off <code>fetch</code>; 3-panel study UI; sequential session locking.</li>
         <li><strong>Evals:</strong> RAGAS 3-way, router bypassed for fairness, matched golden set, provider-agnostic judge, committed results.</li>
@@ -1080,7 +1080,7 @@
     <div class="card"><div class="card-title">Backend</div><div class="card-desc">FastAPI · LangChain + LangGraph · pydantic-settings · asyncio. SSE via <code>text/event-stream</code>.</div></div>
     <div class="card"><div class="card-title">Retrieval &amp; ingestion</div><div class="card-desc">PageIndex (VectifyAI, via litellm) · pgvector · pdfplumber/pypdf · trafilatura · PyMuPDF (vision) · RecursiveCharacterTextSplitter.</div></div>
     <div class="card"><div class="card-title">Frontend</div><div class="card-desc">Next.js 14 (App Router) · React 18 · TypeScript · Tailwind · react-markdown + remark-gfm · react-dropzone.</div></div>
-    <div class="card"><div class="card-title">Storage</div><div class="card-desc">PostgreSQL + pgvector (embeddings) · SQLite (relational + checkpoints) · local disk (PDFs + trees).</div></div>
+    <div class="card"><div class="card-title">Storage</div><div class="card-desc">PostgreSQL + pgvector (relational data · embeddings · LangGraph checkpoints) via SQLAlchemy 2.0 async ORM · local disk (PDFs + trees).</div></div>
     <div class="card"><div class="card-title">Models (any provider)</div><div class="card-desc">OpenAI · Anthropic · Google · OpenAI-compatible (Ollama/Groq/vLLM/Together/LM Studio).</div></div>
     <div class="card"><div class="card-title">Eval &amp; ops</div><div class="card-desc">RAGAS 0.2 (Faithfulness · Relevancy · Precision) · pytest + pytest-asyncio · LangSmith tracing · Docker Compose · Notion API.</div></div>
   </div>

@@ -8,7 +8,7 @@ Copy `.env.example` to `.env` and fill in the values below.
 
 ## Model-agnostic by design
 
-A single **model factory** (`backend/app/llm_factory.py`) constructs the LLM client for every call — chat, planner, notes, quiz, router, final test, super agent, PageIndex navigation, and the RAGAS evaluation judge. Embeddings (ingestion, query, and evaluation) go through a parallel OpenAI-compatible client. Change the provider in one place and it applies everywhere.
+A single **model factory** (`backend/app/core/llm_factory.py`) constructs the LLM client for every call — chat, planner, notes, quiz, router, final test, super agent, PageIndex navigation, and the RAGAS evaluation judge. Embeddings (ingestion, query, and evaluation) go through a parallel OpenAI-compatible client. Change the provider in one place and it applies everywhere.
 
 ```mermaid
 flowchart LR
@@ -130,12 +130,39 @@ Absent the key, tracing is a silent no-op.
 
 ---
 
+## Database
+
+Scholar uses a single **PostgreSQL** instance for all persistent state — relational tables (goals, sessions, notes, quiz data, chat history, super-agent thread metadata) **and** vector embeddings (pgvector). SQLite is no longer used.
+
+### DATABASE_URL
+
+| Context | Value |
+|---------|-------|
+| Local non-Docker dev | `postgresql://postgres@localhost:5000/scholar` |
+| Dockerized backend | `postgresql://postgres@host.docker.internal:5000/scholar` (set in `compose.yml`) |
+| CI (GitHub Actions) | `postgresql://scholar:scholar@localhost:5432/scholar` (pgvector/pgvector:pg16 service) |
+
+The default in `backend/app/config.py` is the local dev URL; `compose.yml` overrides it for Docker. No separate `POSTGRES_PASSWORD` variable is needed for the local trust-auth setup (Postgres.app with the `postgres` user).
+
+### Prerequisites (local dev)
+
+- **Postgres.app** (or equivalent) running on **host port 5000** with a database named `scholar`, user `postgres`, trust authentication, and the **pgvector** extension available.
+- Schema is created automatically at startup (`CREATE EXTENSION IF NOT EXISTS vector` + ORM `create_all`).
+
+---
+
+## Logging
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `LOG_LEVEL` | `INFO` | Log verbosity (`DEBUG`, `INFO`, `WARNING`, `ERROR`). Each request is tagged with a correlation `request_id` in structured log output. |
+
+---
+
 ## Infrastructure
 
 | Variable | Purpose |
 |----------|---------|
-| `DATABASE_URL` | PostgreSQL + pgvector DSN (Docker wires this automatically) |
-| `POSTGRES_PASSWORD` | DB password used by `docker-compose` |
-| `SQLITE_PATH` | Path to the SQLite file (goals, sessions, history) |
+| `DATABASE_URL` | PostgreSQL DSN for all data (relational + pgvector). See table above. |
 | `UPLOAD_DIR` | Where PDFs and PageIndex trees are stored |
 | `NEXT_PUBLIC_API_URL` | Where the frontend's `/api` proxy forwards (in Docker: `http://backend:8000`) |

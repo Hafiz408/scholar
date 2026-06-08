@@ -55,7 +55,6 @@ async def lifespan(app: FastAPI):
             yield
         finally:
             await get_async_engine().dispose()
-            await get_async_engine().dispose()
 
 
 app = FastAPI(title="Scholar API", version="0.1.0", lifespan=lifespan)
