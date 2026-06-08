@@ -4,9 +4,9 @@ from datetime import datetime, timezone
 from typing import TypedDict
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
-from sqlalchemy import select, update
+from sqlalchemy import select
 from app.core.database import get_session
-from app.models.db_models import to_dict, KnowledgeSource, StudyGoal, StudySession
+from app.models.db_models import KnowledgeSource, StudyGoal, StudySession
 from app.agents.planner import generate_plan, StudyPlanOutput
 
 

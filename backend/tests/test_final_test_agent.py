@@ -13,13 +13,11 @@ Coverage:
     ORC-01           — ScholarState TypedDict has V2 annotations
     ORC-02           — update_goal_progress() returns correct shape
 """
-import asyncio
 import json
 import uuid
 
 import pytest
-import pytest_asyncio
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import MagicMock
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.pool import NullPool
 

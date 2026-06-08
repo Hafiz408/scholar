@@ -4,7 +4,6 @@ Tests for Phase 9: Vision Ingestion (VIS-01 through VIS-06).
 All tests use monkeypatching — no live LLM API key or real PDF required.
 """
 import pytest
-import pytest_asyncio
 
 
 # ── VIS-01 ─────────────────────────────────────────────────────────────────

@@ -1,6 +1,5 @@
 import pytest
-import asyncio
-from unittest.mock import patch, AsyncMock, MagicMock
+from unittest.mock import patch
 from app.retrieval.hybrid_retriever import merge_results, retrieve
 from app.models.schemas import RetrievedChunk, RetrievalResult
 

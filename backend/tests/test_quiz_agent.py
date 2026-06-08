@@ -3,7 +3,6 @@ import pytest
 from unittest.mock import MagicMock, patch
 from app.agents.quiz_agent import (
     QuizQuestion,
-    QuizResult,
     evaluate_quiz,
     generate_quiz,
 )

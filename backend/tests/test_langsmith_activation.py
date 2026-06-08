@@ -1,6 +1,5 @@
 """Tests for Phase 8: LangSmith env injection at startup (OBS-01, OBS-02)."""
 import os
-import pytest
 
 
 def test_langsmith_env_injected_when_key_set(monkeypatch):

@@ -253,7 +253,7 @@ async def test_sup04_token_event_json_shape():
     token_events = [e for e in events if e.startswith("event: token\n")]
     assert len(token_events) >= 1
     for event_str in token_events:
-        data_line = [l for l in event_str.split("\n") if l.startswith("data:")][0]
+        data_line = [ln for ln in event_str.split("\n") if ln.startswith("data:")][0]
         payload = json.loads(data_line[len("data: "):])
         assert "type" in payload
         assert "content" in payload
@@ -280,7 +280,7 @@ async def test_sup04_citations_event_json_shape():
 
     citations_events = [e for e in events if e.startswith("event: citations\n")]
     assert len(citations_events) == 1
-    data_line = [l for l in citations_events[0].split("\n") if l.startswith("data:")][0]
+    data_line = [ln for ln in citations_events[0].split("\n") if ln.startswith("data:")][0]
     payload = json.loads(data_line[len("data: "):])
     assert "type" in payload
     assert "chunks" in payload
@@ -307,7 +307,7 @@ async def test_sup04_done_event_json_shape():
 
     done_events = [e for e in events if e.startswith("event: done\n")]
     assert len(done_events) == 1
-    data_line = [l for l in done_events[0].split("\n") if l.startswith("data:")][0]
+    data_line = [ln for ln in done_events[0].split("\n") if ln.startswith("data:")][0]
     payload = json.loads(data_line[len("data: "):])
     assert "type" in payload
     assert "strategy_used" in payload

@@ -1,6 +1,5 @@
 import pytest
-import asyncio
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 from app.retrieval.router import classify_query
 
 LABELLED_TEST_SET = [

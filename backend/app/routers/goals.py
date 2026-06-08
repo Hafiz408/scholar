@@ -3,13 +3,13 @@ from datetime import datetime, timezone
 from app.core.logging import get_logger
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import select, update
+from sqlalchemy import select
 
 from app.agents.orchestrator import create_goal_with_plan, get_goal_plan
 from app.agents.notion_mcp import run_notion_export
 from app.config import settings
 from app.core.database import get_session
-from app.models.db_models import StudySession, StudyGoal, to_dict
+from app.models.db_models import StudySession, to_dict
 from app.models.schemas import GoalSummary
 from app.repositories.goals_repo import list_goals_with_progress
 

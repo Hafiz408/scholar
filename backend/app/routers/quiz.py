@@ -4,10 +4,9 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select, update
 
-from app.config import settings
 from app.core.database import get_session
 from app.models.db_models import StudySession, StudyGoal, to_dict
-from app.agents.quiz_agent import generate_quiz, evaluate_quiz, QuizQuestion, QuizResult
+from app.agents.quiz_agent import generate_quiz, evaluate_quiz, QuizQuestion
 
 logger = get_logger(__name__)
 

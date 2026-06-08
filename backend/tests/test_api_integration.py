@@ -99,7 +99,6 @@ def _insert_goal_and_session(
 def _get_session_row(session_id: str) -> dict | None:
     """Read a study_sessions row from the DB via the ORM."""
     async def _run():
-        from sqlalchemy import select
         factory, engine = _make_session_factory()
         async with factory() as session:
             obj = await session.get(StudySession, session_id)
@@ -307,7 +306,7 @@ class TestQuizEndpoint:
         # Pre-populate: goal + session with notes_markdown + stored quiz questions
         questions_data = [
             {"id": f"q{i}", "question": f"Q{i}?", "options": ["A", "B", "C", "D"],
-             "correct_index": 0, "explanation": f"A is correct."}
+             "correct_index": 0, "explanation": "A is correct."}
             for i in range(1, 6)
         ]
 

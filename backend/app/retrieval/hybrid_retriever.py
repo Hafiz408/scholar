@@ -16,7 +16,7 @@ from app.config import settings
 from app.core.database import get_session
 from app.models.db_models import KnowledgeSource
 from app.models.schemas import RetrievedChunk, RetrievalResult
-from app.retrieval.router import classify_query, _get_pageindex_doc_ids
+from app.retrieval.router import classify_query
 from app.retrieval.pageindex_retriever import fetch_pageindex_chunks
 from app.retrieval.vector_retriever import vector_search
 

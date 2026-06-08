@@ -20,6 +20,12 @@ from app.core.logging import (
 from app.core.database import get_async_engine, get_engine
 from app.core.db_schema import init_orm_models, init_pgvector_schema
 from app.routers.knowledge import router as knowledge_router
+from app.routers.goals import router as goals_router
+from app.routers.sessions import router as sessions_router
+from app.routers.chat import router as chat_router
+from app.routers.quiz import router as quiz_router
+from app.routers.test import router as test_router
+from app.routers.super import router as super_router
 
 # Configure the root logger once, at import time, so every per-module logger inherits
 # the centralized format and level (LOG_LEVEL, default INFO).
@@ -163,14 +169,6 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 
 
 app.include_router(knowledge_router, prefix="/knowledge", tags=["knowledge"])
-
-from app.routers.goals import router as goals_router
-from app.routers.sessions import router as sessions_router
-from app.routers.chat import router as chat_router
-from app.routers.quiz import router as quiz_router
-from app.routers.test import router as test_router
-from app.routers.super import router as super_router
-
 app.include_router(goals_router)
 app.include_router(sessions_router)
 app.include_router(chat_router)

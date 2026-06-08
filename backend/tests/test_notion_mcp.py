@@ -15,12 +15,9 @@ Coverage:
     NTN-04 — SKIPPED (SQLite init_db() removed; schema managed by ORM + Postgres)
     NTN-05 — POST /goals/{id}/export/notion returns {"status": "export_started"}
 """
-import asyncio
 import uuid
 import pytest
-import pytest_asyncio
 import httpx
-from contextlib import asynccontextmanager
 from unittest.mock import AsyncMock, MagicMock, patch
 
 
@@ -72,7 +69,6 @@ async def _seed_goal_and_sessions(goal_id: str, num_sessions: int = 2, notes_mar
 async def _get_goal_notion_url(goal_id: str) -> str | None:
     """Read notion_page_url from a study_goals row."""
     from app.models.db_models import StudyGoal
-    from sqlalchemy import select
     factory, engine = _make_session_factory()
     async with factory() as session:
         obj = await session.get(StudyGoal, goal_id)

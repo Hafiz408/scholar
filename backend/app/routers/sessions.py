@@ -3,7 +3,6 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 
-from app.config import settings
 from app.core.database import get_session as get_db_session
 from app.models.db_models import StudySession, StudyGoal, to_dict
 from app.agents.note_generator import stream_notes

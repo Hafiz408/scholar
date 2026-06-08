@@ -4,9 +4,8 @@ from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 
-from app.config import settings
 from app.core.database import get_session
-from app.models.db_models import StudySession, StudyGoal, to_dict
+from app.models.db_models import StudySession, StudyGoal
 from app.agents.session_chat import stream_chat
 
 router = APIRouter(prefix="/sessions", tags=["chat"])

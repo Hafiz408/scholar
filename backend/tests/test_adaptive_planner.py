@@ -4,17 +4,14 @@ Tests for Phase 10: Adaptive Planner (ADP-01 through ADP-05).
 All tests use monkeypatching for LLM calls. Database seeding uses the ORM
 against the test Postgres instance (same DB the app uses).
 """
-import asyncio
 import uuid
 import pytest
-import pytest_asyncio
 from unittest.mock import MagicMock
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.pool import NullPool
-from sqlalchemy import select
 
 from app.config import settings
-from app.models.db_models import StudyGoal, StudySession, KnowledgeSource
+from app.models.db_models import StudyGoal, StudySession
 
 
 # ── Session factory helpers ───────────────────────────────────────────────────

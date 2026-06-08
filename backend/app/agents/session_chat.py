@@ -66,15 +66,6 @@ async def stream_chat(
             {"role": "assistant", "content": assistant_content},
         ]
         # Build minimal checkpoint for history persistence
-        try:
-            from langgraph.checkpoint.base import Checkpoint, CheckpointMetadata
-        except ImportError:
-            try:
-                from langgraph.checkpoint.types import Checkpoint, CheckpointMetadata
-            except ImportError:
-                Checkpoint = dict
-                CheckpointMetadata = dict
-
         new_checkpoint = {
             "v": 1,
             "id": str(int(time.time() * 1000)),

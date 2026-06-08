@@ -1,7 +1,7 @@
 """Tests for the planner agent — generate_plan mocked to avoid LLM calls."""
 import pytest
 from math import ceil
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 from app.agents.planner import SessionPlan, StudyPlanOutput, generate_plan
 
 

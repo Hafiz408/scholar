@@ -1,7 +1,6 @@
 from pydantic import BaseModel
-from typing import Optional, Literal, Annotated
+from typing import Optional, Literal
 from datetime import datetime
-import operator
 
 
 # Knowledge Base

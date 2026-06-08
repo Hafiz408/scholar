@@ -7,9 +7,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select, update, func
 
-from app.config import settings
 from app.core.database import get_session
-from app.models.db_models import StudyGoal, StudySession, CumulativeTest, to_dict
+from app.models.db_models import StudyGoal, StudySession, CumulativeTest
 from app.agents.test_agent import TestQuestion, generate_test
 from app.agents.quiz_agent import evaluate_quiz, QuizQuestion
 

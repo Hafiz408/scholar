@@ -90,15 +90,6 @@ async def stream_super_chat(
 
         # Build minimal checkpoint for history persistence
         # Note: no goal_id field — super chat is not goal-scoped
-        try:
-            from langgraph.checkpoint.base import Checkpoint, CheckpointMetadata
-        except ImportError:
-            try:
-                from langgraph.checkpoint.types import Checkpoint, CheckpointMetadata
-            except ImportError:
-                Checkpoint = dict
-                CheckpointMetadata = dict
-
         new_checkpoint = {
             "v": 1,
             "id": str(int(time.time() * 1000)),

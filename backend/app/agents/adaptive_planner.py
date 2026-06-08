@@ -6,7 +6,7 @@ import uuid
 
 from sqlalchemy import select, update
 from app.core.database import get_session
-from app.models.db_models import to_dict, KnowledgeSource, StudySession, StudyGoal
+from app.models.db_models import KnowledgeSource, StudySession, StudyGoal
 from app.agents.planner import SessionPlan
 from app.agents.prompts import ADAPTIVE_PLANNER_SYSTEM_PROMPT
 from app.core.llm_factory import get_llm
