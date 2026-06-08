@@ -149,7 +149,7 @@ async def list_knowledge_sources():
 
 @router.delete("/{source_id}", status_code=204)
 async def delete_knowledge_source(source_id: str):
-    """Delete a knowledge source with cascade across pgvector, PageIndex, and SQLite.
+    """Delete a knowledge source with cascade across pgvector, PageIndex, and Postgres.
 
     Returns 204 on success, 404 if source not found.
     PageIndex deletion is best-effort — failure there will not prevent the overall delete.

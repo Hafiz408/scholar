@@ -59,12 +59,11 @@ def init_pgvector_schema():
 
 
 async def init_orm_models() -> None:
-    """Ensure the pgvector extension and create all ORM-declared tables (async).
+    """Ensure the pgvector extension and create all ORM-declared relational tables.
 
-    ``create_all`` is idempotent: it only creates tables that do not already
-    exist. The tables already exist from the raw ``init_db`` / ``init_pgvector_schema``
-    calls this phase, so this is effectively a no-op now — but it establishes the
-    ORM metadata as the source of truth for the data-access rewrite in a later phase.
+    ``Base.metadata.create_all`` is idempotent (creates only missing tables) and is
+    the source of truth for the relational schema. ``init_pgvector_schema`` runs first
+    (in the lifespan) to create ``knowledge_chunks`` with its ivfflat index.
     """
     from sqlalchemy import text
     from app.core.database import get_async_engine

@@ -43,8 +43,7 @@ flowchart TB
     end
 
     subgraph DATA["Storage"]
-        PG[(PostgreSQL + pgvector<br/>embeddings)]
-        SQ[(SQLite<br/>goals · sessions · history)]
+        PG[(PostgreSQL + pgvector<br/>all relational data + embeddings)]
         FS[Local disk<br/>PDFs + PageIndex trees]
     end
 
@@ -59,12 +58,12 @@ flowchart TB
     RE --> PG & FS
     AG --> MF --> EXT
     RE --> MF
-    API --> SQ
+    API --> PG
 ```
 
 ### The agent layer
 
-All learning logic is implemented as agents that share the retrieval engine and the model factory. Conversational agents (chat, super) persist their history through a **LangGraph `AsyncSqliteSaver` checkpointer**, so a browser refresh never loses context.
+All learning logic is implemented as agents that share the retrieval engine and the model factory. Conversational agents (chat, super) persist their history through a **LangGraph `AsyncPostgresSaver` checkpointer** (backed by the same Postgres instance), so a browser refresh never loses context.
 
 | Agent | Trigger | Job |
 |-------|---------|-----|
@@ -80,14 +79,17 @@ All learning logic is implemented as agents that share the retrieval engine and 
 
 ## Storage Model
 
-Scholar deliberately splits state across three stores, each chosen for its access pattern:
+Scholar consolidates all persistent state into Postgres, with local disk for file blobs:
 
 | What | Where | Why |
 |------|-------|-----|
-| Vector embeddings | **PostgreSQL + pgvector** | Fast cosine similarity at scale; the only piece that needs a real DB. |
-| Goals, sessions, notes, quiz data, chat history | **SQLite** | Simple, embedded, and directly compatible with the LangGraph checkpointer. |
+| Vector embeddings (`knowledge_chunks`) | **PostgreSQL + pgvector** | Fast cosine similarity at scale; IVFFlat index for efficient ANN search. |
+| Goals, sessions, notes, quiz data, chat history | **PostgreSQL** (ORM tables) | Single-engine simplicity; all relational data co-located with vectors. Connection pooling via SQLAlchemy 2.0 async ORM (asyncpg driver). |
+| LangGraph conversation checkpoints | **PostgreSQL** (`AsyncPostgresSaver`) | Checkpointer tables managed by LangGraph, same Postgres instance. |
 | PageIndex document trees | **Local disk** (`data/uploads/{id}_tree.json`) | Read-only JSON blobs loaded at query time — no DB row needed. |
 | Uploaded PDFs | **Local disk** (`data/uploads/`) | Raw files for text/vision extraction. |
+
+ORM models are declared in `backend/app/models/db_models.py`; the async engine and `get_session()` context manager live in `backend/app/core/database.py`. Schema initialisation (pgvector extension + `Base.metadata.create_all`) runs at startup via `backend/app/core/db_schema.py`.
 
 ---
 
@@ -105,7 +107,7 @@ Full design, including the bug that once silently disabled PageIndex retrieval, 
 
 ## Model-Agnostic by Design
 
-No model name is hardcoded anywhere in the application. A single **model factory** (`app/llm_factory.py`) builds the right client from `.env`:
+No model name is hardcoded anywhere in the application. A single **model factory** (`app/core/llm_factory.py`) builds the right client from `.env`:
 
 ```mermaid
 flowchart LR
@@ -127,7 +129,7 @@ Chat, planner, quiz, notes, router, the PageIndex navigation LLM, vision, **and*
 User action            API route                              Internal
 ──────────────────────────────────────────────────────────────────────────────
 Upload PDF / URL    →  POST   /knowledge/upload            →  run_ingestion() (background)
-List / delete       →  GET    /knowledge  · DELETE /{id}   →  SQLite + pgvector + disk
+List / delete       →  GET    /knowledge  · DELETE /{id}   →  Postgres + pgvector + disk
 
 Create goal         →  POST   /goals                       →  Planner agent
 Get goal + plan     →  GET    /goals/{id}                  →  goal + sessions
@@ -137,12 +139,15 @@ Final test          →  POST   /goals/{id}/test/generate    →  Final-Test age
                        POST   /goals/{id}/test/submit      →  score → goal complete
 
 Start session       →  POST   /sessions/{id}/start         →  retrieve() + Note Generator (SSE)
-Get session         →  GET    /sessions/{id}               →  SQLite SELECT
+List goals          →  GET    /goals                       →  goals + progress summary
+Get session         →  GET    /sessions/{id}               →  Postgres SELECT
 Send chat           →  POST   /sessions/{id}/chat          →  Router → retrieve() → Chat (SSE)
 Generate / submit   →  POST   /sessions/{id}/quiz/*        →  Quiz agent · pure-Python scoring
                                                               (submit may trigger Adaptive Planner)
 
 Super chat          →  POST   /super/chat/stream           →  Super Agent across all sources (SSE)
+List threads        →  GET    /super/threads               →  list Super Agent thread metadata
+Get thread          →  GET    /super/threads/{id}          →  thread detail + message history
 Health              →  GET    /health                      →  pgvector ping
 ```
 

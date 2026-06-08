@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.orm import sessionmaker, declarative_base
 from app.config import get_settings
 
 # Cache a single pooled engine process-wide. Creating a new engine per call would
@@ -28,15 +27,11 @@ def get_engine():
         )
     return _engine
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False)
-Base = declarative_base()
-
 
 # --- Async engine + session (SQLAlchemy 2.0 / asyncpg) ---------------------
-# The async stack is the forward path for data-access code. It coexists with the
-# sync engine above (still used by /health and legacy paths this phase) and with
-# the raw app/core/pg.py psycopg shim. Like the sync engine, the async engine and
-# its sessionmaker are cached process-wide to share a single connection pool.
+# The async stack backs all data-access code via get_session(). The sync engine
+# above is retained only for the /health pgvector check. Both engines are cached
+# process-wide so each shares a single connection pool.
 _async_engine = None
 _async_sessionmaker = None
 
@@ -52,9 +47,9 @@ def _to_async_url(url: str) -> str:
 def get_async_engine():
     global _async_engine
     if _async_engine is None:
-        s = get_settings()
+        settings = get_settings()
         _async_engine = create_async_engine(
-            _to_async_url(s.database_url),
+            _to_async_url(settings.database_url),
             pool_size=5,
             max_overflow=10,
             pool_pre_ping=True,

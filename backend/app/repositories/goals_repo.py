@@ -1,14 +1,8 @@
 """Data access for study goals. Centralizes ORM queries (SQLAlchemy 2.0 async)."""
-from datetime import datetime, timezone
-
 from sqlalchemy import case, func, select
 
 from app.core.database import get_session
 from app.models.db_models import StudyGoal, StudySession, to_dict
-
-
-def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
 
 
 async def list_goals_with_progress() -> list[dict]:

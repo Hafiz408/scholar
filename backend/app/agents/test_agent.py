@@ -18,7 +18,7 @@ class TestQuestion(BaseModel):
     session_number: int      # CRITICAL: enables weak_session_numbers calculation
     question: str
     options: list[str]       # exactly 4 items
-    correct_index: int       # never sent to frontend; stored in SQLite only
+    correct_index: int       # never sent to frontend; stored in Postgres only
     explanation: str
 
 
